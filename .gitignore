@@ -1,0 +1,11 @@
+*.class
+*.iml
+.idea/
+build/
+.gradle/
+.editorconfig
+target/
+gradle/
+gradlew
+gradlew.bat
+settings.gradle
