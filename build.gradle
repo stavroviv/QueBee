@@ -12,14 +12,22 @@ repositories {
     mavenCentral()
 }
 
+//intellij {
+//    plugins 'DBN:3.2.0163.0'
+//}
+
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    // https://mvnrepository.com/artifact/com.github.jsqlparser/jsqlparser
+//    testCompile group: 'junit', name: 'junit', version: '4.12'
     compile group: 'com.github.jsqlparser', name: 'jsqlparser', version: '0.9'
+    // https://mvnrepository.com/artifact/com.intellij/openapi
+//    compile group: 'com.intellij', name: 'openapi', version: '7.0.3'
+
 }
 
 intellij {
     version 'IU-2018.2.2'
+//    plugins 'DBN:3.2.0163.0' // it works but not need...
+
 }
 
 
