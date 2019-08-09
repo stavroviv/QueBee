@@ -1,13 +1,17 @@
 package com.querybuilder.home.lab;
 
-//import com.intellij.database.util.DbUtil;
+import com.intellij.database.util.DbUtil;
 import com.intellij.facet.FacetConfiguration;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -35,7 +39,17 @@ public class MainController {
 //        com.intellij.sql.database.SqlDataSource;
         Project p = ProjectManager.getInstance().getOpenProjects()[0];
         Application application = ApplicationManager.getApplication();
-//        Set<String> existingDataSourceNames = DbUtil.getExistingDataSourceNames(p);
+
+
+        Platform.runLater(() -> {
+            try {
+                Set<String> existingDataSourceNames = DbUtil.getExistingDataSourceNames(p);
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+
+        });
+
 //        FacetConfiguration().
         System.out.println(p);
 //        System.out.println(existingDataSourceNames);

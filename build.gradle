@@ -12,9 +12,10 @@ repositories {
     mavenCentral()
 }
 
-//intellij {
-//    plugins 'DBN:3.2.0163.0'
+//plugins {
+//    id "org.jetbrains.intellij" version "0.4.7"
 //}
+
 
 dependencies {
 //    testCompile group: 'junit', name: 'junit', version: '4.12'
@@ -27,9 +28,9 @@ dependencies {
 intellij {
     version 'IU-2018.2.2'
 //    plugins 'DBN:3.2.0163.0' // it works but not need...
+    plugins = ['DatabaseTools']
 
 }
-
 
 patchPluginXml {
     changeNotes """
