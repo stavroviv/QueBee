@@ -16,7 +16,7 @@
 
     <!--<depends optional="true">com.intellij.modules.ultimate</depends>-->
     <!--<depends>com.intellij.database</depends>-->
-    <!--<depends>com.intellij.modules.database</depends>-->
+    <depends>com.intellij.modules.database</depends>
     <depends>com.intellij.modules.ultimate</depends>
 
     <extensions defaultExtensionNs="com.intellij">

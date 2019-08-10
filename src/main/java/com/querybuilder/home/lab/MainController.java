@@ -1,11 +1,21 @@
 package com.querybuilder.home.lab;
 
+import com.intellij.database.model.DasModel;
+import com.intellij.database.model.DasObject;
+import com.intellij.database.model.ObjectKind;
+import com.intellij.database.psi.DbDataSource;
+import com.intellij.database.util.DasUtil;
 import com.intellij.database.util.DbUtil;
+import com.intellij.database.view.DatabaseStructure;
+import com.intellij.database.view.DatabaseView;
 import com.intellij.facet.FacetConfiguration;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.psi.PsiElement;
+import com.intellij.util.containers.JBIterable;
+import com.intellij.util.containers.JBTreeTraverser;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -41,19 +51,51 @@ public class MainController {
         Application application = ApplicationManager.getApplication();
 
 
-        Platform.runLater(() -> {
-            try {
-                Set<String> existingDataSourceNames = DbUtil.getExistingDataSourceNames(p);
-            } catch (Exception e) {
-                System.out.println(e);
-            }
+//        Platform.runLater(() -> {
+//            try {
+//
+//            } catch (Exception e) {
+//                System.out.println(e);
+//            }
+//
+//        });
+        Set<String> existingDataSourceNames = DbUtil.getExistingDataSourceNames(p);
+        JBIterable<DbDataSource> dataSources = DbUtil.getDataSources(p);
+        DbDataSource dbDataSource = dataSources.get(0);
 
-        });
+        DasObject schemaObject = DasUtil.getSchemaObject(dbDataSource);
 
-//        FacetConfiguration().
-        System.out.println(p);
+
+        DasObject dasObject = DbUtil.getDasObject(dbDataSource);
+        ObjectKind kind = dasObject.getKind();
+        JBIterable<? extends DasObject> dasChildren = dasObject.getDasChildren(kind);
+        for (DasObject dasChild : dasChildren) {
+            System.out.println(dasChild);
+        }
+//        dbDataSource.getFirstChild()
+
+//        DasUtil.
+        PsiElement firstChild = dbDataSource.getFirstChild();
+        System.out.println(firstChild);
+
+
+//        JBIterable<? extends DasObject> modelRoots = dbDataSource.getModel().getModelRoots();
+//        modelRoots.forEach(x-> System.out.println(x));
+////        DasUtil.dasTraverser()
+////        FacetConfiguration().
+//
+//
+//
+//        System.out.println(dasObject);
+//        DatabaseView view = DatabaseView.getDatabaseView(p);
+////        Class<DasModel> tClass = new DasModel();
+////        DasModel model = DatabaseStructure.getModel(dataSources.get(0));
+////        DbImplUtil.
+//        view.setVisible(true);
+//        System.out.println(p);
+////        dasObject.
 //        System.out.println(existingDataSourceNames);
-        okButton.setText("Thanks!");
+//        okButton.setText("Thanks!");
     }
 
     // loads some strings into the tree in the application UI.
