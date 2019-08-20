@@ -1,38 +1,34 @@
 package com.querybuilder.home.lab;
 
-import com.intellij.database.model.DasModel;
-import com.intellij.database.model.DasObject;
 import com.intellij.database.model.ObjectKind;
 import com.intellij.database.psi.DbDataSource;
-import com.intellij.database.util.DasUtil;
+import com.intellij.database.psi.DbDataSourceImpl;
 import com.intellij.database.util.DbUtil;
-import com.intellij.database.view.DatabaseStructure;
-import com.intellij.database.view.DatabaseView;
-import com.intellij.facet.FacetConfiguration;
-import com.intellij.openapi.application.Application;
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.database.vfs.ObjectPath;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.psi.PsiElement;
+import com.intellij.util.SmartList;
 import com.intellij.util.containers.JBIterable;
-import com.intellij.util.containers.JBTreeTraverser;
-import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-import java.util.Set;
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Map;
 
 //import com.intellij.modules.*;
 
 public class MainController {
     @FXML
-    private TreeView<String> locationTreeView;
+    private TreeView<Person> locationTreeView;
+    @FXML
+    private TableColumn<Person, String> dbName;
+
     @FXML
     private Button okButton;
     @FXML
@@ -45,57 +41,49 @@ public class MainController {
 
     @FXML
     public void onClickMethod() {
-//        com.intellij.modules.idea.ultimate
-//        com.intellij.sql.database.SqlDataSource;
         Project p = ProjectManager.getInstance().getOpenProjects()[0];
-        Application application = ApplicationManager.getApplication();
-
-
-//        Platform.runLater(() -> {
-//            try {
-//
-//            } catch (Exception e) {
-//                System.out.println(e);
-//            }
-//
-//        });
-        Set<String> existingDataSourceNames = DbUtil.getExistingDataSourceNames(p);
         JBIterable<DbDataSource> dataSources = DbUtil.getDataSources(p);
-        DbDataSource dbDataSource = dataSources.get(0);
+        DbDataSourceImpl dbDataSource = (DbDataSourceImpl) dataSources.get(0);
 
-        DasObject schemaObject = DasUtil.getSchemaObject(dbDataSource);
+        ImageView child = new ImageView(new Image(getClass().getResourceAsStream("/myToolWindow/plus.png")));
+        TreeItem<String> root = new TreeItem<>("Root Node", child);
+        root.setExpanded(true);
 
+        try {
+            Field myQNamesField = dbDataSource.getClass().getDeclaredField("myQNames");
+            myQNamesField.setAccessible(true);
+            Map<Object, Object> myQNames = (Map<Object, Object>) myQNamesField.get(dbDataSource);
 
-        DasObject dasObject = DbUtil.getDasObject(dbDataSource);
-        ObjectKind kind = dasObject.getKind();
-        JBIterable<? extends DasObject> dasChildren = dasObject.getDasChildren(kind);
-        for (DasObject dasChild : dasChildren) {
-            System.out.println(dasChild);
+            SmartList list = (SmartList) myQNames.get(ObjectPath.create("socnet", ObjectKind.SCHEMA));
+            Object myTables = list.get(0);
+            Field field2 = myTables.getClass().getDeclaredField("myTables");
+            field2.setAccessible(true);
+
+            Object value222 = field2.get(myTables);
+
+            Field myElements = value222.getClass().getSuperclass().getSuperclass().getDeclaredField("myElements");
+            myElements.setAccessible(true);
+
+            List valueFinal = (List) myElements.get(value222);
+            valueFinal.forEach(x ->
+                    {
+                        try {
+                            Field myNameField = x.getClass().getSuperclass().getDeclaredField("myName");
+                            myNameField.setAccessible(true);
+                            String myName = (String) myNameField.get(x);
+                            root.getChildren().add(new TreeItem<>(myName, child));
+                            System.out.println(myName);
+                        } catch (NoSuchFieldException | IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+            );
+            databaseView.setRoot(root);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
         }
-//        dbDataSource.getFirstChild()
 
-//        DasUtil.
-        PsiElement firstChild = dbDataSource.getFirstChild();
-        System.out.println(firstChild);
-
-
-//        JBIterable<? extends DasObject> modelRoots = dbDataSource.getModel().getModelRoots();
-//        modelRoots.forEach(x-> System.out.println(x));
-////        DasUtil.dasTraverser()
-////        FacetConfiguration().
-//
-//
-//
-//        System.out.println(dasObject);
-//        DatabaseView view = DatabaseView.getDatabaseView(p);
-////        Class<DasModel> tClass = new DasModel();
-////        DasModel model = DatabaseStructure.getModel(dataSources.get(0));
-////        DbImplUtil.
-//        view.setVisible(true);
-//        System.out.println(p);
-////        dasObject.
-//        System.out.println(existingDataSourceNames);
-//        okButton.setText("Thanks!");
     }
 
     // loads some strings into the tree in the application UI.
@@ -125,6 +113,40 @@ public class MainController {
             root2.getChildren().add(new TreeItem<>(itemString, child));
         }
         root.getChildren().add(root2);
-        databaseView.setRoot(root);
+//        databaseView.getColumns()
+
+        // Create three columns
+        TreeTableColumn firstNameCol = new TreeTableColumn("First Name");
+        TreeTableColumn lastNameCol = new TreeTableColumn("Last Name");
+        TreeTableColumn birthDateCol = new TreeTableColumn("Birth Date");
+
+// Add columns to the TreeTableView
+        databaseView.getColumns().add(firstNameCol);
+        databaseView.getColumns().add(lastNameCol);
+        databaseView.getColumns().add(birthDateCol);
+
+         ObservableList<Person> activeSession = FXCollections.observableArrayList();
+
+
+//        dbName.setCellValueFactory(cellData -> cellData.getValue().getName());
+//        activeSession.add(new Person("hrrykane"));
+//        databaseView.setItems(activeSession);
+////        databaseView.setRoot(root);
+    }
+
+    class Person {
+        public Person(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String name;
     }
 }
