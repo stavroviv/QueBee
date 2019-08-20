@@ -7,13 +7,17 @@ import com.intellij.database.util.DbUtil;
 import com.intellij.database.vfs.ObjectPath;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.util.SmartList;
 import com.intellij.util.containers.JBIterable;
+import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
@@ -25,14 +29,16 @@ import java.util.Map;
 
 public class MainController {
     @FXML
-    private TreeView<Person> locationTreeView;
-    @FXML
-    private TableColumn<Person, String> dbName;
+    private TreeTableView<String> locationTreeView;
+//    @FXML
+//    private TableColumn<Person, String> dbName;
 
     @FXML
     private Button okButton;
     @FXML
     private TreeTableView<String> databaseView;
+    @FXML
+    private TreeTableColumn<String, String> tableColumn1;
 
     // the initialize method is automatically invoked by the FXMLLoader - it's magic
     public void initialize() {
@@ -46,7 +52,7 @@ public class MainController {
         DbDataSourceImpl dbDataSource = (DbDataSourceImpl) dataSources.get(0);
 
         ImageView child = new ImageView(new Image(getClass().getResourceAsStream("/myToolWindow/plus.png")));
-        TreeItem<String> root = new TreeItem<>("Root Node", child);
+        TreeItem<String> root = new TreeItem<>("Tables", child);
         root.setExpanded(true);
 
         try {
@@ -72,7 +78,7 @@ public class MainController {
                             myNameField.setAccessible(true);
                             String myName = (String) myNameField.get(x);
                             root.getChildren().add(new TreeItem<>(myName, child));
-                            System.out.println(myName);
+//                            System.out.println(myName);
                         } catch (NoSuchFieldException | IllegalAccessException e) {
                             e.printStackTrace();
                         }
@@ -113,25 +119,12 @@ public class MainController {
             root2.getChildren().add(new TreeItem<>(itemString, child));
         }
         root.getChildren().add(root2);
-//        databaseView.getColumns()
 
-        // Create three columns
-        TreeTableColumn firstNameCol = new TreeTableColumn("First Name");
-        TreeTableColumn lastNameCol = new TreeTableColumn("Last Name");
-        TreeTableColumn birthDateCol = new TreeTableColumn("Birth Date");
+        tableColumn1.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().getValue()));
 
-// Add columns to the TreeTableView
-        databaseView.getColumns().add(firstNameCol);
-        databaseView.getColumns().add(lastNameCol);
-        databaseView.getColumns().add(birthDateCol);
+        databaseView.setRoot(root);
 
-         ObservableList<Person> activeSession = FXCollections.observableArrayList();
-
-
-//        dbName.setCellValueFactory(cellData -> cellData.getValue().getName());
-//        activeSession.add(new Person("hrrykane"));
-//        databaseView.setItems(activeSession);
-////        databaseView.setRoot(root);
     }
 
     class Person {
