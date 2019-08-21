@@ -7,52 +7,53 @@ import com.intellij.database.util.DbUtil;
 import com.intellij.database.vfs.ObjectPath;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.util.SmartList;
 import com.intellij.util.containers.JBIterable;
-import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.control.Button;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableColumn;
+import javafx.scene.control.TreeTableView;
 
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
-//import com.intellij.modules.*;
 
 public class MainController {
     @FXML
     private TreeTableView<String> locationTreeView;
-//    @FXML
-//    private TableColumn<Person, String> dbName;
-
     @FXML
     private Button okButton;
+    @FXML
+    private Button cancelButton;
     @FXML
     private TreeTableView<String> databaseView;
     @FXML
     private TreeTableColumn<String, String> tableColumn1;
 
-    // the initialize method is automatically invoked by the FXMLLoader - it's magic
     public void initialize() {
-        loadTreeItems("initial 1", "initial 2", "initial 3");
+        fillDatabaseTables();
     }
 
     @FXML
     public void onClickMethod() {
+
+    }
+
+    @FXML
+    public void onCancelClickMethod(ActionEvent actionEvent) {
+       MainAction.clos();
+    }
+
+    private void fillDatabaseTables(){
         Project p = ProjectManager.getInstance().getOpenProjects()[0];
         JBIterable<DbDataSource> dataSources = DbUtil.getDataSources(p);
         DbDataSourceImpl dbDataSource = (DbDataSourceImpl) dataSources.get(0);
 
-        ImageView child = new ImageView(new Image(getClass().getResourceAsStream("/myToolWindow/plus.png")));
-        TreeItem<String> root = new TreeItem<>("Tables", child);
+        TreeItem<String> root = new TreeItem<>("Tables");
         root.setExpanded(true);
 
         try {
@@ -77,69 +78,38 @@ public class MainController {
                             Field myNameField = x.getClass().getSuperclass().getDeclaredField("myName");
                             myNameField.setAccessible(true);
                             String myName = (String) myNameField.get(x);
-                            root.getChildren().add(new TreeItem<>(myName, child));
-//                            System.out.println(myName);
+                            TreeItem<String> stringTreeItem = new TreeItem<>(myName);
+                            root.getChildren().add(stringTreeItem);
+
+                            Field myColumnsField = x.getClass().getDeclaredField("myColumns");
+                            myColumnsField.setAccessible(true);
+                            Object myColumns = myColumnsField.get(x);
+
+
+                            Field myColumnsElementsField = myColumns.getClass().getSuperclass().getSuperclass().getSuperclass().getDeclaredField("myElements");
+                            myColumnsElementsField.setAccessible(true);
+                            List myColumnElements = (List) myColumnsElementsField.get(myColumns);
+                            myColumnElements.forEach(xx-> {
+                                try {
+                                    Field myColName = xx.getClass().getSuperclass().getDeclaredField("myName");
+                                    myColName.setAccessible(true);
+                                    String myColNameStr = (String) myColName.get(xx);
+                                    stringTreeItem.getChildren().add( new TreeItem<>(myColNameStr));
+                                } catch (NoSuchFieldException | IllegalAccessException e) {
+                                    e.printStackTrace();
+                                }
+                           });
                         } catch (NoSuchFieldException | IllegalAccessException e) {
                             e.printStackTrace();
                         }
-
                     }
             );
+            tableColumn1.setCellValueFactory(cellData ->
+                    new SimpleStringProperty(cellData.getValue().getValue()));
             databaseView.setRoot(root);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
-
     }
 
-    // loads some strings into the tree in the application UI.
-    public void loadTreeItems(String... rootItems) {
-        final Node rootIcon = new ImageView(new Image(getClass().getResourceAsStream("/myToolWindow/Calendar-icon.png")));
-        ImageView child = new ImageView(new Image(getClass().getResourceAsStream("/myToolWindow/plus.png")));
-
-        TreeItem<String> root = new TreeItem<>("Root Node", child);
-        root.setExpanded(true);
-        for (String itemString : rootItems) {
-            root.getChildren().add(new TreeItem<>(itemString, child));
-            root.getChildren().add(new TreeItem<>(itemString, child));
-            root.getChildren().add(new TreeItem<>(itemString, child));
-            root.getChildren().add(new TreeItem<>(itemString, child));
-            root.getChildren().add(new TreeItem<>(itemString, child));
-            root.getChildren().add(new TreeItem<>(itemString, child));
-            root.getChildren().add(new TreeItem<>(itemString, child));
-            root.getChildren().add(new TreeItem<>(itemString, child));
-            root.getChildren().add(new TreeItem<>(itemString, child));
-            root.getChildren().add(new TreeItem<>(itemString, child));
-        }
-
-        TreeItem<String> root2 = new TreeItem<>("Root Node3", child);
-//       root2.setExpanded(true);
-        for (String itemString : rootItems) {
-            root2.getChildren().add(new TreeItem<>(itemString, child));
-            root2.getChildren().add(new TreeItem<>(itemString, child));
-        }
-        root.getChildren().add(root2);
-
-        tableColumn1.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getValue()));
-
-        databaseView.setRoot(root);
-
-    }
-
-    class Person {
-        public Person(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String name;
-    }
 }

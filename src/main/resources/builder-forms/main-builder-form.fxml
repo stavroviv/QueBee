@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1031.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane fx:id="mainWindow" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1031.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
             <!--fx:controller="com.querybuilder.home.lab.MainController"-->
    <children>
       <TabPane layoutX="74.0" layoutY="70.0" prefHeight="539.0" prefWidth="802.0" side="RIGHT" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="35.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -556,7 +556,7 @@
                   <Insets bottom="5.0" />
                </HBox.margin>
             </Button>
-            <Button alignment="CENTER" cancelButton="true" minHeight="25.0" minWidth="80.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="80.0" text="Cancel" HBox.hgrow="ALWAYS">
+            <Button fx:id="cancelButton" alignment="CENTER" cancelButton="true" minHeight="25.0" minWidth="80.0" mnemonicParsing="false"  onAction="#onCancelClickMethod" prefHeight="25.0" prefWidth="80.0" text="Cancel" HBox.hgrow="ALWAYS">
                <HBox.margin>
                   <Insets bottom="5.0" left="5.0" />
                </HBox.margin>

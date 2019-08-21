@@ -14,7 +14,7 @@ import javafx.scene.Scene;
 import javax.swing.*;
 
 public class MainAction extends AnAction {
-
+    static JFrame frame = new JFrame("Query builder");
     private String getSelectionText(AnActionEvent e) {
 
         final Editor editor = e.getRequiredData(CommonDataKeys.EDITOR);
@@ -72,11 +72,15 @@ public class MainAction extends AnAction {
             fxPanel.setScene(new Scene(root1));
 
         });
-        JFrame frame = new JFrame("Query builder");
+
         frame.setContentPane(fxPanel);
         frame.pack();
         frame.setSize(1000, 600);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+    }
+
+    public static void clos(){
+        frame.setVisible(false);
     }
 }
