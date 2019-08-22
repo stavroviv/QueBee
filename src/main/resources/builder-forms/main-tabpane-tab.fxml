@@ -12,18 +12,14 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 
 <AnchorPane fx:id="mainWindow" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1031.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
             <!--fx:controller="com.querybuilder.home.lab.MainController"-->
    <children>
-      <TabPane fx:id="qbTabPane_All" layoutX="74.0" layoutY="70.0" prefHeight="539.0" prefWidth="802.0" side="RIGHT" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="35.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <tabs>
-          <Tab fx:id="qbTabPane_1" text="Untitled Tab 1">
-               <content>
-                  <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE">
+     
+                  <TabPane prefHeight="700.0" prefWidth="1031.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <tabs>
                       <Tab text="Tables and fields">
                            <content>
@@ -536,43 +532,7 @@
                            </content></Tab>
                     </tabs>
                   </TabPane>
-               </content>
-            </Tab>
 
-            <!-- content from counter.fxml included here -->
 
-          <Tab text="Untitled Tab 2">
-              <fx:include fx:id="count" source="main-tabpane-tab.fxml" />
-          </Tab>
-
-        </tabs>
-      </TabPane>
-      <HBox alignment="BOTTOM_LEFT" layoutY="665.0" prefHeight="35.0" prefWidth="1031.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="665.0">
-         <children>
-            <Button minWidth="80.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="80.0" text="Query">
-               <HBox.margin>
-                  <Insets bottom="5.0" left="5.0" />
-               </HBox.margin>
-            </Button>
-            <Pane prefHeight="35.0" prefWidth="707.0" HBox.hgrow="ALWAYS">
-               <HBox.margin>
-                  <Insets />
-               </HBox.margin></Pane>
-            <Button fx:id="okButton" alignment="CENTER" defaultButton="true" minHeight="25.0" minWidth="80.0" mnemonicParsing="false" onAction="#onClickMethod" prefHeight="25.0" prefWidth="80.0" text="OK" HBox.hgrow="NEVER">
-               <padding>
-                  <Insets right="5.0" />
-               </padding>
-               <HBox.margin>
-                  <Insets bottom="5.0" />
-               </HBox.margin>
-            </Button>
-            <Button fx:id="cancelButton" alignment="CENTER" cancelButton="true" minHeight="25.0" minWidth="80.0" mnemonicParsing="false" onAction="#onCancelClickMethod" prefHeight="25.0" prefWidth="80.0" text="Cancel" HBox.hgrow="ALWAYS">
-               <HBox.margin>
-                  <Insets bottom="5.0" left="5.0" />
-               </HBox.margin>
-            </Button>
-            <Pane layoutX="91.0" layoutY="10.0" minWidth="40.0" prefHeight="35.0" prefWidth="40.0" HBox.hgrow="NEVER" />
-         </children>
-      </HBox>
    </children>
 </AnchorPane>

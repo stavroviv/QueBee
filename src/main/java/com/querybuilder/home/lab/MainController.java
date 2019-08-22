@@ -12,10 +12,8 @@ import com.intellij.util.containers.JBIterable;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableColumn;
-import javafx.scene.control.TreeTableView;
+import javafx.scene.control.*;
+import net.sf.jsqlparser.statement.select.SelectItem;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -34,8 +32,35 @@ public class MainController {
     @FXML
     private TreeTableColumn<String, String> tableColumn1;
 
+    @FXML
+    private TableView<String> fieldTable;
+    @FXML
+    private TableColumn<String, String> fieldColumn;
+    private List<SelectItem> selectItems;
+
+    @FXML
+    private Tab qbTabPane_1;
+    @FXML
+    private TabPane qbTabPane_All;
+
+    public MainController(List<SelectItem> selectItems) {
+        this.selectItems = selectItems;
+    }
+
     public void initialize() {
         fillDatabaseTables();
+//        fieldColumn.setCellValueFactory(new PropertyValueFactory<>("fieldd"));
+        fieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
+        selectItems.forEach(x -> fieldTable.getItems().add(x.toString()));
+
+
+//
+//        Tab tt = new Tab("Tab 2");
+//        tt.setContent(qbTabPane_1.clone);
+//        qbTabPane_All.getTabs().add(tt);
+//        qbTabPane_All.getTabs().add(new Tab("Tab 3"));
+//        qbTabPane_All.getTabs().add(qbTabPane_1);
+//        qbTabPane_All.getTabs().add(qbTabPane_1);
     }
 
     @FXML
@@ -44,11 +69,22 @@ public class MainController {
     }
 
     @FXML
-    public void onCancelClickMethod(ActionEvent actionEvent) {
-       MainAction.clos();
+    public void addFieldRowAction() {
+        fieldTable.getItems().add("test");
     }
 
-    private void fillDatabaseTables(){
+    @FXML
+    public void deleteFIeldRow() {
+        String selectedItem = fieldTable.getSelectionModel().getSelectedItem();
+        fieldTable.getItems().remove(selectedItem);
+    }
+
+    @FXML
+    public void onCancelClickMethod(ActionEvent actionEvent) {
+        MainAction.clos();
+    }
+
+    private void fillDatabaseTables() {
         Project p = ProjectManager.getInstance().getOpenProjects()[0];
         JBIterable<DbDataSource> dataSources = DbUtil.getDataSources(p);
         DbDataSourceImpl dbDataSource = (DbDataSourceImpl) dataSources.get(0);
@@ -89,16 +125,16 @@ public class MainController {
                             Field myColumnsElementsField = myColumns.getClass().getSuperclass().getSuperclass().getSuperclass().getDeclaredField("myElements");
                             myColumnsElementsField.setAccessible(true);
                             List myColumnElements = (List) myColumnsElementsField.get(myColumns);
-                            myColumnElements.forEach(xx-> {
+                            myColumnElements.forEach(xx -> {
                                 try {
                                     Field myColName = xx.getClass().getSuperclass().getDeclaredField("myName");
                                     myColName.setAccessible(true);
                                     String myColNameStr = (String) myColName.get(xx);
-                                    stringTreeItem.getChildren().add( new TreeItem<>(myColNameStr));
+                                    stringTreeItem.getChildren().add(new TreeItem<>(myColNameStr));
                                 } catch (NoSuchFieldException | IllegalAccessException e) {
                                     e.printStackTrace();
                                 }
-                           });
+                            });
                         } catch (NoSuchFieldException | IllegalAccessException e) {
                             e.printStackTrace();
                         }

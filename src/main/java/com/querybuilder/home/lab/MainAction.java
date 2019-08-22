@@ -10,8 +10,13 @@ import javafx.embed.swing.JFXPanel;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.select.*;
 
 import javax.swing.*;
+import java.util.List;
 
 public class MainAction extends AnAction {
     static JFrame frame = new JFrame("Query builder");
@@ -38,30 +43,34 @@ public class MainAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-//        String text = getSelectionText(e);
-//        Statement stmt = null;
-//        try {
-//            stmt = CCJSqlParserUtil.parse(text);
-//        } catch (JSQLParserException e1) {
-//        }
-//
+        String text = getSelectionText(e);
+        Statement stmt = null;
+        try {
+            stmt = CCJSqlParserUtil.parse(text);
+        } catch (JSQLParserException e1) {
+        }
+
 //        testForm q = new testForm();
-//        if (stmt instanceof Select) {
-//            Select sQuery = (Select) stmt;
-//            List<WithItem> withItemsList = sQuery.getWithItemsList();
-//            SelectBody selectBody = sQuery.getSelectBody();
-//        }
+        List<SelectItem> selectItems=null;
+        if (stmt instanceof Select) {
+            Select sQuery = (Select) stmt;
+            List<WithItem> withItemsList = sQuery.getWithItemsList();
+            PlainSelect selectBody = (PlainSelect) sQuery.getSelectBody();
+            selectItems = selectBody.getSelectItems();
+        }
 
 
-        openBuilderForm();
+        openBuilderForm(selectItems);
     }
 
-    private void openBuilderForm() {
+    private void openBuilderForm(List<SelectItem> selectItems) {
+
         JFXPanel fxPanel = new JFXPanel();
+
         Platform.setImplicitExit(false);
         Platform.runLater(() -> {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/builder-forms/main-builder-form.fxml"));
-            fxmlLoader.setController(new MainController());
+            fxmlLoader.setController(new MainController(selectItems));
             Parent root1 = null;
             try {
                 root1 = fxmlLoader.load();
@@ -75,7 +84,7 @@ public class MainAction extends AnAction {
 
         frame.setContentPane(fxPanel);
         frame.pack();
-        frame.setSize(1000, 600);
+        frame.setSize(1200, 800);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
