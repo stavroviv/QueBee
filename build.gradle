@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
 //    testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile group: 'com.github.jsqlparser', name: 'jsqlparser', version: '0.9'
+    compile group: 'com.github.jsqlparser', name: 'jsqlparser', version: '2.1'
     // https://mvnrepository.com/artifact/com.intellij/openapi
 //    compile group: 'com.intellij', name: 'openapi', version: '7.0.3'
 

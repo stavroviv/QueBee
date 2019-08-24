@@ -14,12 +14,14 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.util.SelectUtils;
 
 import javax.swing.*;
 import java.util.List;
 
 public class MainAction extends AnAction {
-    static JFrame frame = new JFrame("Query builder");
+    static JFrame frame;
+
     private String getSelectionText(AnActionEvent e) {
 
         final Editor editor = e.getRequiredData(CommonDataKeys.EDITOR);
@@ -49,41 +51,42 @@ public class MainAction extends AnAction {
             stmt = CCJSqlParserUtil.parse(text);
         } catch (JSQLParserException e1) {
         }
-
-//        testForm q = new testForm();
-        List<SelectItem> selectItems=null;
+        List<SelectItem> selectItems = null;
         if (stmt instanceof Select) {
             Select sQuery = (Select) stmt;
             List<WithItem> withItemsList = sQuery.getWithItemsList();
             PlainSelect selectBody = (PlainSelect) sQuery.getSelectBody();
             selectItems = selectBody.getSelectItems();
+//            selectBody.getGroupBy().addGroupingSet();
+//            TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+////            SelectUtils.buildSelectFromTable()
+//            List<String> tableList = tablesNamesFinder.getTableList(stmt);
+            openBuilderForm(sQuery);
         }
 
 
-        openBuilderForm(selectItems);
     }
 
-    private void openBuilderForm(List<SelectItem> selectItems) {
+    private void openBuilderForm( Select sQuery) {
 
+        if (frame != null) {
+            frame.setVisible(true);
+            return;
+        }
         JFXPanel fxPanel = new JFXPanel();
 
-        Platform.setImplicitExit(false);
-        Platform.runLater(() -> {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/builder-forms/main-builder-form.fxml"));
-            fxmlLoader.setController(new MainController(selectItems));
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/builder-forms/main-builder-form.fxml"));
+        fxmlLoader.setController(new MainController(sQuery));
+        Parent root1 = null;
+        try {
+            root1 = fxmlLoader.load();
+        } catch (Exception e1) {
+            e1.printStackTrace();
+            System.out.println(e1);
+        }
+        fxPanel.setScene(new Scene(root1));
 
-
-            Parent root1 = null;
-            try {
-                root1 = fxmlLoader.load();
-           } catch (Exception e1) {
-                e1.printStackTrace();
-                System.out.println(e1);
-            }
-            fxPanel.setScene(new Scene(root1));
-
-        });
-
+        frame =  new JFrame("Query builder");
         frame.setContentPane(fxPanel);
         frame.pack();
         frame.setSize(1200, 800);
@@ -91,7 +94,7 @@ public class MainAction extends AnAction {
         frame.setVisible(true);
     }
 
-    public static void clos(){
+    public static void clos() {
         frame.setVisible(false);
     }
 }
