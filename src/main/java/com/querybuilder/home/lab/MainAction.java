@@ -71,10 +71,12 @@ public class MainAction extends AnAction {
         Platform.runLater(() -> {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/builder-forms/main-builder-form.fxml"));
             fxmlLoader.setController(new MainController(selectItems));
+
+
             Parent root1 = null;
             try {
                 root1 = fxmlLoader.load();
-            } catch (Exception e1) {
+           } catch (Exception e1) {
                 e1.printStackTrace();
                 System.out.println(e1);
             }

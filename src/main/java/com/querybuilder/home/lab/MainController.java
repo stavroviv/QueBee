@@ -12,10 +12,14 @@ import com.intellij.util.containers.JBIterable;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,33 +38,60 @@ public class MainController {
 
     @FXML
     private TableView<String> fieldTable;
-    @FXML
-    private TableColumn<String, String> fieldColumn;
+
     private List<SelectItem> selectItems;
 
-    @FXML
-    private Tab qbTabPane_1;
+//    @FXML
+//    private Tab qbTabPane_1;
     @FXML
     private TabPane qbTabPane_All;
+    List<Tab> ggg;
 
+    //    private Tab tt;
+//    private Tab tt1;
     public MainController(List<SelectItem> selectItems) {
         this.selectItems = selectItems;
+
+        this.ggg = new ArrayList<>();
+        for (int i = 0; i < 30; i++) {
+            FXMLLoader fxmlLoader1 = new FXMLLoader(getClass().getResource("/builder-forms/main-tabpane-tab.fxml"));
+            fxmlLoader1.setController(new controlllee());
+            Parent root2 = null;
+            try {
+                root2 = fxmlLoader1.load();
+            } catch (Exception e1) {
+                e1.printStackTrace();
+//                System.out.println(e1);
+            }
+
+//        System.out.println(root2);
+//            Scene sc = new Scene(root2);
+            Tab tt = new Tab("Tab 2", root2);
+//            tt.setContent(sc.getRoot());
+
+            ggg.add(tt);
+        }
+
+
+//        Tab tt2 = new Tab("Tab 2");
+//        tt2.setContent(root2.getChildrenUnmodifiable().get(0));
+//        qbTabPane_All.getTabs().add(tt2);
+
+
     }
 
     public void initialize() {
-        fillDatabaseTables();
-//        fieldColumn.setCellValueFactory(new PropertyValueFactory<>("fieldd"));
-        fieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
-        selectItems.forEach(x -> fieldTable.getItems().add(x.toString()));
+//        fillDatabaseTables();
+//        fieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
+//        selectItems.forEach(x -> fieldTable.getItems().add(x.toString()));
+
+        ggg.forEach(tt -> {
+            qbTabPane_All.getTabs().add(tt);
+//            tt.getContent().prefWidthProperty().bind(mainContent.widthProperty());
+//            tt.prefHeightProperty().bind(mainContent.heightProperty());
+        });
 
 
-//
-//        Tab tt = new Tab("Tab 2");
-//        tt.setContent(qbTabPane_1.clone);
-//        qbTabPane_All.getTabs().add(tt);
-//        qbTabPane_All.getTabs().add(new Tab("Tab 3"));
-//        qbTabPane_All.getTabs().add(qbTabPane_1);
-//        qbTabPane_All.getTabs().add(qbTabPane_1);
     }
 
     @FXML
@@ -68,16 +99,6 @@ public class MainController {
 
     }
 
-    @FXML
-    public void addFieldRowAction() {
-        fieldTable.getItems().add("test");
-    }
-
-    @FXML
-    public void deleteFIeldRow() {
-        String selectedItem = fieldTable.getSelectionModel().getSelectedItem();
-        fieldTable.getItems().remove(selectedItem);
-    }
 
     @FXML
     public void onCancelClickMethod(ActionEvent actionEvent) {
@@ -140,9 +161,9 @@ public class MainController {
                         }
                     }
             );
-            tableColumn1.setCellValueFactory(cellData ->
-                    new SimpleStringProperty(cellData.getValue().getValue()));
-            databaseView.setRoot(root);
+//            tableColumn1.setCellValueFactory(cellData ->
+//                    new SimpleStringProperty(cellData.getValue().getValue()));
+//            databaseView.setRoot(root);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
