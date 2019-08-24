@@ -15,10 +15,10 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane fx:id="mainWindow" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1031.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane fx:id="asdasda" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1031.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
             <!--fx:controller="com.querybuilder.home.lab.MainController"-->
    <children>
-     
+
                   <TabPane prefHeight="700.0" prefWidth="1031.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <tabs>
                       <Tab text="Tables and fields">
@@ -29,9 +29,9 @@
                                        <items>
                                           <AnchorPane layoutX="10.0" layoutY="10.0" prefHeight="200.0" prefWidth="200.0">
                                              <children>
-                                                <TreeTableView fx:id="databaseView" layoutY="31.0" prefHeight="640.0" prefWidth="390.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
+                                                <TreeTableView  layoutY="31.0" prefHeight="640.0" prefWidth="390.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
                                                   <columns>
-                                                    <TreeTableColumn fx:id="tableColumn1" prefWidth="216.0" text="Database" />
+                                                    <TreeTableColumn prefWidth="216.0" text="Database" />
                                                   </columns>
                                                    <columnResizePolicy>
                                                       <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -62,9 +62,9 @@
                                           </AnchorPane>
                                           <AnchorPane prefHeight="200.0" prefWidth="200.0">
                                              <children>
-                                                <TableView fx:id="fieldTable" layoutY="31.0" prefHeight="633.0" prefWidth="435.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="30.0">
+                                                <TableView  layoutY="31.0" prefHeight="633.0" prefWidth="435.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="30.0">
                                                   <columns>
-                                                    <TableColumn fx:id="fieldColumn" prefWidth="75.0" text="Fields">
+                                                    <TableColumn   prefWidth="75.0" text="Fields">
                                                         <!--<cellValueFactory><PropertyValueFactory property="field" />-->
                                                         <!--</cellValueFactory>-->
                                                    </TableColumn>
@@ -74,7 +74,7 @@
                                                       <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                                                    </columnResizePolicy>
                                                 </TableView>
-                                                <Button fx:id="addFieldRow" contentDisplay="GRAPHIC_ONLY" layoutX="3.0" layoutY="3.0" mnemonicParsing="false" onAction="#addFieldRowAction" prefHeight="25.0" prefWidth="0.0" text="Button">
+                                                <Button  contentDisplay="GRAPHIC_ONLY" layoutX="3.0" layoutY="3.0" mnemonicParsing="false" onAction="#addFieldRowAction" prefHeight="25.0" prefWidth="0.0" text="Button">
                                                    <graphic>
                                                       <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                                          <image>
