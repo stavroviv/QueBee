@@ -21,6 +21,7 @@ import java.util.List;
 
 public class MainAction extends AnAction {
     static JFrame frame;
+    static  MainController mainController;
 
     private String getSelectionText(AnActionEvent e) {
 
@@ -67,16 +68,16 @@ public class MainAction extends AnAction {
 
     }
 
-    private void openBuilderForm( Select sQuery) {
-
+    private void openBuilderForm(Select sQuery) {
         if (frame != null) {
+            mainController.init(sQuery);
             frame.setVisible(true);
             return;
         }
-        JFXPanel fxPanel = new JFXPanel();
-
+        mainController = new MainController(sQuery);
+        JFXPanel fxPanel = new JFXPanel(); // это должно быть перед загрузкой формы..
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/builder-forms/main-builder-form.fxml"));
-        fxmlLoader.setController(new MainController(sQuery));
+        fxmlLoader.setController(mainController);
         Parent root1 = null;
         try {
             root1 = fxmlLoader.load();
@@ -86,7 +87,7 @@ public class MainAction extends AnAction {
         }
         fxPanel.setScene(new Scene(root1));
 
-        frame =  new JFrame("Query builder");
+        frame = new JFrame("Query builder");
         frame.setContentPane(fxPanel);
         frame.pack();
         frame.setSize(1200, 800);

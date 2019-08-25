@@ -550,9 +550,9 @@
                                     </ImageView>
                                  </graphic>
                               </Button>
-                              <TableView layoutY="40.0" prefHeight="470.0" prefWidth="773.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="40.0">
+                              <TableView fx:id="queryCteTable" layoutY="40.0" prefHeight="470.0" prefWidth="773.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="40.0">
                                  <columns>
-                                    <TableColumn prefWidth="125.0" text="Query" />
+                                    <TableColumn fx:id="queryCteColumn" prefWidth="125.0" text="Query" />
                                  </columns>
                                  <columnResizePolicy>
                                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -564,20 +564,7 @@
                   </Tab>
                </tabs>
             </TabPane>
-            <TabPane id="cteTabPane" fx:id="cteTabPane" layoutX="981.0" layoutY="29.0" prefHeight="191.0" prefWidth="60.0" side="RIGHT" style=" -fx-border-color: transparent; " tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="981.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="27.0">
-              <tabs>
-                <Tab text="Untitled Tab 2">
-                  <content>
-                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-                  </content>
-                </Tab>
-                <Tab text="Untitled Tab 1">
-                  <content>
-                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-                  </content>
-                </Tab>
-              </tabs>
-            </TabPane>
+            <TabPane id="cteTabPane" fx:id="cteTabPane" layoutX="981.0" layoutY="29.0" prefHeight="191.0" prefWidth="60.0" side="RIGHT" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="981.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="27.0" />
 
 
          </children>

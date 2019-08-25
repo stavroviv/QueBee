@@ -12,19 +12,15 @@ import com.intellij.util.containers.JBIterable;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.control.*;
-import javafx.scene.layout.Pane;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.*;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class MainController {
@@ -50,23 +46,38 @@ public class MainController {
     @FXML
     private TabPane cteTabPane;
     List<Tab> ggg;
+    private Select sQuery;
 
     public TableView<String> queryBatchTable;
+    @FXML
+    private TableView<String> queryCteTable;
+    @FXML
+    private TableColumn<String, String> queryCteColumn;
+    private Map<String, Integer> withItemMap;
 
     @FXML
     private TreeTableColumn<String, String> tableColumn1;
 
-    public MainController( Select sQuery) {
-//        this.selectItems = selectItems;
+    public MainController(Select sQuery) {
+        init(sQuery);
+    }
 
-        List<WithItem> withItemsList = sQuery.getWithItemsList();
-        PlainSelect selectBody = (PlainSelect) sQuery.getSelectBody();
-        selectItems = selectBody.getSelectItems();
-
+    public void init(Select sQuery) {
+        if (this.sQuery != null) {
+            this.sQuery = sQuery;
+            this.withItemMap = new HashMap<>();
+            reloadData();
+            return;
+        }
+        this.sQuery = sQuery;
+        this.withItemMap = new HashMap<>();
     }
 
     public void initialize() {
+        initData();
+    }
 
+    private void initData() {
         databaseView.setRoot(fillDatabaseTables());
         mainTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
             cteTabPane.setVisible(newTab.getId() == null || !newTab.getId().equals("queryTabPane"));
@@ -75,25 +86,76 @@ public class MainController {
         fieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
         tableColumn1.setCellValueFactory(cellData ->
                 new SimpleStringProperty(cellData.getValue().getValue()));
+        queryCteColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
 
 
-//        for (int i = 0; i < 100 ; i++) {
-//            cteTabPane.getTabs().add(new Tab("test"));
-//        }
+        databaseView.setOnMousePressed(e -> {
+            if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
+                int index = databaseView.getSelectionModel().getSelectedIndex();
+                System.out.println("" + index);
+            }
+        });
+
+        reloadData();
+        cteTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
+            showCTE(withItemMap.get(newTab.getId()));
+        });
+
     }
 
-//    public Tab addQueryCTE(TreeItem<String> root) {
-//        FXMLLoader fxmlLoader1 = new FXMLLoader(getClass().getResource("/builder-forms/main-tabpane-tab.fxml"));
-//        fxmlLoader1.setController(new FormController(root, this));
-//        Parent root2 = null;
-//        try {
-//            root2 = fxmlLoader1.load();
-//        } catch (Exception e1) {
-//            e1.printStackTrace();
-//        }
-//        Tab tt = new Tab("Tab 2", root2);
-//        return tt;
-//    }
+    private void reloadData() {
+        int i = 0;
+        cteTabPane.getTabs().clear();
+        queryCteTable.getItems().clear();
+
+        List<WithItem> withItemsList = sQuery.getWithItemsList();
+        for (WithItem x : withItemsList) {
+            String cteName = x.getName();
+            Tab tab = new Tab(cteName);
+            tab.setId(cteName);
+            cteTabPane.getTabs().add(tab);
+            withItemMap.put(cteName, i);
+            i++;
+        }
+
+        String cteName = "Query of CTE " + (withItemsList.size() + 1);
+        Tab tab = new Tab(cteName);
+        tab.setId(cteName);
+        cteTabPane.getTabs().add(tab);
+        withItemMap.put(cteName, i);
+        queryCteTable.getItems().addAll(withItemMap.keySet());
+        showCTE(0);
+    }
+
+    private void showCTE(int cteNumber) {
+        fieldTable.getItems().clear();
+        Object selectBody;
+        if (cteNumber == sQuery.getWithItemsList().size()) {
+            selectBody = sQuery.getSelectBody();
+        } else {
+            selectBody = sQuery.getWithItemsList().get(cteNumber).getSelectBody();
+        }
+
+        if (selectBody instanceof SetOperationList) {
+            SetOperationList setOperationList = (SetOperationList) selectBody;
+            List selects = setOperationList.getSelects();
+            for (Object select : selects) {
+                if (select instanceof PlainSelect) {
+
+                } else if (select instanceof SelectExpressionItem) {
+                    fieldTable.getItems().add(select.toString());
+                }
+            }
+        } else if (selectBody instanceof PlainSelect) {
+            PlainSelect pSelect = (PlainSelect) selectBody;
+//            for (Table table : pSelect.getFromItem()) {
+//                fieldTable.getItems().add(table.toString());
+//            }
+            for (Object select : pSelect.getSelectItems()) {
+                fieldTable.getItems().add(select.toString());
+            }
+        }
+    }
 
     @FXML
     public void addFieldRowAction() {
@@ -116,6 +178,10 @@ public class MainController {
 
     }
 
+    @FXML
+    public void onDBTableChange() {
+        System.out.println("234");
+    }
 
     @FXML
     public void onCancelClickMethod(ActionEvent actionEvent) {
@@ -184,5 +250,4 @@ public class MainController {
         }
         return root;
     }
-
 }
