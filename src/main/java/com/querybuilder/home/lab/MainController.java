@@ -6,7 +6,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.*;
-import org.omg.CORBA.INTERNAL;
 
 import java.util.HashMap;
 import java.util.List;
@@ -71,7 +70,7 @@ public class MainController {
     }
 
     private void initData() {
-        DBStructure db = new MySQLDBStructure();
+        DBStructure db = new DBStructureImpl();
         databaseView.setRoot(db.getDBStructure());
         mainTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
             cteTabPane.setVisible(newTab.getId() == null || !newTab.getId().equals("queryTabPane"));
@@ -84,8 +83,14 @@ public class MainController {
 
         databaseView.setOnMousePressed(e -> {
             if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
-                int index = databaseView.getSelectionModel().getSelectedIndex();
-                System.out.println("" + index);
+                TreeItem<String> selectedItem = databaseView.getSelectionModel().getSelectedItem();
+                String parent = selectedItem.getParent().getValue();
+                String field = selectedItem.getValue();
+                if ("Tables".equals(parent)) {
+
+                } else {
+                    addFieldRow(parent + "." + field);
+                }
             }
         });
 
@@ -159,21 +164,28 @@ public class MainController {
 
     @FXML
     public void addFieldRowAction() {
-        Tab tab = cteTabPane.getSelectionModel().selectedItemProperty().get();
-        fieldTable.getItems().add("test");
+        addFieldRow("test");
+    }
 
-        SelectBody selectBody = sQuery.getWithItemsList().get(withItemMap.get(tab.getId())).getSelectBody();
-        PlainSelect pSelect = (PlainSelect) selectBody;
+    private void addFieldRow(String name) {
+        fieldTable.getItems().add(name);
         SelectExpressionItem nSItem = new SelectExpressionItem();
 //        nSItem.setAlias(new Alias("test"));
-        nSItem.setExpression(new Column("test"));
-        pSelect.getSelectItems().add(nSItem);
+        nSItem.setExpression(new Column(name));
+        getSelectBody().getSelectItems().add(nSItem);
     }
 
     @FXML
     public void deleteFIeldRow() {
-        String selectedItem = fieldTable.getSelectionModel().getSelectedItem();
+        int selectedItem = fieldTable.getSelectionModel().getSelectedIndex();
         fieldTable.getItems().remove(selectedItem);
+        getSelectBody().getSelectItems().remove(selectedItem);
+    }
+
+    private PlainSelect getSelectBody() {
+        Tab tab = cteTabPane.getSelectionModel().selectedItemProperty().get();
+        SelectBody selectBody = sQuery.getWithItemsList().get(withItemMap.get(tab.getId())).getSelectBody();
+        return (PlainSelect) selectBody;
     }
 
     public void addCteTableToForm(Tab tap) {

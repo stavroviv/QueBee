@@ -15,7 +15,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
-public class MySQLDBStructure implements DBStructure{
+public class DBStructureImpl implements DBStructure{
 
     public TreeItem<String> getDBStructure() {
         Project p = ProjectManager.getInstance().getOpenProjects()[0];

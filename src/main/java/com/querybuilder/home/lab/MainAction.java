@@ -1,8 +1,10 @@
 package com.querybuilder.home.lab;
 
+import com.intellij.lang.Language;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Caret;
@@ -11,8 +13,10 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiExpressionStatement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.sql.psi.fragments.SqlCodeFragmentImpl;
 import javafx.application.Platform;
@@ -34,11 +38,12 @@ public class MainAction extends AnAction {
     private MainController mainController;
     private Editor editor;
     private Project project;
+    private AnActionEvent e;
 
     private String getSelectionText(AnActionEvent e) {
         editor = e.getRequiredData(CommonDataKeys.EDITOR);
         project = e.getRequiredData(CommonDataKeys.PROJECT);
-
+        this.e = e;
 
         CaretModel caretModel = editor.getCaretModel();
 
@@ -51,9 +56,12 @@ public class MainAction extends AnAction {
 
         String query = "";
         if (caretModel.getCurrentCaret().hasSelection()) {
-//            query = caretModel.getCurrentCaret().getSelectedText().replace(' ', '+') + languageTag;
             query = caretModel.getCurrentCaret().getSelectedText();
-//         BrowserUtil.browse("https://stackoverflow.com/search?q=" + query);
+        }
+
+        if (query.isEmpty()) {
+            PsiFile file = e.getData(CommonDataKeys.PSI_FILE);
+            query = file.getText();
         }
         return query;
     }
@@ -124,19 +132,18 @@ public class MainAction extends AnAction {
             int end = primaryCaret.getSelectionEnd();
             // Replace the selection with a fixed string.
             // Must do this document change in a write action context.
-
-//            String pattern = fieldname + "=0;";
-//            PsiElementFactory factory = new SqlCodeFragmentImpl();
-//            PsiExpressionStatement statement = (PsiExpressionStatement) factory.createStatementFromText(resultQuery, null);
-//             (PsiExpressionStatement) CodeStyleManager.getInstance(project).reformat(statement);
-
-
             WriteCommandAction.runWriteCommandAction(
                     project, () ->
-                            document.replaceString(start, end, resultQuery)
+                    {
+                        PsiElement data = e.getData(LangDataKeys.PSI_FILE);
+                        if (start != end) {
+                            document.replaceString(start, end, resultQuery);
+                        } else {
+                            document.replaceString(0,document.getTextLength(),resultQuery);
+                        }
+                        CodeStyleManager.getInstance(project).reformat(data);
+                    }
             );
-            // De-select the text range that was just replaced
-//        primaryCaret.removeSelection();
             frame.setVisible(false);
             System.out.println(resultQuery);
 
