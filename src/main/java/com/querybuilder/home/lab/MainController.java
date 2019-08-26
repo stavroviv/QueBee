@@ -1,10 +1,12 @@
 package com.querybuilder.home.lab;
 
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 
 import java.util.HashMap;
@@ -47,6 +49,11 @@ public class MainController {
     @FXML
     private TreeTableColumn<String, String> tableColumn1;
 
+    @FXML
+    private TreeTableColumn<String, String> tablesViewColumn;
+    @FXML
+    private TreeTableView<String> tablesView;
+
     protected MainAction mAction;
 
     public MainController(Select sQuery, MainAction mAction) {
@@ -72,12 +79,15 @@ public class MainController {
     private void initData() {
         DBStructure db = new DBStructureImpl();
         databaseView.setRoot(db.getDBStructure());
+        tablesView.setRoot(new TreeItem<>("TablesRoot"));
         mainTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
             cteTabPane.setVisible(newTab.getId() == null || !newTab.getId().equals("queryTabPane"));
         });
 
         fieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
         tableColumn1.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().getValue()));
+        tablesViewColumn.setCellValueFactory(cellData ->
                 new SimpleStringProperty(cellData.getValue().getValue()));
         queryCteColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
 
@@ -87,8 +97,9 @@ public class MainController {
                 String parent = selectedItem.getParent().getValue();
                 String field = selectedItem.getValue();
                 if ("Tables".equals(parent)) {
-
+                    addTablesRow(field);
                 } else {
+                    addTablesRow(parent);
                     addFieldRow(parent + "." + field);
                 }
             }
@@ -105,6 +116,22 @@ public class MainController {
             }
         });
 
+    }
+
+    private void addTablesRow(String parent) {
+        TreeItem<String> stringTreeItem = new TreeItem<>(parent);
+        ObservableList<TreeItem<String>> children = tablesView.getRoot().getChildren();
+        if (!children.contains(stringTreeItem)){
+            children.add(stringTreeItem);
+
+        }
+
+//        SelectExpressionItem nSItem = new SelectExpressionItem();
+//        nSItem.
+////        nSItem.setAlias(new Alias("test"));
+//        nSItem.setExpression(new Column(name));
+//        Table ttt = (Table)getSelectBody().getSelectItems();
+//        ttt.
     }
 
     private void reloadData() {

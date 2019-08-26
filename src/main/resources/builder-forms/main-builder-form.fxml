@@ -47,9 +47,9 @@
                                     </AnchorPane>
                                     <AnchorPane layoutX="10.0" layoutY="10.0" prefHeight="200.0" prefWidth="200.0">
                                        <children>
-                                          <TreeTableView layoutY="30.0" prefHeight="641.0" prefWidth="174.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
+                                          <TreeTableView fx:id="tablesView" layoutY="30.0" prefHeight="641.0" prefWidth="174.0" showRoot="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
                                              <columns>
-                                                <TreeTableColumn id="locationTreeView" prefWidth="239.0" text="Tables" />
+                                                <TreeTableColumn id="locationTreeView" fx:id="tablesViewColumn" prefWidth="239.0" text="Tables" />
                                              </columns>
                                              <columnResizePolicy>
                                                 <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

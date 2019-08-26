@@ -1,6 +1,5 @@
 package com.querybuilder.home.lab;
 
-import com.intellij.lang.Language;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -11,14 +10,10 @@ import com.intellij.openapi.editor.Caret;
 import com.intellij.openapi.editor.CaretModel;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementFactory;
-import com.intellij.psi.PsiExpressionStatement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CodeStyleManager;
-import com.intellij.sql.psi.fragments.SqlCodeFragmentImpl;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.fxml.FXMLLoader;
@@ -27,8 +22,10 @@ import javafx.scene.Scene;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.*;
-import net.sf.jsqlparser.util.SelectUtils;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.WithItem;
 
 import javax.swing.*;
 import java.util.List;
@@ -72,7 +69,8 @@ public class MainAction extends AnAction {
         Statement stmt = null;
         try {
             stmt = CCJSqlParserUtil.parse(text);
-        } catch (JSQLParserException e1) {
+        } catch (JSQLParserException exception) {
+            exception.printStackTrace();
         }
         List<SelectItem> selectItems = null;
         if (stmt instanceof Select) {
@@ -139,13 +137,12 @@ public class MainAction extends AnAction {
                         if (start != end) {
                             document.replaceString(start, end, resultQuery);
                         } else {
-                            document.replaceString(0,document.getTextLength(),resultQuery);
+                            document.replaceString(0, document.getTextLength(), resultQuery);
                         }
                         CodeStyleManager.getInstance(project).reformat(data);
                     }
             );
             frame.setVisible(false);
-            System.out.println(resultQuery);
 
         });
     }
