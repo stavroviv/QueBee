@@ -12,12 +12,17 @@ import com.intellij.util.containers.JBIterable;
 import javafx.scene.control.TreeItem;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class DBStructureImpl implements DBStructure{
+    private Map<String, List<String>> dbElements;
 
+    @Override
     public TreeItem<String> getDBStructure() {
+        dbElements = new HashMap<>();
         Project p = ProjectManager.getInstance().getOpenProjects()[0];
         JBIterable<DbDataSource> dataSources = DbUtil.getDataSources(p);
         DbDataSourceImpl dbDataSource = (DbDataSourceImpl) dataSources.get(0);
@@ -54,20 +59,25 @@ public class DBStructureImpl implements DBStructure{
                             myColumnsField.setAccessible(true);
                             Object myColumns = myColumnsField.get(x);
 
-
                             Field myColumnsElementsField = myColumns.getClass().getSuperclass().getSuperclass().getSuperclass().getDeclaredField("myElements");
                             myColumnsElementsField.setAccessible(true);
                             List myColumnElements = (List) myColumnsElementsField.get(myColumns);
+
+                            List<String> tableElements = new ArrayList<>();
                             myColumnElements.forEach(xx -> {
                                 try {
                                     Field myColName = xx.getClass().getSuperclass().getDeclaredField("myName");
                                     myColName.setAccessible(true);
                                     String myColNameStr = (String) myColName.get(xx);
+                                    tableElements.add(myColNameStr);
                                     stringTreeItem.getChildren().add(new TreeItem<>(myColNameStr));
                                 } catch (NoSuchFieldException | IllegalAccessException e) {
                                     e.printStackTrace();
                                 }
                             });
+
+                            dbElements.put(myName, tableElements);
+
                         } catch (NoSuchFieldException | IllegalAccessException e) {
                             e.printStackTrace();
                         }
@@ -78,5 +88,10 @@ public class DBStructureImpl implements DBStructure{
             e.printStackTrace();
         }
         return root;
+    }
+
+    @Override
+    public Map<String, List<String>> getDbElements() {
+        return dbElements;
     }
 }
