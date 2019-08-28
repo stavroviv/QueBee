@@ -1,6 +1,8 @@
 package com.querybuilder.home.lab;
 
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -303,7 +305,7 @@ public class MainController {
     @FXML
     private TableColumn<LinkElement, Boolean> linkTableCustom;
     @FXML
-    private TableColumn<LinkElement, Object> linkTableJoinCondition;
+    private TableColumn<LinkElement, LinkElement> linkTableJoinCondition;
 
     @FXML
     protected void addLinkElement(ActionEvent event) {
@@ -343,8 +345,8 @@ public class MainController {
                 };
             }
         });
-
-        linkTableJoinCondition.setCellFactory(column -> new TableCell<LinkElement, Object>() {
+        linkTableJoinCondition.setCellValueFactory(features -> new ReadOnlyObjectWrapper(features.getValue()));
+        linkTableJoinCondition.setCellFactory(column -> new TableCell<LinkElement, LinkElement>() {
 
             private final ObservableList<String> langs = FXCollections.observableArrayList("Java", "JavaScript", "C#", "Python");
             private final ComboBox<String> langsComboBox = new ComboBox<>(langs);
@@ -357,12 +359,21 @@ public class MainController {
 
             private final HBox pane = new HBox(langsComboBox, langsComboBox2, langsComboBox3);
 
+            private final ObservableList<String> langs33 = FXCollections.observableArrayList("Java", "JavaScript", "C#", "Python");
+            private final ComboBox<String> langsComboBox33 = new ComboBox<>(langs33);
+            private final HBox pane2 = new HBox(langsComboBox33);
+
             @Override
-            protected void updateItem(Object item, boolean empty) {
+            protected void updateItem(LinkElement item, boolean empty) {
                 super.updateItem(item, empty);
 //                LinkElement lElement = linkTable.getSelectionModel().getSelectedItem();
 //                if (lElement != null && lElement.isLinkTableCustom()) {
-                    setGraphic(empty ? null : pane);
+                   if (item!=null && item.isLinkTableCustom()){
+                       setGraphic(pane2);
+                   } else {
+                       setGraphic(empty ? null : pane);
+                   }
+
 //                } else {
 //                    setGraphic(null);
 //                }
