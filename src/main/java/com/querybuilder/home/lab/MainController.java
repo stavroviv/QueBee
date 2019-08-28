@@ -5,14 +5,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.ComboBoxTableCell;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
-import kotlin.reflect.jvm.internal.impl.metadata.deserialization.Flags;
+import javafx.scene.shape.Rectangle;
+import javafx.util.Callback;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
@@ -147,11 +146,10 @@ public class MainController {
 
         linkTableAllTable1.setCellFactory(tc -> new CheckBoxTableCell<>());
         linkTableAllTable2.setCellFactory(tc -> new CheckBoxTableCell<>());
+        linkTableCustom.setCellFactory(tc -> new CheckBoxTableCell<>());
 
-       items = FXCollections.observableArrayList("Dfcz", "Test2", "Dfcz33");
-//        ttttt.getItems().add("sadasd");
-//        ttt1.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
-//        ttt2.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
+        items = FXCollections.observableArrayList("Dfcz", "Test2", "Dfcz33");
+
     }
 
     private void addTablesRow(String parent) {
@@ -287,15 +285,13 @@ public class MainController {
         mAction.clos();
     }
 
+
+    /**********************************************
+     LINK TABLE
+     **********************************************/
+
     @FXML
     private TableView<LinkElement> linkTable;
-//    @FXML
-//    private TableView<String> ttttt;
-//    @FXML
-//    private TableColumn<String, String> ttt1;
-//    @FXML
-//    private TableColumn<String, String> ttt2;
-
     @FXML
     private TableColumn<LinkElement, String> linkTableColumnTable1;
     @FXML
@@ -304,60 +300,73 @@ public class MainController {
     private TableColumn<LinkElement, Boolean> linkTableAllTable1;
     @FXML
     private TableColumn<LinkElement, Boolean> linkTableAllTable2;
+    @FXML
+    private TableColumn<LinkElement, Boolean> linkTableCustom;
+    @FXML
+    private TableColumn<LinkElement, Object> linkTableJoinCondition;
 
-    @FXML
-    private TableColumn<LinkElement, String> linkTableJoinCondition;
-
-    @FXML
-    private HBox combo;
-    @FXML
-    private ComboBox<String> combo1;
-    @FXML
-    private ComboBox<String> combo2;
     @FXML
     protected void addLinkElement(ActionEvent event) {
         ObservableList<LinkElement> data = linkTable.getItems();
         data.add(new LinkElement("test", "test", true, true));
-        combo1.getItems().add("test");
-        combo2.getItems().add("testd33");
-       items.add("SDSDd");
+
         linkTableColumnTable1.setCellFactory(ComboBoxTableCell.forTableColumn(items));
         linkTableColumnTable2.setCellFactory(ComboBoxTableCell.forTableColumn(items));
+//        linkTableColumnTable2.setCellFactory(ComboBoxTableCell.forTableColumn(items));
 
-        linkTableJoinCondition.setCellFactory(column -> new TableCell<LinkElement, String>() {
-//            final Button btn = new Button("Just Do It");
+        ObservableList<Color> cmbdsdf = FXCollections.observableArrayList(Color.RED, Color.GREEN, Color.BLUE);
+       ComboBox<Color> cmb = new ComboBox<>(cmbdsdf);
+
+        cmb.setCellFactory(new Callback<ListView<Color>, ListCell<Color>>()
+
+        {
+            @Override public ListCell<Color> call (ListView < Color > p) {
+                return new ListCell<Color>() {
+                    private final Rectangle rectangle;
+
+                    {
+                        setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+                        rectangle = new Rectangle(10, 10);
+                    }
+
+                    @Override
+                    protected void updateItem(Color item, boolean empty) {
+                        super.updateItem(item, empty);
+
+                        if (item == null || empty) {
+                            setGraphic(null);
+                        } else {
+                            rectangle.setFill(item);
+                            setGraphic(rectangle);
+                        }
+                    }
+                };
+            }
+        });
+
+        linkTableJoinCondition.setCellFactory(column -> new TableCell<LinkElement, Object>() {
+
+            private final ObservableList<String> langs = FXCollections.observableArrayList("Java", "JavaScript", "C#", "Python");
+            private final ComboBox<String> langsComboBox = new ComboBox<>(langs);
+
+            private final ObservableList<String> langs2 = FXCollections.observableArrayList("=", ">", "<", "<=");
+            private final ComboBox<String> langsComboBox2 = new ComboBox<>(langs2);
+
+            private final ObservableList<String> langs3 = FXCollections.observableArrayList("ggg", "dd", "g#", "hhhh");
+            private final ComboBox<String> langsComboBox3 = new ComboBox<>(langs3);
+
+            private final HBox pane = new HBox(langsComboBox, langsComboBox2, langsComboBox3);
+
             @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty); //This is mandatory
-//                btn.setOnAction(event -> {
-//                    LinkElement person = getTableView().getItems().get(getIndex());
-//                    System.out.println(person.getTable1());
-//                });
-
-                setGraphic(combo);
-//                if (item == null || empty) {
-//                    setGraphicTextGap(23);//If the cell is empty
-//                    setText("Testtttttt");
-//                    setStyle("-fx-background-color: yellow");
-//                } else { //If the cell is not empty
-//
-//                    setText(item); //Put the String data in the cell
-//
-//                    //We get here all the info of the Person of this row
-//                    LinkElement auxPerson = getTableView().getItems().get(getIndex());
-//
-//                    // Style all persons wich name is "Edgard"
-//                    if (auxPerson.getTable1().equals("SDSDd")) {
-//                        setTextFill(Color.RED); //The text in red
-//                        setStyle("-fx-background-color: yellow"); //The background of the cell in yellow
-//                    } else {
-//                        //Here I see if the row of this cell is selected or not
-//                        if(getTableView().getSelectionModel().getSelectedItems().contains(auxPerson))
-//                            setTextFill(Color.WHITE);
-//                        else
-//                            setTextFill(Color.BLACK);
-//                    }
+            protected void updateItem(Object item, boolean empty) {
+                super.updateItem(item, empty);
+//                LinkElement lElement = linkTable.getSelectionModel().getSelectedItem();
+//                if (lElement != null && lElement.isLinkTableCustom()) {
+                    setGraphic(empty ? null : pane);
+//                } else {
+//                    setGraphic(null);
 //                }
+                System.out.println(item);
             }
         });
 

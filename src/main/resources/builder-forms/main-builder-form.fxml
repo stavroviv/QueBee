@@ -2,7 +2,6 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
@@ -179,9 +178,8 @@
                                        <cellValueFactory><PropertyValueFactory property="allTable2" />
                                        </cellValueFactory>
                                     </TableColumn>
-                                    <TableColumn fx:id="linkTableAllTable21" maxWidth="50.0" minWidth="50.0" prefWidth="49.887939453125" text="Custom">
-                                       <cellValueFactory>
-                                          <PropertyValueFactory property="allTable2" />
+                                    <TableColumn fx:id="linkTableCustom" maxWidth="50.0" minWidth="50.0" prefWidth="49.887939453125" text="Custom">
+                                       <cellValueFactory><PropertyValueFactory property="custom" />
                                        </cellValueFactory>
                                     </TableColumn>
                                     <TableColumn fx:id="linkTableJoinCondition" prefWidth="536.800048828125" text="Join condition" />
@@ -190,13 +188,6 @@
                                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                                  </columnResizePolicy>
                               </TableView>
-                              <HBox fx:id="combo" layoutX="642.0" layoutY="7.0" prefHeight="25.0" prefWidth="327.0">
-                                 <children>
-                                    <ComboBox fx:id="combo1" prefWidth="150.0" />
-                                    <ComboBox fx:id="combo2" layoutX="10.0" layoutY="10.0" prefWidth="150.0" />
-                                    <ComboBox layoutX="10.0" layoutY="10.0" prefWidth="150.0" />
-                                 </children>
-                              </HBox>
                            </children>
                            <padding>
                               <Insets right="30.0" />
