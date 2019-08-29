@@ -1,6 +1,8 @@
 package com.querybuilder.home.lab;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -10,9 +12,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.ComboBoxTableCell;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
 import javafx.util.Callback;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -148,8 +153,17 @@ public class MainController {
 
         linkTableAllTable1.setCellFactory(tc -> new CheckBoxTableCell<>());
         linkTableAllTable2.setCellFactory(tc -> new CheckBoxTableCell<>());
-        linkTableCustom.setCellFactory(tc -> new CheckBoxTableCell<>());
 
+        linkTableCustom.setCellFactory(column -> new CheckBoxTableCell<>());
+        linkTableCustom.setCellValueFactory(cellData -> {
+            LinkElement cellValue = cellData.getValue();
+            BooleanProperty property = cellValue.customProperty();
+            property.addListener((observable, oldValue, newValue) -> {
+                cellValue.setCustom(newValue);
+                linkTable.refresh();
+            });
+            return property;
+        });
         items = FXCollections.observableArrayList("Dfcz", "Test2", "Dfcz33");
 
     }
@@ -310,41 +324,11 @@ public class MainController {
     @FXML
     protected void addLinkElement(ActionEvent event) {
         ObservableList<LinkElement> data = linkTable.getItems();
-        data.add(new LinkElement("test", "test", true, true));
+        data.add(new LinkElement("test", "test", false, false, false));
 
         linkTableColumnTable1.setCellFactory(ComboBoxTableCell.forTableColumn(items));
         linkTableColumnTable2.setCellFactory(ComboBoxTableCell.forTableColumn(items));
-//        linkTableColumnTable2.setCellFactory(ComboBoxTableCell.forTableColumn(items));
 
-        ObservableList<Color> cmbdsdf = FXCollections.observableArrayList(Color.RED, Color.GREEN, Color.BLUE);
-       ComboBox<Color> cmb = new ComboBox<>(cmbdsdf);
-
-        cmb.setCellFactory(new Callback<ListView<Color>, ListCell<Color>>()
-
-        {
-            @Override public ListCell<Color> call (ListView < Color > p) {
-                return new ListCell<Color>() {
-                    private final Rectangle rectangle;
-
-                    {
-                        setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-                        rectangle = new Rectangle(10, 10);
-                    }
-
-                    @Override
-                    protected void updateItem(Color item, boolean empty) {
-                        super.updateItem(item, empty);
-
-                        if (item == null || empty) {
-                            setGraphic(null);
-                        } else {
-                            rectangle.setFill(item);
-                            setGraphic(rectangle);
-                        }
-                    }
-                };
-            }
-        });
         linkTableJoinCondition.setCellValueFactory(features -> new ReadOnlyObjectWrapper(features.getValue()));
         linkTableJoinCondition.setCellFactory(column -> new TableCell<LinkElement, LinkElement>() {
 
@@ -354,30 +338,30 @@ public class MainController {
             private final ObservableList<String> langs2 = FXCollections.observableArrayList("=", ">", "<", "<=");
             private final ComboBox<String> langsComboBox2 = new ComboBox<>(langs2);
 
-            private final ObservableList<String> langs3 = FXCollections.observableArrayList("ggg", "dd", "g#", "hhhh");
+            private final ObservableList<String> langs3 = FXCollections.observableArrayList("Java", "JavaScript", "C#", "Python");
             private final ComboBox<String> langsComboBox3 = new ComboBox<>(langs3);
 
-            private final HBox pane = new HBox(langsComboBox, langsComboBox2, langsComboBox3);
+            private final HBox pane = new HBox(langsComboBox, new Text("|"), langsComboBox2, new Text("|"), langsComboBox3);
 
-            private final ObservableList<String> langs33 = FXCollections.observableArrayList("Java", "JavaScript", "C#", "Python");
-            private final ComboBox<String> langsComboBox33 = new ComboBox<>(langs33);
-            private final HBox pane2 = new HBox(langsComboBox33);
+            private final TextField ttt = new TextField();
+
+            {
+                langsComboBox.prefWidthProperty().bind(pane.widthProperty());
+                langsComboBox2.setMinWidth(70);
+                langsComboBox3.prefWidthProperty().bind(pane.widthProperty());
+                ttt.setMaxWidth(Double.MAX_VALUE);
+            }
 
             @Override
             protected void updateItem(LinkElement item, boolean empty) {
                 super.updateItem(item, empty);
-//                LinkElement lElement = linkTable.getSelectionModel().getSelectedItem();
-//                if (lElement != null && lElement.isLinkTableCustom()) {
-                   if (item!=null && item.isLinkTableCustom()){
-                       setGraphic(pane2);
-                   } else {
-                       setGraphic(empty ? null : pane);
-                   }
-
-//                } else {
-//                    setGraphic(null);
-//                }
-                System.out.println(item);
+                if (empty) {
+                    setGraphic(null);
+                } else if (item != null && item.isCustom()) {
+                    setGraphic(ttt);
+                } else {
+                    setGraphic(pane);
+                }
             }
         });
 

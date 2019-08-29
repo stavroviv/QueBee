@@ -161,24 +161,23 @@
                               </Button>
                               <TableView fx:id="linkTable" editable="true" layoutY="40.0" prefHeight="470.0" prefWidth="773.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="40.0">
                                  <columns>
-                                    <TableColumn maxWidth="40.0" minWidth="40.0" prefWidth="115.0" text="№" />
-                                    <TableColumn fx:id="linkTableColumnTable1" prefWidth="125.0" text="Table 1">
+                                    <TableColumn fx:id="linkTableColumnTable1" prefWidth="200.0" text="Table 1">
                                        <cellValueFactory><PropertyValueFactory property="table1" />
                                        </cellValueFactory>
                                     </TableColumn>
-                                    <TableColumn fx:id="linkTableAllTable1" maxWidth="30.0" minWidth="30.0" prefWidth="47.0" text="All">
+                                    <TableColumn fx:id="linkTableAllTable1" maxWidth="30.0" minWidth="30.0" prefWidth="30.0" resizable="false" text="All">
                                        <cellValueFactory><PropertyValueFactory property="allTable1" />
                                        </cellValueFactory>
                                     </TableColumn>
-                                    <TableColumn fx:id="linkTableColumnTable2" prefWidth="249.3599853515625" text="Table 2">
+                                    <TableColumn fx:id="linkTableColumnTable2" prefWidth="200.0" text="Table 2">
                                        <cellValueFactory><PropertyValueFactory property="table2" />
                                        </cellValueFactory>
                                     </TableColumn>
-                                    <TableColumn fx:id="linkTableAllTable2" maxWidth="30.0" minWidth="30.0" prefWidth="49.887939453125" text="All">
+                                    <TableColumn fx:id="linkTableAllTable2" maxWidth="30.0" minWidth="30.0" prefWidth="30.0" resizable="false" text="All">
                                        <cellValueFactory><PropertyValueFactory property="allTable2" />
                                        </cellValueFactory>
                                     </TableColumn>
-                                    <TableColumn fx:id="linkTableCustom" maxWidth="50.0" minWidth="50.0" prefWidth="49.887939453125" text="Custom">
+                                    <TableColumn fx:id="linkTableCustom" maxWidth="50.0" minWidth="50.0" prefWidth="50.0" resizable="false" text="Custom">
                                        <cellValueFactory><PropertyValueFactory property="custom" />
                                        </cellValueFactory>
                                     </TableColumn>

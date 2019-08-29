@@ -108,13 +108,21 @@ public class MainAction extends AnAction {
                 System.out.println(e1);
             }
             fxPanel.setScene(new Scene(root1));
+
+            frame = new JFrame("Query builder");
+            frame.setContentPane(fxPanel);
+            frame.pack();
+            frame.setSize(1200, 800);
+            frame.setLocationRelativeTo(null);
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
+            }
+            frame.setVisible(true);
+
         });
-        frame = new JFrame("Query builder");
-        frame.setContentPane(fxPanel);
-        frame.pack();
-        frame.setSize(1200, 800);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+
     }
 
     public void clos() {
@@ -143,7 +151,6 @@ public class MainAction extends AnAction {
                     }
             );
             frame.setVisible(false);
-
         });
     }
 }

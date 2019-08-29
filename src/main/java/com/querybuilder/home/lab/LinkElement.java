@@ -9,28 +9,27 @@ public class LinkElement {
     private SimpleStringProperty table2 = new SimpleStringProperty();
     private BooleanProperty allTable1 = new SimpleBooleanProperty();
     private BooleanProperty allTable2 = new SimpleBooleanProperty();
-    private BooleanProperty linkTableCustom = new SimpleBooleanProperty();
+    private BooleanProperty custom = new SimpleBooleanProperty();
 
-    public LinkElement(String table1, String table2, boolean allTable1, boolean allTable2) {
+    public LinkElement(String table1, String table2, boolean allTable1, boolean allTable2,  boolean custom) {
         setTable1(table1);
         setTable2(table2);
         setAllTable1(allTable1);
         setAllTable2(allTable2);
-        setLinkTableCustom(false);
+        setCustom(custom);
     }
 
-    public boolean isLinkTableCustom() {
-        return linkTableCustom.get();
+    public Boolean isCustom() {
+        return custom.get();
     }
 
-    public BooleanProperty linkTableCustomProperty() {
-        return linkTableCustom;
+    public BooleanProperty customProperty() {
+        return custom;
     }
 
-    public void setLinkTableCustom(boolean linkTableCustom) {
-        this.linkTableCustom.set(linkTableCustom);
+    public void setCustom(Boolean custom) {
+        this.custom.set(custom);
     }
-
     public boolean isAllTable1() {
         return allTable1.get();
     }
