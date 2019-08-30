@@ -1,72 +1,17 @@
-/*.combo-box .list-cell*/
-/*{*/
-    /*-fx-background: white;*/
-    /*-fx-background-color: transparent;*/
-    /*-fx-text-fill: -fx-text-base-color;*/
-    /*-fx-padding: 3 0 2 7;*/
-    /*-fx-cell-size: 1.66667em;*/
-/*}*/
-
-/*.combo-box-popup .list-view*/
-/*{*/
-    /*-fx-background-color: white, white;*/
-    /*-fx-background-insets: 0, 1;*/
-    /*-fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.6) , 8, 0.0 , 0 , 0 );*/
-/*}*/
-
-/*.combo-box-popup .list-view .list-cell*/
-/*{*/
-    /*-fx-padding: 4 0 4 5;*/
-
-    /*!* No alternate highlighting *!*/
-    /*-fx-background-color: white;*/
-/*}*/
-
-/*.combo-box-popup .list-view .list-cell:filled:selected, .combo-box-popup .list-view .list-cell:filled:selected:hover*/
-/*{*/
-    /*-fx-background: -fx-accent;*/
-    /*-fx-background-color: -fx-selection-bar;*/
-    /*-fx-text-fill: -fx-selection-bar-text;*/
-/*}*/
-
-/*.combo-box-popup .list-view .list-cell:filled:hover*/
-/*{*/
-    /*-fx-background-color: white;*/
-    /*-fx-text-fill: -fx-text-inner-color;*/
-/*}*/
-
-.combo-box-base
-{
-    -fx-skin: "com.sun.javafx.scene.control.skin.ComboBoxBaseSkin";
-    -fx-background-color: white, #dddddd, white, white;
-    -fx-background-radius: 0, 0, 0, 0;
-    -fx-background-insets: 0 0 -1 0, 0, 1, 2;
-    -fx-padding: 0;
+.root {
+    /*-fx-font-size: 8pt;*/
+    /*-fx-font-family: "Courier New";*/
+    /*-fx-background: rgb(225, 228, 203);*/
 }
 
-.combo-box .arrow, .combo-box .arrow-button{
-    /*-fx-background-color: transparent;*/
-    /*-fx-max-width: 0;*/
-    -fx-animated: true;
-    /*fs*/
-}
-
-/*.combo-box-base:hover*/
-/*{*/
-    /*-fx-color: -fx-hover-base;*/
+/*.tree-cell .arrow {*/
+    /*-fx-shape: null;*/
+    /*-fx-background-color: #91bb96;*/
+    /*!*-fx-background-image: url("/resources/myToolWindow/plus.png");*!*/
 /*}*/
 
-/*.combo-box-base:showing*/
-/*{*/
-    /*-fx-color: -fx-pressed-base;*/
-/*}*/
-
-/*.combo-box-base:focused {*/
-    /*-fx-background-color: -fx-focus-color, -fx-outer-border, -fx-inner-border, -fx-body-color;*/
-    /*-fx-background-radius: 6.4, 4, 5, 3;*/
-    /*-fx-background-insets: -1.4, 0, 1, 2;*/
-/*}*/
-
-/*.combo-box-base:disabled {*/
-    /*-fx-opacity: .4;*/
+/*.tree-cell:expanded .tree-disclosure-node .arrow {*/
+    /*-fx-shape: null;*/
+    /*-fx-background-color: #bb211f;*/
+    /*!*-fx-background-image: "myToolWindow/minus.png";*!*/
 /*}*/

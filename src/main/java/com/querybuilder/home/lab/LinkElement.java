@@ -10,6 +10,7 @@ public class LinkElement {
     private BooleanProperty allTable1 = new SimpleBooleanProperty();
     private BooleanProperty allTable2 = new SimpleBooleanProperty();
     private BooleanProperty custom = new SimpleBooleanProperty();
+    private String condition;
 
     public LinkElement(String table1, String table2, boolean allTable1, boolean allTable2,  boolean custom) {
         setTable1(table1);
@@ -17,6 +18,14 @@ public class LinkElement {
         setAllTable1(allTable1);
         setAllTable2(allTable2);
         setCustom(custom);
+    }
+
+    public String getCondition() {
+        return condition;
+    }
+
+    public void setCondition(String condition) {
+        this.condition = condition;
     }
 
     public Boolean isCustom() {

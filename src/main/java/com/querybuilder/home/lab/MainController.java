@@ -2,9 +2,7 @@ package com.querybuilder.home.lab;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -12,13 +10,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.ComboBoxTableCell;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Text;
-import javafx.util.Callback;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
@@ -53,7 +45,7 @@ public class MainController {
     private TableColumn<String, String> fieldColumn;
     @FXML
     private TabPane cteTabPane;
-    List<Tab> ggg;
+
     private Select sQuery;
 
     public TableView<String> queryBatchTable;
@@ -100,18 +92,16 @@ public class MainController {
         DBStructure db = new DBStructureImpl();
         databaseView.setRoot(db.getDBStructure());
         dbElements = db.getDbElements();
-
+        items = FXCollections.observableArrayList();
         tablesView.setRoot(new TreeItem<>(TABLES_ROOT));
+        groupFieldsTree.setRoot(new TreeItem<>(TABLES_ROOT));
+        conditionsTreeTable.setRoot(new TreeItem<>(TABLES_ROOT));
+
         mainTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
             cteTabPane.setVisible(newTab.getId() == null || !newTab.getId().equals("queryTabPane"));
         });
 
-        fieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
-        tableColumn1.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getValue()));
-        tablesViewColumn.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getValue()));
-        queryCteColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
+        setCellFactories();
 
         databaseView.setOnMousePressed(e -> {
             if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
@@ -146,32 +136,25 @@ public class MainController {
                 showCTE(iii);
             }
         });
+        initLinkTable();
+    }
 
-        linkTable.setEditable(true);
-        linkTable.getSelectionModel().cellSelectionEnabledProperty().set(true);
-
-
-        linkTableAllTable1.setCellFactory(tc -> new CheckBoxTableCell<>());
-        linkTableAllTable2.setCellFactory(tc -> new CheckBoxTableCell<>());
-
-        linkTableCustom.setCellFactory(column -> new CheckBoxTableCell<>());
-        linkTableCustom.setCellValueFactory(cellData -> {
-            LinkElement cellValue = cellData.getValue();
-            BooleanProperty property = cellValue.customProperty();
-            property.addListener((observable, oldValue, newValue) -> {
-                cellValue.setCustom(newValue);
-                linkTable.refresh();
-            });
-            return property;
-        });
-        items = FXCollections.observableArrayList("Dfcz", "Test2", "Dfcz33");
-
+    private void setCellFactories() {
+        // table columns
+        fieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
+        queryCteColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
+        // tree columns
+        tableColumn1.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValue()));
+        tablesViewColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValue()));
+        groupFieldsTreeColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValue()));
+        conditionsTreeTableColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValue()));
     }
 
     private void addTablesRow(String parent) {
         ObservableList<TreeItem<String>> children = tablesView.getRoot().getChildren();
         if (children.stream().noneMatch(x -> x.getValue().equals(parent))) {
             tablesView.getRoot().getChildren().add(getTableItemWithFields(parent));
+            conditionsTreeTable.getRoot().getChildren().add(getTableItemWithFields(parent));
         }
     }
 
@@ -201,8 +184,7 @@ public class MainController {
     }
 
     private void showCTE(int cteNumber) {
-        fieldTable.getItems().clear();
-        tablesView.getRoot().getChildren().clear();
+        clearTables();
 
         Object selectBody;
         if (cteNumber == sQuery.getWithItemsList().size()) {
@@ -230,27 +212,54 @@ public class MainController {
         }
     }
 
+    private void clearTables() {
+        fieldTable.getItems().clear();
+        tablesView.getRoot().getChildren().clear();
+        items.clear();
+        groupFieldsTree.getRoot().getChildren().clear();
+        conditionsTreeTable.getRoot().getChildren().clear();
+    }
+
     private void fillFromTables(PlainSelect pSelect) {
+        linkTablesPane.setDisable(true);
         FromItem fromItem = pSelect.getFromItem();
+        Table table = null;
         if (fromItem instanceof Table) {
-            Table table = (Table) fromItem;
+            table = (Table) fromItem;
             tablesView.getRoot().getChildren().add(getTableItemWithFields(table.getName()));
+            conditionsTreeTable.getRoot().getChildren().add(getTableItemWithFields(table.getName()));
         }
         List<Join> joins = pSelect.getJoins();
         if (joins == null) {
             return;
         }
+        linkTablesPane.setDisable(false);
+        linkTable.getItems().clear();
+        items.add(table.getName());
         for (Join join : joins) {
-            String tName = join.toString();
-            tablesView.getRoot().getChildren().add(getTableItemWithFields(tName));
+            tablesView.getRoot().getChildren().add(getTableItemWithFields(join.getRightItem().toString()));
+            conditionsTreeTable.getRoot().getChildren().add(getTableItemWithFields(join.getRightItem().toString()));
+            addLinkElement(table, join);
         }
+    }
+
+    private void addLinkElement(Table table, Join join) {
+        LinkElement linkElement = new LinkElement(table.getName(), join.getRightItem().toString(), true, false, true);
+        linkElement.setCondition(join.getOnExpression().toString());
+        linkTable.getItems().add(linkElement);
+        items.add(join.getRightItem().toString());
     }
 
     private TreeItem<String> getTableItemWithFields(String tableName) {
         TreeItem<String> stringTreeItem = new TreeItem<>(tableName);
         List<String> columns = dbElements.get(tableName);
         if (columns != null) {
-            columns.forEach(col -> stringTreeItem.getChildren().add(new TreeItem<>(col)));
+            columns.forEach(col ->
+                    {
+                        stringTreeItem.getChildren().add(new TreeItem<>(col));
+                        addRowToGroup(tableName + "." + col);
+                    }
+            );
         }
         return stringTreeItem;
     }
@@ -266,6 +275,8 @@ public class MainController {
 //        nSItem.setAlias(new Alias("test"));
         nSItem.setExpression(new Column(name));
         getSelectBody().getSelectItems().add(nSItem);
+
+        addRowToGroup(name);
     }
 
     @FXML
@@ -320,11 +331,32 @@ public class MainController {
     private TableColumn<LinkElement, Boolean> linkTableCustom;
     @FXML
     private TableColumn<LinkElement, LinkElement> linkTableJoinCondition;
+    @FXML
+    private Tab linkTablesPane;
 
     @FXML
     protected void addLinkElement(ActionEvent event) {
         ObservableList<LinkElement> data = linkTable.getItems();
-        data.add(new LinkElement("test", "test", false, false, false));
+        data.add(new LinkElement("", "", false, false, false));
+    }
+
+    private void initLinkTable() {
+        linkTable.setEditable(true);
+        linkTable.getSelectionModel().cellSelectionEnabledProperty().set(true);
+
+        linkTableAllTable1.setCellFactory(tc -> new CheckBoxTableCell<>());
+        linkTableAllTable2.setCellFactory(tc -> new CheckBoxTableCell<>());
+
+        linkTableCustom.setCellFactory(column -> new CheckBoxTableCell<>());
+        linkTableCustom.setCellValueFactory(cellData -> {
+            LinkElement cellValue = cellData.getValue();
+            BooleanProperty property = cellValue.customProperty();
+            property.addListener((observable, oldValue, newValue) -> {
+                cellValue.setCustom(newValue);
+                linkTable.refresh();
+            });
+            return property;
+        });
 
         linkTableColumnTable1.setCellFactory(ComboBoxTableCell.forTableColumn(items));
         linkTableColumnTable2.setCellFactory(ComboBoxTableCell.forTableColumn(items));
@@ -332,16 +364,16 @@ public class MainController {
         linkTableJoinCondition.setCellValueFactory(features -> new ReadOnlyObjectWrapper(features.getValue()));
         linkTableJoinCondition.setCellFactory(column -> new TableCell<LinkElement, LinkElement>() {
 
-            private final ObservableList<String> langs = FXCollections.observableArrayList("Java", "JavaScript", "C#", "Python");
+            private final ObservableList<String> langs = FXCollections.observableArrayList(items);
             private final ComboBox<String> langsComboBox = new ComboBox<>(langs);
 
-            private final ObservableList<String> langs2 = FXCollections.observableArrayList("=", ">", "<", "<=");
+            private final ObservableList<String> langs2 = FXCollections.observableArrayList("=", "<>", "<", ">", "<=", ">=");
             private final ComboBox<String> langsComboBox2 = new ComboBox<>(langs2);
 
-            private final ObservableList<String> langs3 = FXCollections.observableArrayList("Java", "JavaScript", "C#", "Python");
+            private final ObservableList<String> langs3 = FXCollections.observableArrayList(items);
             private final ComboBox<String> langsComboBox3 = new ComboBox<>(langs3);
 
-            private final HBox pane = new HBox(langsComboBox, new Text("|"), langsComboBox2, new Text("|"), langsComboBox3);
+            private final HBox pane = new HBox(langsComboBox, langsComboBox2, langsComboBox3);
 
             private final TextField ttt = new TextField();
 
@@ -358,12 +390,35 @@ public class MainController {
                 if (empty) {
                     setGraphic(null);
                 } else if (item != null && item.isCustom()) {
+                    ttt.setText(item.getCondition());
                     setGraphic(ttt);
                 } else {
+                    String condition = item.getCondition();
+                    if (condition != null) {
+                        String[] array = condition.split("[>=<=<>]");
+                        langsComboBox.setValue(array[0]);
+                        langsComboBox2.setValue(condition.replace(array[0], "").replace(array[1], ""));
+                        langsComboBox3.setValue(array[1]);
+                    }
                     setGraphic(pane);
                 }
             }
         });
-
     }
+
+    @FXML
+    private TreeTableView<String> groupFieldsTree;
+    @FXML
+    private TreeTableColumn<String, String> groupFieldsTreeColumn;
+
+    private void addRowToGroup(String name) {
+        groupFieldsTree.getRoot().getChildren().add(new TreeItem<>(name));
+    }
+
+    @FXML
+    private TreeTableView<String> conditionsTreeTable;
+    @FXML
+    private TreeTableColumn<String, String> conditionsTreeTableColumn;
+
+
 }
