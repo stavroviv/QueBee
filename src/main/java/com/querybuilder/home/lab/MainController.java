@@ -63,13 +63,13 @@ public class MainController {
     @FXML
     private TreeTableView<String> tablesView;
 
-    protected MainAction mAction;
+    protected QueryBuilder queryBuilder;
     private Map<String, List<String>> dbElements;
 
     private ObservableList<String> items;
 
-    public MainController(Select sQuery, MainAction mAction) {
-        this.mAction = mAction;
+    public MainController(Select sQuery, QueryBuilder queryBuilder) {
+        this.queryBuilder = queryBuilder;
         init(sQuery);
     }
 
@@ -137,6 +137,43 @@ public class MainController {
             }
         });
         initLinkTable();
+        tableViewSetContextMenu();
+    }
+
+    private void tableViewSetContextMenu() {
+        MenuItem addContext = new MenuItem("Add");
+        MenuItem changeContext = new MenuItem("Change");
+        MenuItem deleteContext = new MenuItem("Delete");
+        MenuItem renameContext = new MenuItem("Rename");
+
+        addContext.setOnAction((ActionEvent event) -> {
+            System.out.println("addContext");
+            Object item = tablesView.getSelectionModel().getSelectedItem();
+            System.out.println("Selected item: " + item);
+        });
+        deleteContext.setOnAction((ActionEvent event) -> {
+            System.out.println("deleteContext");
+            Object item = tablesView.getSelectionModel().getSelectedItem();
+            System.out.println("Selected item: " + item);
+        });
+        renameContext.setOnAction((ActionEvent event) -> {
+            System.out.println("renameContext");
+            Object item = tablesView.getSelectionModel().getSelectedItem();
+            System.out.println("Selected item: " + item);
+        });
+        changeContext.setOnAction((ActionEvent event) -> {
+            System.out.println("changeContext");
+            Object item = tablesView.getSelectionModel().getSelectedItem();
+            openNestedQuery(item.toString());
+        });
+
+        ContextMenu menu = new ContextMenu();
+        menu.getItems().add(addContext);
+        menu.getItems().add(changeContext);
+        menu.getItems().add(deleteContext);
+        menu.getItems().add(renameContext);
+        tablesView.setContextMenu(menu);
+
     }
 
     private void setCellFactories() {
@@ -159,11 +196,13 @@ public class MainController {
     }
 
     private void reloadData() {
-        int i = 0;
         cteTabPane.getTabs().clear();
         queryCteTable.getItems().clear();
-
         List<WithItem> withItemsList = sQuery.getWithItemsList();
+        if (withItemsList == null) {
+            return;
+        }
+        int i = 0;
         for (WithItem x : withItemsList) {
             String cteName = x.getName();
             Tab tab = new Tab(cteName);
@@ -172,7 +211,6 @@ public class MainController {
             withItemMap.put(cteName, i);
             i++;
         }
-
         String cteName = "Query of CTE " + (withItemsList.size() + 1);
         Tab tab = new Tab(cteName);
         tab.setId(cteName);
@@ -237,9 +275,15 @@ public class MainController {
         linkTable.getItems().clear();
         items.add(table.getName());
         for (Join join : joins) {
-            tablesView.getRoot().getChildren().add(getTableItemWithFields(join.getRightItem().toString()));
-            conditionsTreeTable.getRoot().getChildren().add(getTableItemWithFields(join.getRightItem().toString()));
-            addLinkElement(table, join);
+            FromItem rightItem = join.getRightItem();
+            if (rightItem instanceof SubSelect) {
+                SubSelect sSelect = (SubSelect) rightItem;
+                tablesView.getRoot().getChildren().add(new TreeItem<>(sSelect.getAlias().getName()));
+            } else if (rightItem instanceof Table) {
+                tablesView.getRoot().getChildren().add(getTableItemWithFields(rightItem.toString()));
+                conditionsTreeTable.getRoot().getChildren().add(getTableItemWithFields(rightItem.toString()));
+                addLinkElement(table, join);
+            }
         }
     }
 
@@ -299,7 +343,7 @@ public class MainController {
 
     @FXML
     public void onClickMethod() {
-        mAction.clos(sQuery.toString());
+        queryBuilder.closeForm(sQuery.toString());
     }
 
     @FXML
@@ -309,7 +353,7 @@ public class MainController {
 
     @FXML
     public void onCancelClickMethod(ActionEvent actionEvent) {
-        mAction.clos();
+        queryBuilder.closeForm();
     }
 
 
@@ -421,4 +465,15 @@ public class MainController {
     private TreeTableColumn<String, String> conditionsTreeTableColumn;
 
 
+    @FXML
+    private Button addInnerQuery;
+
+    @FXML
+    public void addInnerQueryOnClick() {
+        openNestedQuery("");
+    }
+
+    private void openNestedQuery(String text){
+        QueryBuilder qb = new QueryBuilder(text, false);
+    }
 }

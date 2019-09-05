@@ -31,8 +31,7 @@ import javax.swing.*;
 import java.util.List;
 
 public class MainAction extends AnAction {
-    private JFrame frame;
-    private MainController mainController;
+
     private Editor editor;
     private Project project;
     private AnActionEvent e;
@@ -66,70 +65,11 @@ public class MainAction extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
         String text = getSelectionText(e);
-        Statement stmt = null;
-        try {
-            stmt = CCJSqlParserUtil.parse(text);
-        } catch (JSQLParserException exception) {
-            exception.printStackTrace();
-        }
-        List<SelectItem> selectItems = null;
-        if (stmt instanceof Select) {
-            Select sQuery = (Select) stmt;
-            List<WithItem> withItemsList = sQuery.getWithItemsList();
-            PlainSelect selectBody = (PlainSelect) sQuery.getSelectBody();
-            selectItems = selectBody.getSelectItems();
-//            selectBody.getGroupBy().addGroupingSet();
-//            TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
-////            SelectUtils.buildSelectFromTable()
-//            List<String> tableList = tablesNamesFinder.getTableList(stmt);
-            openBuilderForm(sQuery);
-        }
-
-
+        QueryBuilder qb = new QueryBuilder(text);
+        qb.setMainAction(this);
     }
 
-    private void openBuilderForm(Select sQuery) {
-//        if (frame != null) {
-//            mainController.init(sQuery);
-//            frame.setVisible(true);
-//            return;
-//        }
-        mainController = new MainController(sQuery, this);
-        JFXPanel fxPanel = new JFXPanel(); // это должно быть перед загрузкой формы..
-        Platform.setImplicitExit(false);
-        Platform.runLater(() -> {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/builder-forms/main-builder-form.fxml"));
-            fxmlLoader.setController(mainController);
-            Parent root1 = null;
-            try {
-                root1 = fxmlLoader.load();
-            } catch (Exception e1) {
-                e1.printStackTrace();
-                System.out.println(e1);
-            }
-            fxPanel.setScene(new Scene(root1));
-
-            frame = new JFrame("Query builder");
-            frame.setContentPane(fxPanel);
-            frame.pack();
-            frame.setSize(1200, 800);
-            frame.setLocationRelativeTo(null);
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e1) {
-                e1.printStackTrace();
-            }
-            frame.setVisible(true);
-
-        });
-
-    }
-
-    public void clos() {
-        frame.setVisible(false);
-    }
-
-    public void clos(String resultQuery) {
+    public void insertResult(String resultQuery) {
         ApplicationManager.getApplication().invokeLater(() -> {
             final Document document = editor.getDocument();
             // Work off of the primary caret to get the selection info
@@ -150,7 +90,6 @@ public class MainAction extends AnAction {
                         CodeStyleManager.getInstance(project).reformat(data);
                     }
             );
-            frame.setVisible(false);
         });
     }
 }

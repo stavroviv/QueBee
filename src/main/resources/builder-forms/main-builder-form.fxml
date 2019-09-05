@@ -57,7 +57,7 @@
                                                 <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                                              </columnResizePolicy>
                                           </TreeTableView>
-                                          <Button contentDisplay="GRAPHIC_ONLY" layoutX="4.0" layoutY="3.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="0.0" text="Button">
+                                          <Button fx:id="addInnerQuery" contentDisplay="GRAPHIC_ONLY" layoutX="4.0" layoutY="3.0" mnemonicParsing="false" onAction="#addInnerQueryOnClick" prefHeight="25.0" prefWidth="0.0" text="Button">
                                              <graphic>
                                                 <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                                    <image>

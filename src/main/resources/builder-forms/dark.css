@@ -4,14 +4,14 @@
     /*-fx-background: rgb(225, 228, 203);*/
 }
 
-/*.tree-cell .arrow {*/
-    /*-fx-shape: null;*/
-    /*-fx-background-color: #91bb96;*/
-    /*!*-fx-background-image: url("/resources/myToolWindow/plus.png");*!*/
-/*}*/
+.tree-cell .arrow {
+    -fx-shape: null;
+   -fx-background-color: transparent;;
+    -fx-background-image: url("plus.png");
+}
 
-/*.tree-cell:expanded .tree-disclosure-node .arrow {*/
-    /*-fx-shape: null;*/
-    /*-fx-background-color: #bb211f;*/
-    /*!*-fx-background-image: "myToolWindow/minus.png";*!*/
-/*}*/
+.tree-cell:expanded .tree-disclosure-node .arrow {
+    -fx-shape: null;
+    -fx-background-color: transparent;
+    -fx-background-image: url("minus.png");
+}
