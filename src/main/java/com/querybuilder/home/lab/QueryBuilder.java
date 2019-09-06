@@ -8,12 +8,9 @@ import javafx.scene.Scene;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectItem;
 
 import javax.swing.*;
-import java.util.List;
 
 public class QueryBuilder {
     private JFrame frame;
@@ -26,11 +23,12 @@ public class QueryBuilder {
 
     public QueryBuilder(String text, boolean mainForm) {
         this.mainForm = mainForm;
-        Statement stmt = null;
+        Statement stmt;
         if (text != null && !text.isEmpty()) {
             try {
                 stmt = CCJSqlParserUtil.parse(text);
             } catch (JSQLParserException exception) {
+                System.out.println(text);
                 exception.printStackTrace();
                 return;
             }
@@ -44,7 +42,7 @@ public class QueryBuilder {
         Select sQuery = (Select) stmt;
 
         MainController mainController = new MainController(sQuery, this);
-        JFXPanel fxPanel = new JFXPanel(); // это должно быть перед загрузкой формы..
+        JFXPanel fxPanel = new JFXPanel(); // это должно быть перед загрузкой формы
         Platform.setImplicitExit(false);
         Platform.runLater(() -> {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/builder-forms/main-builder-form.fxml"));
@@ -63,11 +61,11 @@ public class QueryBuilder {
             frame.pack();
             frame.setSize(1200, 800);
             frame.setLocationRelativeTo(null);
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e1) {
-                e1.printStackTrace();
-            }
+//            try {
+//                Thread.sleep(500);
+//            } catch (InterruptedException e1) {
+//                e1.printStackTrace();
+//            }
             frame.setVisible(true);
         });
     }
