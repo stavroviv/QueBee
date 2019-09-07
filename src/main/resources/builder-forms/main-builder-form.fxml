@@ -36,9 +36,9 @@
                                  <items>
                                     <AnchorPane layoutX="10.0" layoutY="10.0" prefHeight="200.0" prefWidth="200.0">
                                        <children>
-                                          <TreeTableView fx:id="databaseView" layoutY="31.0" prefHeight="640.0" prefWidth="390.0" stylesheets="@dark.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
+                                          <TreeTableView fx:id="databaseTableView" layoutY="31.0" prefHeight="640.0" prefWidth="390.0" stylesheets="@dark.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
                                              <columns>
-                                                <TreeTableColumn fx:id="tableColumn1" prefWidth="216.0" text="Database" />
+                                                <TreeTableColumn fx:id="databaseTableColumn" prefWidth="216.0" text="Database" />
                                              </columns>
                                              <columnResizePolicy>
                                                 <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

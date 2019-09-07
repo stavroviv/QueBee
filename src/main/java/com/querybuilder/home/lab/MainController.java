@@ -10,7 +10,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.ComboBoxTableCell;
-import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -37,8 +36,6 @@ public class MainController {
     private TableView<String> fieldTable;
     private List<SelectItem> selectItems;
     private List<SelectItem> cteList;
-    @FXML
-    private TreeTableView<String> databaseView;
 
     @FXML
     private TabPane qbTabPane_All;
@@ -58,8 +55,6 @@ public class MainController {
     private TableColumn<String, String> queryCteColumn;
     private Map<String, Integer> withItemMap;
 
-    @FXML
-    private TreeTableColumn<String, String> tableColumn1;
 
 
     protected QueryBuilder queryBuilder;
@@ -87,9 +82,14 @@ public class MainController {
         initData();
     }
 
+    @FXML
+    private TreeTableView<String> databaseTableView;
+    @FXML
+    private TreeTableColumn<String, String> databaseTableColumn;
+
     private void initData() {
         DBStructure db = new DBStructureImpl();
-        databaseView.setRoot(db.getDBStructure());
+        databaseTableView.setRoot(db.getDBStructure());
         dbElements = db.getDbElements();
         items = FXCollections.observableArrayList();
         tablesView.setRoot(new TreeItem<>());
@@ -101,20 +101,20 @@ public class MainController {
         });
 
         setCellFactories();
-
-        databaseView.setOnMousePressed(e -> {
-            if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
-                TreeItem<String> selectedItem = databaseView.getSelectionModel().getSelectedItem();
-                String parent = selectedItem.getParent().getValue();
-                String field = selectedItem.getValue();
-                if (DATABASE_ROOT.equals(parent)) {
-                    addTablesRow(field);
-                } else {
-                    addTablesRow(parent);
-                    addFieldRow(parent + "." + field);
-                }
-            }
-        });
+//
+//        databaseTableView.setOnMousePressed(e -> {
+//            if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
+//                TreeItem<String> selectedItem = databaseTableView.getSelectionModel().getSelectedItem();
+//                String parent = selectedItem.getParent().getValue();
+//                String field = selectedItem.getValue();
+//                if (DATABASE_ROOT.equals(parent)) {
+//                    addTablesRow(field);
+//                } else {
+//                    addTablesRow(parent);
+//                    addFieldRow(parent + "." + field);
+//                }
+//            }
+//        });
 
         reloadData();
         cteTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
@@ -126,8 +126,26 @@ public class MainController {
                 showCTE(iii);
             }
         });
+        initdatabaseTableView();
         initTreeTablesView();
         initLinkTableView();
+
+    }
+
+    private void initdatabaseTableView() {
+        databaseTableView.setOnMousePressed(e -> {
+            if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
+                TreeItem<String> selectedItem = databaseTableView.getSelectionModel().getSelectedItem();
+                String parent = selectedItem.getParent().getValue();
+                String field = selectedItem.getValue();
+                if (DATABASE_ROOT.equals(parent)) {
+                    addTablesRow(field);
+                } else {
+                    addTablesRow(parent);
+                    addFieldRow(parent + "." + field);
+                }
+            }
+        });
 
     }
 
@@ -136,7 +154,7 @@ public class MainController {
         fieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
         queryCteColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
         // tree columns
-        tableColumn1.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValue()));
+        databaseTableColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValue()));
         groupFieldsTreeColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValue()));
         conditionsTreeTableColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValue()));
     }
