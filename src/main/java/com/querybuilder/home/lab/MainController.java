@@ -26,8 +26,6 @@ public class MainController {
     private final static String TABLES_ROOT = "TablesRoot";
     private final static String DATABASE_ROOT = "Tables";
 
-    //    @FXML
-//    private TreeTableView<String> locationTreeView;
     @FXML
     private Button okButton;
     @FXML
@@ -82,11 +80,6 @@ public class MainController {
         initData();
     }
 
-    @FXML
-    private TreeTableView<String> databaseTableView;
-    @FXML
-    private TreeTableColumn<String, String> databaseTableColumn;
-
     private void initData() {
         DBStructure db = new DBStructureImpl();
         databaseTableView.setRoot(db.getDBStructure());
@@ -126,18 +119,23 @@ public class MainController {
                 showCTE(iii);
             }
         });
-        initdatabaseTableView();
+        initDatabaseTableView();
         initTreeTablesView();
         initLinkTableView();
 
     }
 
-    private void initdatabaseTableView() {
+    @FXML
+    private TreeTableView<TableRow> databaseTableView;
+    @FXML
+    private TreeTableColumn<TableRow, TableRow> databaseTableColumn;
+
+    private void initDatabaseTableView() {
         databaseTableView.setOnMousePressed(e -> {
             if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
-                TreeItem<String> selectedItem = databaseTableView.getSelectionModel().getSelectedItem();
-                String parent = selectedItem.getParent().getValue();
-                String field = selectedItem.getValue();
+                TreeItem<TableRow> selectedItem = databaseTableView.getSelectionModel().getSelectedItem();
+                String parent = selectedItem.getParent().getValue().getName();
+                String field = selectedItem.getValue().getName();
                 if (DATABASE_ROOT.equals(parent)) {
                     addTablesRow(field);
                 } else {
@@ -146,7 +144,7 @@ public class MainController {
                 }
             }
         });
-
+        setCellFactory(databaseTableColumn);
     }
 
     private void setCellFactories() {
@@ -154,7 +152,7 @@ public class MainController {
         fieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
         queryCteColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
         // tree columns
-        databaseTableColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValue()));
+//        databaseTableColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValue()));
         groupFieldsTreeColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValue()));
         conditionsTreeTableColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValue()));
     }
@@ -366,7 +364,11 @@ public class MainController {
                 }
             }
         });
+        setCellFactory(tablesViewColumn);
+        tableViewSetContextMenu();
+    }
 
+    private void setCellFactory(TreeTableColumn<TableRow, TableRow> tablesViewColumn) {
         tablesViewColumn.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().getValue()));
         tablesViewColumn.setCellFactory(ttc -> new TreeTableCell<TableRow, TableRow>() {
             private final ImageView element = new ImageView(new Image(getClass().getResourceAsStream("/myToolWindow/element.png")));
@@ -386,7 +388,6 @@ public class MainController {
                 }
             }
         });
-        tableViewSetContextMenu();
     }
 
     private void tableViewSetContextMenu() {

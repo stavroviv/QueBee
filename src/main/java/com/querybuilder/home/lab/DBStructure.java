@@ -6,6 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 public interface DBStructure {
-    TreeItem<String> getDBStructure();
+    TreeItem<TableRow> getDBStructure();
     Map<String, List<String>> getDbElements();
 }

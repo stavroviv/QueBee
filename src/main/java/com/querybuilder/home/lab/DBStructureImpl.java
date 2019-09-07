@@ -21,13 +21,15 @@ public class DBStructureImpl implements DBStructure{
     private Map<String, List<String>> dbElements;
 
     @Override
-    public TreeItem<String> getDBStructure() {
+    public TreeItem<TableRow> getDBStructure() {
         dbElements = new HashMap<>();
         Project p = ProjectManager.getInstance().getOpenProjects()[0];
         JBIterable<DbDataSource> dataSources = DbUtil.getDataSources(p);
         DbDataSourceImpl dbDataSource = (DbDataSourceImpl) dataSources.get(0);
 
-        TreeItem<String> root = new TreeItem<>("Tables");
+        TableRow tablesRoot = new TableRow("Tables");
+        tablesRoot.setRoot(true);
+        TreeItem<TableRow> root = new TreeItem<>(tablesRoot);
         root.setExpanded(true);
 
         try {
@@ -52,7 +54,9 @@ public class DBStructureImpl implements DBStructure{
                             Field myNameField = x.getClass().getSuperclass().getDeclaredField("myName");
                             myNameField.setAccessible(true);
                             String myName = (String) myNameField.get(x);
-                            TreeItem<String> stringTreeItem = new TreeItem<>(myName);
+                            TableRow parentNode = new TableRow(myName);
+                            parentNode.setRoot(true);
+                            TreeItem<TableRow> stringTreeItem = new TreeItem<>(parentNode);
                             root.getChildren().add(stringTreeItem);
 
                             Field myColumnsField = x.getClass().getDeclaredField("myColumns");
@@ -70,7 +74,7 @@ public class DBStructureImpl implements DBStructure{
                                     myColName.setAccessible(true);
                                     String myColNameStr = (String) myColName.get(xx);
                                     tableElements.add(myColNameStr);
-                                    stringTreeItem.getChildren().add(new TreeItem<>(myColNameStr));
+                                    stringTreeItem.getChildren().add(new TreeItem<>(new TableRow(myColNameStr)));
                                 } catch (NoSuchFieldException | IllegalAccessException e) {
                                     e.printStackTrace();
                                 }
