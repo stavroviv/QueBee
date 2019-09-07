@@ -172,6 +172,7 @@ public class MainController {
         queryCteTable.getItems().clear();
         List<WithItem> withItemsList = sQuery.getWithItemsList();
         if (withItemsList == null) {
+            showCTE(0);
             return;
         }
         int i = 0;
@@ -195,9 +196,8 @@ public class MainController {
 
     private void showCTE(int cteNumber) {
         clearTables();
-
         Object selectBody;
-        if (cteNumber == sQuery.getWithItemsList().size()) {
+        if (sQuery.getWithItemsList() == null || cteNumber == sQuery.getWithItemsList().size()) {
             selectBody = sQuery.getSelectBody();
         } else {
             selectBody = sQuery.getWithItemsList().get(cteNumber).getSelectBody();
