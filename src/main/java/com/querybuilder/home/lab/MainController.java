@@ -44,7 +44,16 @@ public class MainController {
     @FXML
     private TabPane cteTabPane;
 
+
     private Select sQuery;
+
+    public Select getsQuery() {
+        return sQuery;
+    }
+
+    public void setsQuery(Select sQuery) {
+        this.sQuery = sQuery;
+    }
 
     public TableView<String> queryBatchTable;
     @FXML
@@ -52,7 +61,6 @@ public class MainController {
     @FXML
     private TableColumn<String, String> queryCteColumn;
     private Map<String, Integer> withItemMap;
-
 
 
     protected QueryBuilder queryBuilder;
@@ -319,8 +327,13 @@ public class MainController {
     }
 
     private PlainSelect getSelectBody() {
-        Tab tab = cteTabPane.getSelectionModel().selectedItemProperty().get();
-        SelectBody selectBody = sQuery.getWithItemsList().get(withItemMap.get(tab.getId())).getSelectBody();
+        SelectBody selectBody;
+        if (withItemMap.size() == 0) {
+            selectBody = sQuery.getSelectBody();
+        } else {
+            Tab tab = cteTabPane.getSelectionModel().selectedItemProperty().get();
+            selectBody = sQuery.getWithItemsList().get(withItemMap.get(tab.getId())).getSelectBody();
+        }
         return (PlainSelect) selectBody;
     }
 
@@ -414,7 +427,7 @@ public class MainController {
         changeContext.setOnAction((ActionEvent event) -> {
             System.out.println("changeContext");
             TableRow item = tablesView.getSelectionModel().getSelectedItem().getValue();
-            openNestedQuery(item.getQuery());
+            openNestedQuery(item.getQuery(), item);
         });
 
         ContextMenu menu = new ContextMenu();
@@ -539,10 +552,29 @@ public class MainController {
 
     @FXML
     public void addInnerQueryOnClick() {
-        openNestedQuery("");
+        openNestedQuery("", null);
     }
 
-    private void openNestedQuery(String text) {
+    private void openNestedQuery(String text, TableRow item) {
         QueryBuilder qb = new QueryBuilder(text, false);
+        qb.setParentController(this);
+        qb.setItem(item);
+//        qb.setParentController(this);
+    }
+
+    public void insertResult(String result, TableRow item, SubSelect subSelect) {
+        item.setQuery(result);
+        PlainSelect selectBody = getSelectBody();
+        if (selectBody.getFromItem().getAlias() != null && selectBody.getFromItem().getAlias().getName().equals(item.getName())) {
+            selectBody.setFromItem(subSelect);
+        } else {
+            selectBody.getJoins().forEach((x) -> {
+                if (x.getRightItem().getAlias() != null && x.getRightItem().getAlias().getName().equals(item.getName())) {
+                    x.setRightItem(subSelect);
+                }
+                ;
+            });
+        }
+        System.out.println(selectBody);
     }
 }

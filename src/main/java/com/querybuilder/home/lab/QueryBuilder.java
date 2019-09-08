@@ -6,9 +6,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SubSelect;
 
 import javax.swing.*;
 
@@ -16,6 +18,18 @@ public class QueryBuilder {
     private JFrame frame;
     private boolean mainForm;
     private MainAction mainAction;
+    private MainController parentController;
+    private MainController controller;
+    private TableRow item;
+
+    public MainController getParentController() {
+        return parentController;
+    }
+
+    public void setParentController(MainController parentController) {
+        this.parentController = parentController;
+    }
+
 
     public QueryBuilder(String text) {
         this(text, true);
@@ -42,6 +56,8 @@ public class QueryBuilder {
         Select sQuery = (Select) stmt;
 
         MainController mainController = new MainController(sQuery, this);
+        this.controller = mainController;
+
         JFXPanel fxPanel = new JFXPanel(); // это должно быть перед загрузкой формы
         Platform.setImplicitExit(false);
         Platform.runLater(() -> {
@@ -70,6 +86,7 @@ public class QueryBuilder {
         });
     }
 
+
     public void closeForm() {
         frame.setVisible(false);
     }
@@ -77,11 +94,27 @@ public class QueryBuilder {
     public void closeForm(String result) {
         if (mainForm) {
             mainAction.insertResult(result);
+        } else {
+            SubSelect subSelect = castResultToSubSelect(item.getName());
+            parentController.insertResult(result, item, subSelect);
         }
         closeForm();
     }
 
+    private SubSelect castResultToSubSelect(String alias) {
+        SubSelect result = new SubSelect();
+        Select select = this.controller.getsQuery();
+        result.setSelectBody(select.getSelectBody());
+        result.setWithItemsList(select.getWithItemsList());
+        result.setAlias(new Alias(alias));
+        return result;
+    }
+
     public void setMainAction(MainAction mainAction) {
         this.mainAction = mainAction;
+    }
+
+    public void setItem(TableRow item) {
+        this.item = item;
     }
 }
