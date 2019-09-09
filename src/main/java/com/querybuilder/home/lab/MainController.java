@@ -276,6 +276,7 @@ public class MainController {
                 SubSelect sSelect = (SubSelect) rightItem;
                 TableRow tableRow = new TableRow(sSelect.getAlias().getName());
                 tableRow.setNested(true);
+                tableRow.setRoot(true);
                 String queryText = sSelect.toString().replace(sSelect.getAlias().toString(), "");
                 queryText = queryText.substring(1, queryText.length() - 1);
                 tableRow.setQuery(queryText);
@@ -378,7 +379,6 @@ public class MainController {
             }
         });
         setCellFactory(tablesViewColumn);
-        tableViewSetContextMenu();
     }
 
     private void setCellFactory(TreeTableColumn<TableRow, TableRow> tablesViewColumn) {
@@ -392,51 +392,60 @@ public class MainController {
             protected void updateItem(TableRow item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty ? null : item.getName());
+                // icons
                 if (empty) {
                     setGraphic(null);
                 } else if (item.isNested()) {
                     setGraphic(nestedQuery);
+//                    setContextMenu();
                 } else {
                     setGraphic(item.isRoot() ? table : element);
+                }
+                // context menu
+                if ("tablesViewColumn".equals(tablesViewColumn.getId())) {
+                    setContextMenu(tableViewGetContextMenu(item, empty));
                 }
             }
         });
     }
 
-    private void tableViewSetContextMenu() {
+    private ContextMenu tableViewGetContextMenu(TableRow item, boolean empty) {
         MenuItem addContext = new MenuItem("Add");
         MenuItem changeContext = new MenuItem("Change");
         MenuItem deleteContext = new MenuItem("Delete");
         MenuItem renameContext = new MenuItem("Rename");
 
         addContext.setOnAction((ActionEvent event) -> {
-            System.out.println("addContext");
-            Object item = tablesView.getSelectionModel().getSelectedItem();
-            System.out.println("Selected item: " + item);
+//            System.out.println("addContext");
+//            Object item = tablesView.getSelectionModel().getSelectedItem();
+//            System.out.println("Selected item: " + item);
         });
         deleteContext.setOnAction((ActionEvent event) -> {
-            System.out.println("deleteContext");
-            Object item = tablesView.getSelectionModel().getSelectedItem();
-            System.out.println("Selected item: " + item);
+//            System.out.println("deleteContext");
+//            Object item = tablesView.getSelectionModel().getSelectedItem();
+//            System.out.println("Selected item: " + item);
         });
         renameContext.setOnAction((ActionEvent event) -> {
-            System.out.println("renameContext");
-            Object item = tablesView.getSelectionModel().getSelectedItem();
-            System.out.println("Selected item: " + item);
+//            System.out.println("renameContext");
+//            Object item = tablesView.getSelectionModel().getSelectedItem();
+//            System.out.println("Selected item: " + item);
         });
         changeContext.setOnAction((ActionEvent event) -> {
-            System.out.println("changeContext");
-            TableRow item = tablesView.getSelectionModel().getSelectedItem().getValue();
+//            System.out.println("changeContext");
+//            TableRow item = tablesView.getSelectionModel().getSelectedItem().getValue();
             openNestedQuery(item.getQuery(), item);
         });
 
         ContextMenu menu = new ContextMenu();
         menu.getItems().add(addContext);
-        menu.getItems().add(changeContext);
-        menu.getItems().add(deleteContext);
-        menu.getItems().add(renameContext);
-        tablesView.setContextMenu(menu);
-
+        if (!empty && item.isRoot()) {
+            if (item.isNested()) {
+                menu.getItems().add(changeContext);
+            }
+            menu.getItems().add(deleteContext);
+            menu.getItems().add(renameContext);
+        }
+        return menu;
     }
 
     /**********************************************

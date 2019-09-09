@@ -1,10 +1,12 @@
 package com.querybuilder.home.lab;
 
+import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.util.Duration;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -77,12 +79,11 @@ public class QueryBuilder {
             frame.pack();
             frame.setSize(1200, 800);
             frame.setLocationRelativeTo(null);
-//            try {
-//                Thread.sleep(500);
-//            } catch (InterruptedException e1) {
-//                e1.printStackTrace();
-//            }
             frame.setVisible(true);
+            root1.setOpacity(0.5f);
+            FadeTransition ft = new FadeTransition(Duration.millis(500), root1);
+            ft.setToValue(1);
+            ft.play();
         });
     }
 

@@ -52,8 +52,6 @@
                                              <columns>
 
                                                 <TreeTableColumn fx:id="tablesViewColumn" prefWidth="239.0" text="Tables">
-                                                   <!--<cellValueFactory><PropertyValueFactory property="name" />-->
-                                                   <!--</cellValueFactory>-->
                                                 </TreeTableColumn>
 
                                              </columns>
