@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class MainController {
     private final static String TABLES_ROOT = "TablesRoot";
     private final static String DATABASE_ROOT = "Tables";
@@ -89,34 +88,13 @@ public class MainController {
     }
 
     private void initData() {
-        DBStructure db = new DBStructureImpl();
-        databaseTableView.setRoot(db.getDBStructure());
-        dbElements = db.getDbElements();
-        items = FXCollections.observableArrayList();
-        tablesView.setRoot(new TreeItem<>());
-        groupFieldsTree.setRoot(new TreeItem<>());
-        conditionsTreeTable.setRoot(new TreeItem<>());
+        initTables();
 
         mainTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
             cteTabPane.setVisible(newTab.getId() == null || !newTab.getId().equals("queryTabPane"));
         });
 
         setCellFactories();
-//
-//        databaseTableView.setOnMousePressed(e -> {
-//            if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
-//                TreeItem<String> selectedItem = databaseTableView.getSelectionModel().getSelectedItem();
-//                String parent = selectedItem.getParent().getValue();
-//                String field = selectedItem.getValue();
-//                if (DATABASE_ROOT.equals(parent)) {
-//                    addTablesRow(field);
-//                } else {
-//                    addTablesRow(parent);
-//                    addFieldRow(parent + "." + field);
-//                }
-//            }
-//        });
-
         reloadData();
         cteTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
             if (newTab == null) {
@@ -130,7 +108,16 @@ public class MainController {
         initDatabaseTableView();
         initTreeTablesView();
         initLinkTableView();
+    }
 
+    private void initTables(){
+        DBStructure db = new DBStructureImpl();
+        databaseTableView.setRoot(db.getDBStructure());
+        dbElements = db.getDbElements();
+        items = FXCollections.observableArrayList();
+        tablesView.setRoot(new TreeItem<>());
+        groupFieldsTree.setRoot(new TreeItem<>());
+        conditionsTreeTable.setRoot(new TreeItem<>());
     }
 
     @FXML
@@ -160,7 +147,6 @@ public class MainController {
         fieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
         queryCteColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
         // tree columns
-//        databaseTableColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValue()));
         groupFieldsTreeColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValue()));
         conditionsTreeTableColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValue()));
     }

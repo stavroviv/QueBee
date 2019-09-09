@@ -80,8 +80,8 @@ public class QueryBuilder {
             frame.setSize(1200, 800);
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
-            root1.setOpacity(0.5f);
-            FadeTransition ft = new FadeTransition(Duration.millis(500), root1);
+            root1.setOpacity(0.1f);
+            FadeTransition ft = new FadeTransition(Duration.millis(1000), root1);
             ft.setToValue(1);
             ft.play();
         });
