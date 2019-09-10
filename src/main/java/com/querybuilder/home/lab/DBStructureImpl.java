@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DBStructureImpl implements DBStructure{
+public class DBStructureImpl implements DBStructure {
     private Map<String, List<String>> dbElements;
 
     @Override
@@ -37,17 +37,24 @@ public class DBStructureImpl implements DBStructure{
             myQNamesField.setAccessible(true);
             Map<Object, Object> myQNames = (Map<Object, Object>) myQNamesField.get(dbDataSource);
 
-            SmartList list = (SmartList) myQNames.get(ObjectPath.create("socnet", ObjectKind.SCHEMA));
+            SmartList list = (SmartList) myQNames.get(ObjectPath.create("javacrm", ObjectKind.DATABASE));
             Object myTables = list.get(0);
-            Field field2 = myTables.getClass().getDeclaredField("myTables");
+            Field field2 = myTables.getClass().getDeclaredField("mySchemas");
             field2.setAccessible(true);
 
             Object value222 = field2.get(myTables);
 
-            Field myElements = value222.getClass().getSuperclass().getSuperclass().getDeclaredField("myElements");
+            Field myElements = value222.getClass().getSuperclass().getSuperclass().getSuperclass().getDeclaredField("myElements");
             myElements.setAccessible(true);
 
-            List valueFinal = (List) myElements.get(value222);
+            List valueFinal2 = (List) myElements.get(value222);
+            Object tablll = valueFinal2.get(129);
+            Field myTablessField = tablll.getClass().getDeclaredField("myTables");
+            Object myTabless = myTablessField.get(tablll);
+
+            Field myElFields = myTabless.getClass().getDeclaredField("myElements");
+            List valueFinal = (List) myElFields.get(myTabless);
+//            List valueFinal = null;
             valueFinal.forEach(x ->
                     {
                         try {
