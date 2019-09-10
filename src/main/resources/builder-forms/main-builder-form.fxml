@@ -234,43 +234,43 @@
 
                                        <children>
                                           <Pane layoutX="10.0" layoutY="30.0" maxWidth="53.0" prefHeight="80.0" prefWidth="53.0" />
-                                          <Button fx:id="buttonGroupRigth" minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&gt;">
+                                          <Button fx:id="buttonGroupRigth" minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&gt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&gt;&gt;">
+                                          <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&gt;&gt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" top="5.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&lt;">
+                                          <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&lt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" top="5.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button layoutX="19.0" layoutY="142.0" minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&lt;&lt;">
+                                          <Button layoutX="19.0" layoutY="142.0" minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&lt;&lt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" top="5.0" />
                                              </VBox.margin>
                                           </Button>
                                           <Pane maxWidth="20.0" minWidth="20.0" nodeOrientation="RIGHT_TO_LEFT" prefHeight="220.0" prefWidth="20.0" />
-                                          <Button minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&gt;">
+                                          <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&gt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&gt;&gt;">
+                                          <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&gt;&gt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" top="5.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button layoutX="19.0" layoutY="150.0" minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&lt;">
+                                          <Button layoutX="19.0" layoutY="150.0" minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&lt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" top="5.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button layoutX="19.0" layoutY="180.0" minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&lt;&lt;">
+                                          <Button layoutX="19.0" layoutY="180.0" minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&lt;&lt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" top="5.0" />
                                              </VBox.margin>
@@ -474,24 +474,24 @@
                                     <VBox alignment="TOP_RIGHT" layoutX="246.0" minWidth="30.0" prefHeight="636.0" prefWidth="50.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="245.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                        <children>
                                           <Pane layoutX="10.0" layoutY="30.0" maxWidth="53.0" prefHeight="44.0" prefWidth="45.0" />
-                                          <Button fx:id="buttonOrderRigth" minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&gt;">
+                                          <Button fx:id="buttonOrderRigth" minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&gt;">
                                              <VBox.margin>
-                                                <Insets right="8.0" top="5.0" />
+                                                <Insets right="4.0" top="5.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&gt;&gt;">
+                                          <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&gt;&gt;">
                                              <VBox.margin>
-                                                <Insets right="8.0" top="5.0" />
+                                                <Insets right="4.0" top="5.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&lt;">
+                                          <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&lt;">
                                              <VBox.margin>
-                                                <Insets right="8.0" top="5.0" />
+                                                <Insets right="4.0" top="5.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button layoutX="19.0" layoutY="142.0" minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&lt;&lt;">
+                                          <Button layoutX="19.0" layoutY="142.0" minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&lt;&lt;">
                                              <VBox.margin>
-                                                <Insets right="8.0" top="5.0" />
+                                                <Insets right="4.0" top="5.0" />
                                              </VBox.margin>
                                           </Button>
                                        </children>
@@ -541,43 +541,43 @@
                                     <VBox alignment="TOP_RIGHT" layoutX="245.0" minWidth="30.0" prefHeight="636.0" prefWidth="48.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="245.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                        <children>
                                           <Pane layoutX="10.0" layoutY="30.0" maxWidth="53.0" prefHeight="80.0" prefWidth="53.0" />
-                                          <Button minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&gt;">
+                                          <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&gt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&gt;&gt;">
+                                          <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&gt;&gt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" top="5.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&lt;">
+                                          <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&lt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" top="5.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button layoutX="19.0" layoutY="142.0" minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&lt;&lt;">
+                                          <Button layoutX="19.0" layoutY="142.0" minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&lt;&lt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" top="5.0" />
                                              </VBox.margin>
                                           </Button>
                                           <Pane maxWidth="20.0" minWidth="20.0" nodeOrientation="RIGHT_TO_LEFT" prefHeight="220.0" prefWidth="20.0" />
-                                          <Button minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&gt;">
+                                          <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&gt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&gt;&gt;">
+                                          <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&gt;&gt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" top="5.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button layoutX="19.0" layoutY="150.0" minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&lt;">
+                                          <Button layoutX="19.0" layoutY="150.0" minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&lt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" top="5.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button layoutX="19.0" layoutY="180.0" minHeight="25.0" minWidth="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" text="&lt;&lt;">
+                                          <Button layoutX="19.0" layoutY="180.0" minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&lt;&lt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" top="5.0" />
                                              </VBox.margin>

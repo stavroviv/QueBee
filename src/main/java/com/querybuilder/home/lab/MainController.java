@@ -17,6 +17,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +66,7 @@ public class MainController {
     protected QueryBuilder queryBuilder;
     private Map<String, List<String>> dbElements;
 
-    private ObservableList<String> items;
+    private ObservableList<String> joinItems;
 
     public MainController(Select sQuery, QueryBuilder queryBuilder) {
         this.queryBuilder = queryBuilder;
@@ -110,11 +111,11 @@ public class MainController {
         initLinkTableView();
     }
 
-    private void initTables(){
+    private void initTables() {
         DBStructure db = new DBStructureImpl();
         databaseTableView.setRoot(db.getDBStructure());
         dbElements = db.getDbElements();
-        items = FXCollections.observableArrayList();
+        joinItems = FXCollections.observableArrayList();
         tablesView.setRoot(new TreeItem<>());
         groupFieldsTree.setRoot(new TreeItem<>());
         conditionsTreeTable.setRoot(new TreeItem<>());
@@ -131,6 +132,7 @@ public class MainController {
                 TreeItem<TableRow> selectedItem = databaseTableView.getSelectionModel().getSelectedItem();
                 String parent = selectedItem.getParent().getValue().getName();
                 String field = selectedItem.getValue().getName();
+
                 if (DATABASE_ROOT.equals(parent)) {
                     addTablesRow(field);
                 } else {
@@ -155,6 +157,16 @@ public class MainController {
         ObservableList<TreeItem<TableRow>> children = tablesView.getRoot().getChildren();
         if (children.stream().noneMatch(x -> x.getValue().getName().equals(parent))) {
             tablesView.getRoot().getChildren().add(getTableItemWithFields(parent));
+            if (getSelectBody().getFromItem() == null) {
+                getSelectBody().setFromItem(new Table(parent));
+            } else {
+                List<Join> jList = (getSelectBody().getJoins() == null) ? new ArrayList<>() : getSelectBody().getJoins();
+                Join join = new Join();
+                join.setRightItem(new Table(parent));
+                join.setSimple(true);
+                jList.add(join);
+                getSelectBody().setJoins(jList);
+            }
 //            conditionsTreeTable.getRoot().getChildren().add(getTableItemWithFields(parent));
         }
     }
@@ -235,7 +247,7 @@ public class MainController {
     private void clearTables() {
         fieldTable.getItems().clear();
         tablesView.getRoot().getChildren().clear();
-        items.clear();
+        joinItems.clear();
         groupFieldsTree.getRoot().getChildren().clear();
         conditionsTreeTable.getRoot().getChildren().clear();
     }
@@ -253,14 +265,17 @@ public class MainController {
         if (joins == null) {
             return;
         }
+
         linkTablesPane.setDisable(false);
         linkTable.getItems().clear();
-        items.add(table.getName());
+        joinItems.add(table.getName());
         for (Join join : joins) {
             FromItem rightItem = join.getRightItem();
+            String rightItemName = "";
             if (rightItem instanceof SubSelect) {
                 SubSelect sSelect = (SubSelect) rightItem;
-                TableRow tableRow = new TableRow(sSelect.getAlias().getName());
+                rightItemName = sSelect.getAlias().getName();
+                TableRow tableRow = new TableRow(rightItemName);
                 tableRow.setNested(true);
                 tableRow.setRoot(true);
                 String queryText = sSelect.toString().replace(sSelect.getAlias().toString(), "");
@@ -277,18 +292,23 @@ public class MainController {
                 });
 
             } else if (rightItem instanceof Table) {
-                tablesView.getRoot().getChildren().add(getTableItemWithFields(rightItem.toString()));
+                rightItemName = rightItem.toString();
+                tablesView.getRoot().getChildren().add(getTableItemWithFields(rightItemName));
 //                conditionsTreeTable.getRoot().getChildren().add(getTableItemWithFields(rightItem.toString()));
                 addLinkElement(table, join);
             }
+            joinItems.add(rightItemName);
         }
     }
 
     private void addLinkElement(Table table, Join join) {
+        if (join.getOnExpression() == null) {
+            return;
+        }
         LinkElement linkElement = new LinkElement(table.getName(), join.getRightItem().toString(), true, false, true);
         linkElement.setCondition(join.getOnExpression().toString());
         linkTable.getItems().add(linkElement);
-        items.add(join.getRightItem().toString());
+        joinItems.add(join.getRightItem().toString());
     }
 
     @FXML
@@ -301,7 +321,10 @@ public class MainController {
         SelectExpressionItem nSItem = new SelectExpressionItem();
 //        nSItem.setAlias(new Alias("test"));
         nSItem.setExpression(new Column(name));
-        getSelectBody().getSelectItems().add(nSItem);
+
+        List<SelectItem> selectItems = getSelectBody().getSelectItems() == null ? new ArrayList<>() : getSelectBody().getSelectItems();
+        selectItems.add(nSItem);
+        getSelectBody().setSelectItems(selectItems);
 
         addRowToGroup(name);
     }
@@ -317,11 +340,23 @@ public class MainController {
         SelectBody selectBody;
         if (withItemMap.size() == 0) {
             selectBody = sQuery.getSelectBody();
+            if (selectBody == null) {
+                initEmptyQuery();
+            }
         } else {
             Tab tab = cteTabPane.getSelectionModel().selectedItemProperty().get();
             selectBody = sQuery.getWithItemsList().get(withItemMap.get(tab.getId())).getSelectBody();
         }
         return (PlainSelect) selectBody;
+    }
+
+    private void initEmptyQuery() {
+        PlainSelect plainSelect = new PlainSelect();
+//        List<SelectItem> selectItems = new ArrayList<>();
+//        plainSelect.setSelectItems(selectItems);
+//        FromItem fromItem = new Table();
+//        plainSelect.setFromItem(fromItem);
+        sQuery.setSelectBody(plainSelect);
     }
 
     public void addCteTableToForm(Tab tap) {
@@ -478,31 +513,51 @@ public class MainController {
             });
             return property;
         });
+        ObservableList<String> joinItems1 = FXCollections.observableArrayList();
+        joinItems1.addAll(joinItems);
+        ObservableList<String> joinItems2 = FXCollections.observableArrayList();
+        joinItems2.addAll(joinItems);
 
-        linkTableColumnTable1.setCellFactory(ComboBoxTableCell.forTableColumn(items));
-        linkTableColumnTable2.setCellFactory(ComboBoxTableCell.forTableColumn(items));
+        linkTableColumnTable1.setCellFactory(ComboBoxTableCell.forTableColumn(joinItems1));
+        linkTableColumnTable2.setCellFactory(ComboBoxTableCell.forTableColumn(joinItems2));
+
+        linkTableColumnTable1.setOnEditStart(e -> {
+            ObservableList<TablePosition> selectedCells = linkTable.getSelectionModel().getSelectedCells();
+            LinkElement linkElement = linkTable.getItems().get(selectedCells.get(0).getRow());
+            joinItems1.clear();
+            tablesView.getRoot().getChildren().forEach(x -> {
+                if (!linkElement.getTable2().equals(x.getValue().getName())) {
+                    joinItems1.add(x.getValue().getName());
+                }
+            });
+        });
+        linkTableColumnTable2.setOnEditStart(e -> {
+            joinItems2.clear();
+            tablesView.getRoot().getChildren().forEach(x -> joinItems2.add(x.getValue().getName()));
+        });
+
 
         linkTableJoinCondition.setCellValueFactory(features -> new ReadOnlyObjectWrapper(features.getValue()));
         linkTableJoinCondition.setCellFactory(column -> new TableCell<LinkElement, LinkElement>() {
 
-            private final ObservableList<String> langs = FXCollections.observableArrayList(items);
+            private final ObservableList<String> langs = FXCollections.observableArrayList(joinItems);
             private final ComboBox<String> langsComboBox = new ComboBox<>(langs);
 
             private final ObservableList<String> langs2 = FXCollections.observableArrayList("=", "<>", "<", ">", "<=", ">=");
             private final ComboBox<String> langsComboBox2 = new ComboBox<>(langs2);
 
-            private final ObservableList<String> langs3 = FXCollections.observableArrayList(items);
+            private final ObservableList<String> langs3 = FXCollections.observableArrayList(joinItems);
             private final ComboBox<String> langsComboBox3 = new ComboBox<>(langs3);
 
             private final HBox pane = new HBox(langsComboBox, langsComboBox2, langsComboBox3);
 
-            private final TextField ttt = new TextField();
+            private final TextField customConditon = new TextField();
 
             {
                 langsComboBox.prefWidthProperty().bind(pane.widthProperty());
                 langsComboBox2.setMinWidth(70);
                 langsComboBox3.prefWidthProperty().bind(pane.widthProperty());
-                ttt.setMaxWidth(Double.MAX_VALUE);
+                customConditon.setMaxWidth(Double.MAX_VALUE);
             }
 
             @Override
@@ -511,8 +566,8 @@ public class MainController {
                 if (empty) {
                     setGraphic(null);
                 } else if (item != null && item.isCustom()) {
-                    ttt.setText(item.getCondition());
-                    setGraphic(ttt);
+                    customConditon.setText(item.getCondition());
+                    setGraphic(customConditon);
                 } else {
                     String condition = item.getCondition();
                     if (condition != null) {
