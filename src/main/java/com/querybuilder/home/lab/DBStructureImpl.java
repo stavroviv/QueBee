@@ -36,7 +36,7 @@ public class DBStructureImpl implements DBStructure {
             Field myQNamesField = dbDataSource.getClass().getDeclaredField("myQNames");
             myQNamesField.setAccessible(true);
             Map<Object, Object> myQNames = (Map<Object, Object>) myQNamesField.get(dbDataSource);
-
+// PG!!!
             SmartList list = (SmartList) myQNames.get(ObjectPath.create("javacrm", ObjectKind.DATABASE));
             Object myTables = list.get(0);
             Field field2 = myTables.getClass().getDeclaredField("mySchemas");
