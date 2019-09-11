@@ -538,47 +538,81 @@ public class MainController {
 
 
         linkTableJoinCondition.setCellValueFactory(features -> new ReadOnlyObjectWrapper(features.getValue()));
-        linkTableJoinCondition.setCellFactory(column -> new TableCell<LinkElement, LinkElement>() {
 
-            private final ObservableList<String> langs = FXCollections.observableArrayList(joinItems);
-            private final ComboBox<String> langsComboBox = new ComboBox<>(langs);
+        final ObservableList<String> langs = FXCollections.observableArrayList(joinItems);
 
-            private final ObservableList<String> langs2 = FXCollections.observableArrayList("=", "<>", "<", ">", "<=", ">=");
-            private final ComboBox<String> langsComboBox2 = new ComboBox<>(langs2);
-
-            private final ObservableList<String> langs3 = FXCollections.observableArrayList(joinItems);
-            private final ComboBox<String> langsComboBox3 = new ComboBox<>(langs3);
-
-            private final HBox pane = new HBox(langsComboBox, langsComboBox2, langsComboBox3);
-
-            private final TextField customConditon = new TextField();
-
-            {
-                langsComboBox.prefWidthProperty().bind(pane.widthProperty());
-                langsComboBox2.setMinWidth(70);
-                langsComboBox3.prefWidthProperty().bind(pane.widthProperty());
-                customConditon.setMaxWidth(Double.MAX_VALUE);
+        linkTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+//                langs.clear();
+                langs.addAll(dbElements.get(newSelection.getTable1()));
             }
+        });
+//        final ComboBox<String> langsComboBox = new ComboBox<>(langs);
+        linkTableJoinCondition.setCellFactory(column -> {
+            return new TableCell<LinkElement, LinkElement>() {
 
-            @Override
-            protected void updateItem(LinkElement item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else if (item != null && item.isCustom()) {
-                    customConditon.setText(item.getCondition());
-                    setGraphic(customConditon);
-                } else {
-                    String condition = item.getCondition();
-                    if (condition != null) {
-                        String[] array = condition.split("[>=<=<>]");
-                        langsComboBox.setValue(array[0]);
-                        langsComboBox2.setValue(condition.replace(array[0], "").replace(array[1], ""));
-                        langsComboBox3.setValue(array[1]);
-                    }
-                    setGraphic(pane);
+                //            private ObservableList<String> langs = FXCollections.observableArrayList(joinItems);
+                private ComboBox<String> langsComboBox = new ComboBox<>(langs);
+
+                private final ObservableList<String> langs2 = FXCollections.observableArrayList("=", "<>", "<", ">", "<=", ">=");
+                private final ComboBox<String> langsComboBox2 = new ComboBox<>(langs2);
+
+                private final ObservableList<String> langs3 = FXCollections.observableArrayList(joinItems);
+                private final ComboBox<String> langsComboBox3 = new ComboBox<>(langs3);
+
+                private final HBox pane = new HBox(langsComboBox, langsComboBox2, langsComboBox3);
+
+                private final TextField customConditon = new TextField();
+
+                {
+                    langsComboBox.prefWidthProperty().bind(pane.widthProperty());
+                    langsComboBox2.setMinWidth(70);
+                    langsComboBox3.prefWidthProperty().bind(pane.widthProperty());
+                    customConditon.setMaxWidth(Double.MAX_VALUE);
+//                    langsComboBox.getEditor().setOnAction(event -> {
+//                        System.out.println(event);
+//
+//                        ObservableList<TablePosition> selectedCells = linkTable.getSelectionModel().getSelectedCells();
+//                        if (selectedCells.size() > 0) {
+//                            TablePosition tablePosition = selectedCells.get(0);
+//                            int row = tablePosition.getRow();
+//                            LinkElement linkElement = linkTable.getItems().get(row);
+//                            langs.clear();
+//                            dbElements.get(linkElement.getTable1()).forEach(x -> {
+////                        if (!linkElement.getTable2().equals(x.getValue().getName())) {
+//                                langs.add(x);
+////                        }
+//                            });
+////                    tablesView.getRoot().getChildren().forEach();
+////                    langsComboBox.setItems(langs);
+//                        }
+//                    });
                 }
-            }
+
+                @Override
+                protected void updateItem(LinkElement item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty) {
+                        setGraphic(null);
+                    } else if (item != null && item.isCustom()) {
+                        customConditon.setText(item.getCondition());
+                        setGraphic(customConditon);
+                    } else {
+                        String condition = item.getCondition();
+                        if (condition != null) {
+                            String[] array = condition.split("[>=<=<>]");
+                            langsComboBox.setValue(array[0]);
+                            langsComboBox2.setValue(condition.replace(array[0], "").replace(array[1], ""));
+                            langsComboBox3.setValue(array[1]);
+                        }
+//                         final ObservableList<String> langs34 = FXCollections.observableArrayList(joinItems);
+//                         final ComboBox<String> langsComboBox34 = new ComboBox<>(langs3);
+//                         pane.getChildren().add(langsComboBox34);
+                        setGraphic(pane);
+                    }
+
+                }
+            };
         });
     }
 
