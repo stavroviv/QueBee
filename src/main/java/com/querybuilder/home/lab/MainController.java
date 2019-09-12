@@ -305,7 +305,7 @@ public class MainController {
         if (join.getOnExpression() == null) {
             return;
         }
-        LinkElement linkElement = new LinkElement(table.getName(), join.getRightItem().toString(), true, false, true);
+        LinkElement linkElement = new LinkElement(table.getName(), join.getRightItem().toString(), true, false, true, dbElements);
         linkElement.setCondition(join.getOnExpression().toString());
         linkTable.getItems().add(linkElement);
         joinItems.add(join.getRightItem().toString());
@@ -492,8 +492,19 @@ public class MainController {
 
     @FXML
     protected void addLinkElement(ActionEvent event) {
-        ObservableList<LinkElement> data = linkTable.getItems();
-        data.add(new LinkElement("", "", false, false, false));
+        linkTable.getItems().add(new LinkElement("", "", false, false, false, dbElements));
+    }
+
+    @FXML
+    protected void copyLinkElement(ActionEvent event) {
+        LinkElement selectedItem = linkTable.getSelectionModel().getSelectedItem();
+        linkTable.getItems().add(selectedItem.clone());
+    }
+
+    @FXML
+    protected void deleteLinkElement(ActionEvent event) {
+        LinkElement selectedItem = linkTable.getSelectionModel().getSelectedItem();
+        linkTable.getItems().remove(selectedItem);
     }
 
     private void initLinkTableView() {
@@ -513,106 +524,49 @@ public class MainController {
             });
             return property;
         });
+
         ObservableList<String> joinItems1 = FXCollections.observableArrayList();
         joinItems1.addAll(joinItems);
+        linkTableColumnTable1.setCellFactory(ComboBoxTableCell.forTableColumn(joinItems1));
+
         ObservableList<String> joinItems2 = FXCollections.observableArrayList();
         joinItems2.addAll(joinItems);
-
-        linkTableColumnTable1.setCellFactory(ComboBoxTableCell.forTableColumn(joinItems1));
         linkTableColumnTable2.setCellFactory(ComboBoxTableCell.forTableColumn(joinItems2));
 
-        linkTableColumnTable1.setOnEditStart(e -> {
-            ObservableList<TablePosition> selectedCells = linkTable.getSelectionModel().getSelectedCells();
-            LinkElement linkElement = linkTable.getItems().get(selectedCells.get(0).getRow());
-            joinItems1.clear();
-            tablesView.getRoot().getChildren().forEach(x -> {
-                if (!linkElement.getTable2().equals(x.getValue().getName())) {
-                    joinItems1.add(x.getValue().getName());
-                }
-            });
-        });
-        linkTableColumnTable2.setOnEditStart(e -> {
-            joinItems2.clear();
-            tablesView.getRoot().getChildren().forEach(x -> joinItems2.add(x.getValue().getName()));
-        });
-
-
         linkTableJoinCondition.setCellValueFactory(features -> new ReadOnlyObjectWrapper(features.getValue()));
+        linkTableJoinCondition.setCellFactory(column -> new TableCell<LinkElement, LinkElement>() {
+            private final ObservableList<String> comparison = FXCollections.observableArrayList("=", "<>", "<", ">", "<=", ">=");
+            private final ComboBox<String> comparisonComboBox = new ComboBox<>(comparison);
+            private final TextField customConditon = new TextField();
 
-        final ObservableList<String> langs = FXCollections.observableArrayList(joinItems);
+            @Override
+            protected void updateItem(LinkElement item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else if (item != null && item.isCustom()) {
+                    customConditon.setText(item.getCondition());
+                    setGraphic(customConditon);
+                } else {
+                    HBox pane = new HBox();
+                    item.getConditionComboBox1().prefWidthProperty().bind(pane.widthProperty());
+                    comparisonComboBox.setMinWidth(70);
+                    item.getConditionComboBox2().prefWidthProperty().bind(pane.widthProperty());
 
-        linkTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            if (newSelection != null) {
-//                langs.clear();
-                langs.addAll(dbElements.get(newSelection.getTable1()));
-            }
-        });
-//        final ComboBox<String> langsComboBox = new ComboBox<>(langs);
-        linkTableJoinCondition.setCellFactory(column -> {
-            return new TableCell<LinkElement, LinkElement>() {
-
-                //            private ObservableList<String> langs = FXCollections.observableArrayList(joinItems);
-                private ComboBox<String> langsComboBox = new ComboBox<>(langs);
-
-                private final ObservableList<String> langs2 = FXCollections.observableArrayList("=", "<>", "<", ">", "<=", ">=");
-                private final ComboBox<String> langsComboBox2 = new ComboBox<>(langs2);
-
-                private final ObservableList<String> langs3 = FXCollections.observableArrayList(joinItems);
-                private final ComboBox<String> langsComboBox3 = new ComboBox<>(langs3);
-
-                private final HBox pane = new HBox(langsComboBox, langsComboBox2, langsComboBox3);
-
-                private final TextField customConditon = new TextField();
-
-                {
-                    langsComboBox.prefWidthProperty().bind(pane.widthProperty());
-                    langsComboBox2.setMinWidth(70);
-                    langsComboBox3.prefWidthProperty().bind(pane.widthProperty());
-                    customConditon.setMaxWidth(Double.MAX_VALUE);
-//                    langsComboBox.getEditor().setOnAction(event -> {
-//                        System.out.println(event);
-//
-//                        ObservableList<TablePosition> selectedCells = linkTable.getSelectionModel().getSelectedCells();
-//                        if (selectedCells.size() > 0) {
-//                            TablePosition tablePosition = selectedCells.get(0);
-//                            int row = tablePosition.getRow();
-//                            LinkElement linkElement = linkTable.getItems().get(row);
-//                            langs.clear();
-//                            dbElements.get(linkElement.getTable1()).forEach(x -> {
-////                        if (!linkElement.getTable2().equals(x.getValue().getName())) {
-//                                langs.add(x);
-////                        }
-//                            });
-////                    tablesView.getRoot().getChildren().forEach();
-////                    langsComboBox.setItems(langs);
-//                        }
-//                    });
-                }
-
-                @Override
-                protected void updateItem(LinkElement item, boolean empty) {
-                    super.updateItem(item, empty);
-                    if (empty) {
-                        setGraphic(null);
-                    } else if (item != null && item.isCustom()) {
-                        customConditon.setText(item.getCondition());
-                        setGraphic(customConditon);
-                    } else {
-                        String condition = item.getCondition();
-                        if (condition != null) {
-                            String[] array = condition.split("[>=<=<>]");
-                            langsComboBox.setValue(array[0]);
-                            langsComboBox2.setValue(condition.replace(array[0], "").replace(array[1], ""));
-                            langsComboBox3.setValue(array[1]);
-                        }
-//                         final ObservableList<String> langs34 = FXCollections.observableArrayList(joinItems);
-//                         final ComboBox<String> langsComboBox34 = new ComboBox<>(langs3);
-//                         pane.getChildren().add(langsComboBox34);
-                        setGraphic(pane);
+                    String condition = item.getCondition();
+                    if (condition != null) {
+                        String[] array = condition.split("[>=<=<>]");
+                        item.getConditionComboBox1().setValue(array[0]);
+                        comparisonComboBox.setValue(condition.replace(array[0], "").replace(array[1], ""));
+                        item.getConditionComboBox2().setValue(array[1]);
                     }
-
+                    pane.getChildren().add(item.getConditionComboBox1());
+                    pane.getChildren().add(comparisonComboBox);
+                    pane.getChildren().add(item.getConditionComboBox2());
+                    setGraphic(pane);
                 }
-            };
+
+            }
         });
     }
 

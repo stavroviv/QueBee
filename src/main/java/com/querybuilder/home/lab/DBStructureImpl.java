@@ -25,7 +25,7 @@ public class DBStructureImpl implements DBStructure{
         dbElements = new HashMap<>();
         Project p = ProjectManager.getInstance().getOpenProjects()[0];
         JBIterable<DbDataSource> dataSources = DbUtil.getDataSources(p);
-        DbDataSourceImpl dbDataSource = (DbDataSourceImpl) dataSources.get(0);
+        DbDataSourceImpl dbDataSource = (DbDataSourceImpl) dataSources.get(1);
 
         TableRow tablesRoot = new TableRow("Tables");
         tablesRoot.setRoot(true);
