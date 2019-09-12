@@ -1,6 +1,8 @@
 package com.querybuilder.home.lab;
 
+import com.intellij.database.model.DasObject;
 import com.intellij.database.model.ObjectKind;
+import com.intellij.database.model.postgres.PostgresModModel;
 import com.intellij.database.psi.DbDataSource;
 import com.intellij.database.psi.DbDataSourceImpl;
 import com.intellij.database.util.DbUtil;
@@ -17,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DBStructureImpl implements DBStructure{
+public class DBStructureImpl implements DBStructure {
     private Map<String, List<String>> dbElements;
 
     @Override
@@ -25,12 +27,40 @@ public class DBStructureImpl implements DBStructure{
         dbElements = new HashMap<>();
         Project p = ProjectManager.getInstance().getOpenProjects()[0];
         JBIterable<DbDataSource> dataSources = DbUtil.getDataSources(p);
-        DbDataSourceImpl dbDataSource = (DbDataSourceImpl) dataSources.get(1);
+        DbDataSourceImpl dbDataSource = (DbDataSourceImpl) dataSources.get(0);
 
         TableRow tablesRoot = new TableRow("Tables");
         tablesRoot.setRoot(true);
         TreeItem<TableRow> root = new TreeItem<>(tablesRoot);
         root.setExpanded(true);
+
+
+//        JBIterable<? extends DasObject> modelRoots = dataSources.get(1).getModel().getModelRoots();
+//        modelRoots.forEach(x -> {
+//            if (x.getKind().code().equals("schema")) {
+//                System.out.println(x);
+//                for (DasObject dasChild : x.getDasChildren(ObjectKind.TABLE)) {
+//                  System.out.println(dasChild);
+//                }
+////                x.getDasChildren(ObjectKind.SCHEMA).forEach();
+//            }
+//        });
+        JBIterable<? extends DasObject> modelRoots = dataSources.get(0).getModel().getModelRoots();
+        modelRoots.forEach(x -> {
+            if (x.getKind().code().equals("database")) {
+                System.out.println(x);
+                x.getDasChildren(ObjectKind.SCHEMA).forEach(u -> {
+                    if (u.getKind().code().equals("schema")) {
+                        u.getDasChildren(ObjectKind.TABLE).forEach(gg -> {
+                            System.out.println(gg);
+                            gg.getDasChildren(ObjectKind.COLUMN).forEach(ggg-> System.out.println(ggg));
+                        });
+                    }
+//                    System.out.println(u);
+                });
+            }
+        });
+
 
         try {
             Field myQNamesField = dbDataSource.getClass().getDeclaredField("myQNames");
