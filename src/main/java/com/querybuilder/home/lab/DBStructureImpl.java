@@ -2,18 +2,14 @@ package com.querybuilder.home.lab;
 
 import com.intellij.database.model.DasObject;
 import com.intellij.database.model.ObjectKind;
-import com.intellij.database.model.postgres.PostgresModModel;
 import com.intellij.database.psi.DbDataSource;
 import com.intellij.database.psi.DbDataSourceImpl;
 import com.intellij.database.util.DbUtil;
-import com.intellij.database.vfs.ObjectPath;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.util.SmartList;
 import com.intellij.util.containers.JBIterable;
 import javafx.scene.control.TreeItem;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,94 +30,32 @@ public class DBStructureImpl implements DBStructure {
         TreeItem<TableRow> root = new TreeItem<>(tablesRoot);
         root.setExpanded(true);
 
-
-//        JBIterable<? extends DasObject> modelRoots = dataSources.get(1).getModel().getModelRoots();
-//        modelRoots.forEach(x -> {
-//            if (x.getKind().code().equals("schema")) {
-//                System.out.println(x);
-//                for (DasObject dasChild : x.getDasChildren(ObjectKind.TABLE)) {
-//                  System.out.println(dasChild);
-//                }
-////                x.getDasChildren(ObjectKind.SCHEMA).forEach();
-//            }
-//        });
         JBIterable<? extends DasObject> modelRoots = dataSources.get(0).getModel().getModelRoots();
-        modelRoots.forEach(x -> {
-            if (x.getKind().code().equals("database")) {
-                System.out.println(x);
-                x.getDasChildren(ObjectKind.SCHEMA).forEach(u -> {
-                    if (u.getKind().code().equals("schema")) {
-                        u.getDasChildren(ObjectKind.TABLE).forEach(gg -> {
-                            System.out.println(gg);
-                            gg.getDasChildren(ObjectKind.COLUMN).forEach(ggg-> System.out.println(ggg));
-                        });
-                    }
-//                    System.out.println(u);
-                });
-            }
-        });
-
-
-        try {
-            Field myQNamesField = dbDataSource.getClass().getDeclaredField("myQNames");
-            myQNamesField.setAccessible(true);
-            Map<Object, Object> myQNames = (Map<Object, Object>) myQNamesField.get(dbDataSource);
-
-            SmartList list = (SmartList) myQNames.get(ObjectPath.create("socnet", ObjectKind.SCHEMA));
-            Object myTables = list.get(0);
-            Field field2 = myTables.getClass().getDeclaredField("myTables");
-            field2.setAccessible(true);
-
-            Object value222 = field2.get(myTables);
-
-            Field myElements = value222.getClass().getSuperclass().getSuperclass().getDeclaredField("myElements");
-            myElements.setAccessible(true);
-
-            List valueFinal = (List) myElements.get(value222);
-            valueFinal.forEach(x ->
-                    {
-                        try {
-                            Field myNameField = x.getClass().getSuperclass().getDeclaredField("myName");
-                            myNameField.setAccessible(true);
-                            String myName = (String) myNameField.get(x);
-                            TableRow parentNode = new TableRow(myName);
-                            parentNode.setRoot(true);
-                            TreeItem<TableRow> stringTreeItem = new TreeItem<>(parentNode);
-                            root.getChildren().add(stringTreeItem);
-
-                            Field myColumnsField = x.getClass().getDeclaredField("myColumns");
-                            myColumnsField.setAccessible(true);
-                            Object myColumns = myColumnsField.get(x);
-
-                            Field myColumnsElementsField = myColumns.getClass().getSuperclass().getSuperclass().getSuperclass().getDeclaredField("myElements");
-                            myColumnsElementsField.setAccessible(true);
-                            List myColumnElements = (List) myColumnsElementsField.get(myColumns);
-
-                            List<String> tableElements = new ArrayList<>();
-                            myColumnElements.forEach(xx -> {
-                                try {
-                                    Field myColName = xx.getClass().getSuperclass().getDeclaredField("myName");
-                                    myColName.setAccessible(true);
-                                    String myColNameStr = (String) myColName.get(xx);
-                                    tableElements.add(myColNameStr);
-                                    stringTreeItem.getChildren().add(new TreeItem<>(new TableRow(myColNameStr)));
-                                } catch (NoSuchFieldException | IllegalAccessException e) {
-                                    e.printStackTrace();
-                                }
-                            });
-
-                            dbElements.put(myName, tableElements);
-
-                        } catch (NoSuchFieldException | IllegalAccessException e) {
-                            e.printStackTrace();
-                        }
-                    }
-            );
-
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
+        if (dbDataSource.getSqlDialect().getID().equals("PostgreSQL")) {
+            modelRoots
+                    .find(x -> x.getKind().equals(ObjectKind.DATABASE))
+                    .getDasChildren(ObjectKind.SCHEMA)
+                    .find(x -> x.getKind().equals(ObjectKind.SCHEMA))
+                    .getDasChildren(ObjectKind.TABLE).forEach(table -> addToStructure(table, root));
+        } else if (dbDataSource.getSqlDialect().getID().equals("MySQL")) {
+            modelRoots
+                    .find(x -> x.getKind().equals(ObjectKind.SCHEMA))
+                    .getDasChildren(ObjectKind.TABLE).forEach(table -> addToStructure(table, root));
         }
         return root;
+    }
+
+    private void addToStructure(DasObject table, TreeItem<TableRow> root) {
+        TableRow parentNode = new TableRow(table.getName());
+        parentNode.setRoot(true);
+        TreeItem<TableRow> stringTreeItem = new TreeItem<>(parentNode);
+        root.getChildren().add(stringTreeItem);
+        List<String> tableElements = new ArrayList<>();
+        table.getDasChildren(ObjectKind.COLUMN).forEach(column -> {
+            tableElements.add(column.getName());
+            stringTreeItem.getChildren().add(new TreeItem<>(new TableRow(column.getName())));
+        });
+        dbElements.put(table.getName(), tableElements);
     }
 
     @Override
