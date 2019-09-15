@@ -113,7 +113,7 @@ public class MainController {
 
     private void initTables() {
         DBStructure db = new DBStructureImpl();
-        databaseTableView.setRoot(db.getDBStructure());
+        databaseTableView.setRoot(db.getDBStructure(this.queryBuilder.getDataSource()));
         dbElements = db.getDbElements();
         joinItems = FXCollections.observableArrayList();
         tablesView.setRoot(new TreeItem<>());

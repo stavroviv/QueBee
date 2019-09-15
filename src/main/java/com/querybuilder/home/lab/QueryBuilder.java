@@ -1,5 +1,6 @@
 package com.querybuilder.home.lab;
 
+import com.intellij.database.dataSource.LocalDataSource;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
@@ -19,6 +20,7 @@ import javax.swing.*;
 public class QueryBuilder {
     private JFrame frame;
     private boolean mainForm;
+
     private MainAction mainAction;
     private MainController parentController;
     private MainController controller;
@@ -115,7 +117,21 @@ public class QueryBuilder {
         this.mainAction = mainAction;
     }
 
+    public MainAction getMainAction() {
+        return mainAction;
+    }
+
     public void setItem(TableRow item) {
         this.item = item;
+    }
+
+    public LocalDataSource getDataSource() {
+        return dataSource;
+    }
+
+    private LocalDataSource dataSource;
+
+    public void setDataSource(LocalDataSource dataSource) {
+        this.dataSource = dataSource;
     }
 }

@@ -1,5 +1,12 @@
 package com.querybuilder.home.lab;
 
+import com.intellij.database.console.JdbcConsole;
+import com.intellij.database.dataSource.LocalDataSource;
+import com.intellij.database.model.DatabaseSystem;
+import com.intellij.database.model.RawConnectionConfig;
+import com.intellij.database.psi.DbDataSource;
+import com.intellij.database.psi.DbPsiFacade;
+import com.intellij.database.util.DbSqlUtil;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -14,6 +21,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CodeStyleManager;
+import com.intellij.util.containers.JBIterable;
+
+import java.util.List;
+import java.util.Set;
 
 public class MainAction extends AnAction {
 
@@ -25,7 +36,7 @@ public class MainAction extends AnAction {
         editor = e.getRequiredData(CommonDataKeys.EDITOR);
         project = e.getRequiredData(CommonDataKeys.PROJECT);
         this.e = e;
-
+//        DbSqlUtil.SQL_FILE_FILTER(project);
         CaretModel caretModel = editor.getCaretModel();
 
 //        String languageTag = "";
@@ -34,6 +45,15 @@ public class MainAction extends AnAction {
 //            Language lang = e.getData(CommonDataKeys.PSI_FILE).getLanguage();
 ////            languageTag = "+[" + lang.getDisplayName().toLowerCase() + "]";
 //        }
+// DbPsiFacade is the entry point API for DB/Das model
+        List<DbDataSource> dataSources = DbPsiFacade.getInstance(project).getDataSources();
+//        DbPsiFacade.getInstance(project).
+// get all JDBC URLs
+        Set<String> urls = JBIterable.from(dataSources)
+                .map(DbDataSource::getDelegate) // unwrap the underlying DatabaseSystem (DDL or JDBC)
+                .filterMap(DatabaseSystem::getConnectionConfig)  // get RawConnectionConfig
+                .filterMap(RawConnectionConfig::getUrl)          // get JDBC URL
+                .toSet();
 
         String query = "";
         if (caretModel.getCurrentCaret().hasSelection()) {
@@ -50,8 +70,13 @@ public class MainAction extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
         String text = getSelectionText(e);
+
+        JdbcConsole maybeAttachedSession = JdbcConsole.ScriptingJdbcSessionHolder.INSTANCE.getMaybeAttachedSession(e);
+        LocalDataSource dataSource = maybeAttachedSession.getDataSource();
+
         QueryBuilder qb = new QueryBuilder(text);
         qb.setMainAction(this);
+        qb.setDataSource(dataSource);
     }
 
     public void insertResult(String resultQuery) {
