@@ -24,13 +24,14 @@ public class DBStructureImpl implements DBStructure {
         root.setExpanded(true);
 
         JBIterable<? extends DasObject> modelRoots = dataSource.getModel().getModelRoots();
-        if (dataSource.getDatabaseDriver().getSqlDialect().equals("PostgreSQL")) {
+        String sqlDialect = dataSource.getDatabaseDriver().getSqlDialect();
+        if (sqlDialect.equals("PostgreSQL")) {
             modelRoots
                     .find(x -> x.getKind().equals(ObjectKind.DATABASE))
                     .getDasChildren(ObjectKind.SCHEMA)
                     .find(x -> x.getKind().equals(ObjectKind.SCHEMA))
                     .getDasChildren(ObjectKind.TABLE).forEach(table -> addToStructure(table, root));
-        } else if (dataSource.getDatabaseDriver().getSqlDialect().equals("MySQL")) {
+        } else if (sqlDialect.equals("MySQL")) {
             modelRoots
                     .find(x -> x.getKind().equals(ObjectKind.SCHEMA))
                     .getDasChildren(ObjectKind.TABLE).forEach(table -> addToStructure(table, root));
@@ -54,7 +55,7 @@ public class DBStructureImpl implements DBStructure {
     @Override
     public Map<String, List<String>> getDbElements() {
         if (dbElements == null) {
-//            getDBStructure();
+//           getDBStructure();
         }
         return dbElements;
     }

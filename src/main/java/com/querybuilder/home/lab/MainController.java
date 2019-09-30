@@ -142,6 +142,8 @@ public class MainController {
             }
         });
         setCellFactory(databaseTableColumn);
+
+        groupFieldsTree.setRoot(new SelectedFieldsTree(tablesView, fieldTable).getTree());
     }
 
     private void setCellFactories() {
@@ -149,7 +151,8 @@ public class MainController {
         fieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
         queryCteColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
         // tree columns
-        groupFieldsTreeColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValue()));
+//        groupFieldsTreeColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
+        setCellFactory(groupFieldsTreeColumn);
         conditionsTreeTableColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValue()));
     }
 
@@ -326,7 +329,7 @@ public class MainController {
         selectItems.add(nSItem);
         getSelectBody().setSelectItems(selectItems);
 
-        addRowToGroup(name);
+//        addRowToGroup(name);
     }
 
     @FXML
@@ -571,12 +574,12 @@ public class MainController {
     }
 
     @FXML
-    private TreeTableView<String> groupFieldsTree;
+    private TreeTableView<TableRow> groupFieldsTree;
     @FXML
-    private TreeTableColumn<String, String> groupFieldsTreeColumn;
+    private TreeTableColumn<TableRow, TableRow> groupFieldsTreeColumn;
 
     private void addRowToGroup(String name) {
-        groupFieldsTree.getRoot().getChildren().add(new TreeItem<>(name));
+//        groupFieldsTree.getRoot().getChildren().add(new TreeItem<>(name));
     }
 
     @FXML
