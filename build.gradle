@@ -12,24 +12,14 @@ repositories {
     mavenCentral()
 }
 
-//plugins {
-//    id "org.jetbrains.intellij" version "0.4.7"
-//}
-
-
 dependencies {
-//    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
     compile group: 'com.github.jsqlparser', name: 'jsqlparser', version: '2.1'
-    // https://mvnrepository.com/artifact/com.intellij/openapi
-//    compile group: 'com.intellij', name: 'openapi', version: '7.0.3'
-
 }
 
 intellij {
     version 'IU-2018.2.2'
-//    plugins 'DBN:3.2.0163.0' // it works but not need...
     plugins = ['DatabaseTools']
-
 }
 
 patchPluginXml {

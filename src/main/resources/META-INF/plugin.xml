@@ -1,21 +1,13 @@
 <idea-plugin>
-    <id>plug.artifact_plug</id>
-    <name>Plugin display name here</name>
-    <vendor email="support@yourcompany.com" url="http://www.yourcompany.com">YourCompany</vendor>
+    <id>plug.quebee</id>
+    <name>QueBee</name>
+    <vendor email="QueBee@gmail.com" url="http://www.homelab.com">QueBee</vendor>
 
     <description><![CDATA[
-    Enter short description for your plugin here.<br>
-    <em>most HTML tags may be used</em>
+    Query builder<br>
+    <em>for Postgres, MySQL</em>
     ]]></description>
 
-    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
-         on how to target different products -->
-    <!--&lt;!&ndash; uncomment to enable plugin in all products-->
-    <!--<depends>com.intellij.modules.lang</depends>-->
-    <!--<depends>com.intellij.modules.idea.ultimate</depends>-->
-
-    <!--<depends optional="true">com.intellij.modules.ultimate</depends>-->
-    <!--<depends>com.intellij.database</depends>-->
     <depends>com.intellij.modules.database</depends>
     <depends>com.intellij.modules.ultimate</depends>
 
@@ -23,10 +15,8 @@
     </extensions>
 
     <actions>
-        <action id="com.querybuilder.home.lab.SQLQueryBuilder"
-                class="com.querybuilder.home.lab.MainAction"
-                text="SQL query builder"
-                description="Open best in the world SQL query builder">
+        <action id="com.querybuilder.home.lab.SQLQueryBuilder" class="com.querybuilder.home.lab.MainAction"
+                text="SQL query builder" description="Open best in the world SQL query builder">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
     </actions>
