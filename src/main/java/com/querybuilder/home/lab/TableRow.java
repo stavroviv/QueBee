@@ -16,7 +16,12 @@ public class TableRow {
 
 
     public TableRow(String name) {
+        this(name, false);
+    }
+
+    public TableRow(String name, boolean root) {
         this.name = name;
+        this.root = root;
     }
 
     public boolean isNested() {
