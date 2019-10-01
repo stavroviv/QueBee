@@ -117,14 +117,14 @@ public class MainController {
         dbElements = db.getDbElements();
         joinItems = FXCollections.observableArrayList();
         tablesView.setRoot(new TreeItem<>());
-        groupFieldsTree.setRoot(new TreeItem<>());
-        conditionsTreeTable.setRoot(new TreeItem<>());
     }
 
     @FXML
     private TreeTableView<TableRow> databaseTableView;
     @FXML
     private TreeTableColumn<TableRow, TableRow> databaseTableColumn;
+
+    private SelectedFieldsTree selectedFieldsTree;
 
     private void initDatabaseTableView() {
         databaseTableView.setOnMousePressed(e -> {
@@ -143,7 +143,11 @@ public class MainController {
         });
         setCellFactory(databaseTableColumn);
 
-        groupFieldsTree.setRoot(new SelectedFieldsTree(tablesView, fieldTable).getTree());
+        selectedFieldsTree = new SelectedFieldsTree(tablesView, fieldTable);
+        groupFieldsTree.setRoot(selectedFieldsTree);
+        conditionsTreeTable.setRoot(new SelectedFieldsTree(tablesView));
+        orderFieldsTree.setRoot(new SelectedFieldsTree(tablesView, fieldTable));
+        totalsFieldsTree.setRoot(new SelectedFieldsTree(tablesView, fieldTable));
     }
 
     private void setCellFactories() {
@@ -151,9 +155,10 @@ public class MainController {
         fieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
         queryCteColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
         // tree columns
-//        groupFieldsTreeColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
         setCellFactory(groupFieldsTreeColumn);
-        conditionsTreeTableColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValue()));
+        setCellFactory(conditionsTreeTableColumn);
+        setCellFactory(orderFieldsTreeColumn);
+        setCellFactory(totalsFieldsTreeColumn);
     }
 
     private void addTablesRow(String parent) {
@@ -251,8 +256,6 @@ public class MainController {
         fieldTable.getItems().clear();
         tablesView.getRoot().getChildren().clear();
         joinItems.clear();
-        groupFieldsTree.getRoot().getChildren().clear();
-        conditionsTreeTable.getRoot().getChildren().clear();
     }
 
     private void fillFromTables(PlainSelect pSelect) {
@@ -583,11 +586,23 @@ public class MainController {
     }
 
     @FXML
-    private TreeTableView<String> conditionsTreeTable;
+    private TreeTableView<TableRow> conditionsTreeTable;
     @FXML
-    private TreeTableColumn<String, String> conditionsTreeTableColumn;
+    private TreeTableColumn<TableRow, TableRow> conditionsTreeTableColumn;
 
+    @FXML
+    private TreeTableView<TableRow> orderFieldsTree;
+    @FXML
+    private TreeTableColumn<TableRow, TableRow> orderFieldsTreeColumn;
 
+    @FXML
+    private TreeTableView<TableRow> totalsFieldsTree;
+    @FXML
+    private TreeTableColumn<TableRow, TableRow> totalsFieldsTreeColumn;
+
+    /*
+    INNER QUERY
+     */
     @FXML
     private Button addInnerQuery;
 
@@ -618,4 +633,6 @@ public class MainController {
         }
         System.out.println(selectBody);
     }
+
+
 }
