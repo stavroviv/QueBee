@@ -4,6 +4,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -26,8 +27,6 @@ public class MainController {
     private final static String TABLES_ROOT = "TablesRoot";
     private final static String DATABASE_ROOT = "Tables";
 
-    @FXML
-    private Button okButton;
     @FXML
     private Button cancelButton;
     @FXML
@@ -124,7 +123,10 @@ public class MainController {
     @FXML
     private TreeTableColumn<TableRow, TableRow> databaseTableColumn;
 
-    private SelectedFieldsTree selectedFieldsTree;
+    private SelectedFieldsTree selectedGroupFieldsTree;
+    private SelectedFieldsTree selectedConditionsTreeTable;
+    private SelectedFieldsTree selectedOrderFieldsTree;
+    private SelectedFieldsTree selectedTotalsFieldsTree;
 
     private void initDatabaseTableView() {
         databaseTableView.setOnMousePressed(e -> {
@@ -141,13 +143,29 @@ public class MainController {
                 }
             }
         });
+        tablesView.getRoot().getChildren().addListener(
+                (ListChangeListener<TreeItem<TableRow>>) c -> {
+                    while (c.next()) {
+                        selectedGroupFieldsTree.applyChanges(c);
+                        selectedConditionsTreeTable.applyChanges(c);
+                        selectedOrderFieldsTree.applyChanges(c);
+                        selectedTotalsFieldsTree.applyChanges(c);
+                    }
+                }
+        );
         setCellFactory(databaseTableColumn);
+        initSelectedTables();
+    }
 
-        selectedFieldsTree = new SelectedFieldsTree(tablesView, fieldTable);
-        groupFieldsTree.setRoot(selectedFieldsTree);
-        conditionsTreeTable.setRoot(new SelectedFieldsTree(tablesView));
-        orderFieldsTree.setRoot(new SelectedFieldsTree(tablesView, fieldTable));
-        totalsFieldsTree.setRoot(new SelectedFieldsTree(tablesView, fieldTable));
+    private void initSelectedTables() {
+        selectedGroupFieldsTree = new SelectedFieldsTree(tablesView, fieldTable);
+        groupFieldsTree.setRoot(selectedGroupFieldsTree);
+        selectedConditionsTreeTable = new SelectedFieldsTree(tablesView);
+        conditionsTreeTable.setRoot(selectedConditionsTreeTable);
+        selectedOrderFieldsTree = new SelectedFieldsTree(tablesView, fieldTable);
+        orderFieldsTree.setRoot(selectedOrderFieldsTree);
+        selectedTotalsFieldsTree = new SelectedFieldsTree(tablesView, fieldTable);
+        totalsFieldsTree.setRoot(selectedTotalsFieldsTree);
     }
 
     private void setCellFactories() {
@@ -165,6 +183,7 @@ public class MainController {
         ObservableList<TreeItem<TableRow>> children = tablesView.getRoot().getChildren();
         if (children.stream().noneMatch(x -> x.getValue().getName().equals(parent))) {
             tablesView.getRoot().getChildren().add(getTableItemWithFields(parent));
+//            joinItems.add(parent);
             if (getSelectBody().getFromItem() == null) {
                 getSelectBody().setFromItem(new Table(parent));
             } else {
@@ -175,7 +194,6 @@ public class MainController {
                 jList.add(join);
                 getSelectBody().setJoins(jList);
             }
-//            conditionsTreeTable.getRoot().getChildren().add(getTableItemWithFields(parent));
         }
     }
 
@@ -336,10 +354,16 @@ public class MainController {
     }
 
     @FXML
-    public void deleteFIeldRow() {
+    public void deleteFieldRow() {
         int selectedItem = fieldTable.getSelectionModel().getSelectedIndex();
         fieldTable.getItems().remove(selectedItem);
         getSelectBody().getSelectItems().remove(selectedItem);
+    }
+
+    @FXML
+    public void deleteTableFromSelected() {
+        int selectedItem = tablesView.getSelectionModel().getSelectedIndex();
+        tablesView.getRoot().getChildren().remove(selectedItem);
     }
 
     private PlainSelect getSelectBody() {
@@ -372,7 +396,12 @@ public class MainController {
 
     @FXML
     public void onClickMethod() {
+        fillCurrentQuery();
         queryBuilder.closeForm(sQuery.toString());
+    }
+
+    private void fillCurrentQuery() {
+
     }
 
     @FXML
@@ -448,9 +477,7 @@ public class MainController {
 //            System.out.println("Selected item: " + item);
         });
         deleteContext.setOnAction((ActionEvent event) -> {
-//            System.out.println("deleteContext");
-//            Object item = tablesView.getSelectionModel().getSelectedItem();
-//            System.out.println("Selected item: " + item);
+            deleteTableFromSelected();
         });
         renameContext.setOnAction((ActionEvent event) -> {
 //            System.out.println("renameContext");

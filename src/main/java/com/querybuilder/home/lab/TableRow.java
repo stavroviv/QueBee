@@ -47,5 +47,4 @@ public class TableRow {
     public void setQuery(String query) {
         this.query = query;
     }
-
 }

@@ -1,10 +1,12 @@
 package com.querybuilder.home.lab;
 
+import javafx.collections.ListChangeListener;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableView;
 
 public class SelectedFieldsTree extends TreeItem<TableRow> {
+    TreeItem<TableRow> allFieldsRoot;
 
     public SelectedFieldsTree(TreeTableView<TableRow> tablesView, TableView<String> fieldTable) {
         super(new TableRow("Tables"));
@@ -13,23 +15,52 @@ public class SelectedFieldsTree extends TreeItem<TableRow> {
             this.getChildren().add(tableRowTreeItem);
         });
         TableRow allFieldsRootRow = new TableRow("All fields");
-        TreeItem<TableRow> allFieldsRoot = new TreeItem<>(allFieldsRootRow);
+        allFieldsRoot = new TreeItem<>(allFieldsRootRow);
         this.getChildren().add(allFieldsRoot);
         tablesView.getRoot().getChildren().forEach(x -> {
-            TableRow tableRow = new TableRow(x.getValue().getName(), true);
-            TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(tableRow);
+            TreeItem<TableRow> tableRowTreeItem = newTreeItem(x, true);
             allFieldsRoot.getChildren().add(tableRowTreeItem);
-            x.getChildren().forEach(y -> tableRowTreeItem.getChildren().add(new TreeItem<>(new TableRow(y.getValue().getName()))));
+            x.getChildren().forEach(y -> tableRowTreeItem.getChildren().add((newTreeItem(y))));
         });
     }
 
     public SelectedFieldsTree(TreeTableView<TableRow> tablesView) {
         super(new TableRow("Tables"));
         tablesView.getRoot().getChildren().forEach(x -> {
-            TableRow tableRow = new TableRow(x.getValue().getName(), true);
-            TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(tableRow);
+            TreeItem<TableRow> tableRowTreeItem = newTreeItem(x, true);
             this.getChildren().add(tableRowTreeItem);
-            x.getChildren().forEach(y -> tableRowTreeItem.getChildren().add(new TreeItem<>(new TableRow(y.getValue().getName()))));
+            x.getChildren().forEach(y -> tableRowTreeItem.getChildren().add(newTreeItem(y)));
         });
+    }
+
+    private TreeItem<TableRow> newTreeItem(TreeItem<TableRow> x) {
+        return newTreeItem(x, false);
+    }
+
+    private TreeItem<TableRow> newTreeItem(TreeItem<TableRow> x, boolean isRoot) {
+        TableRow tableRow = new TableRow(x.getValue().getName(), isRoot);
+        return new TreeItem<>(tableRow);
+    }
+
+    public void applyChanges(ListChangeListener.Change<? extends TreeItem<TableRow>> change) {
+        TreeItem<TableRow> root = allFieldsRoot != null ? allFieldsRoot : this;
+        if (change.wasAdded()) {
+            change.getAddedSubList().forEach(x -> {
+                TreeItem<TableRow> tableRowTreeItem = newTreeItem(x, true);
+                root.getChildren().add(tableRowTreeItem);
+                x.getChildren().forEach(y -> tableRowTreeItem.getChildren().add(newTreeItem(y)));
+            });
+        } else if (change.wasRemoved()) {
+            change.getRemoved().forEach(x -> {
+                TreeItem<TableRow> deleted = null;
+                for (TreeItem<TableRow> item : root.getChildren()) {
+                    if (item.getValue().getName().equals(x.getValue().getName())) {
+                        deleted = item;
+                        break;
+                    }
+                }
+                root.getChildren().remove(deleted);
+            });
+        }
     }
 }
