@@ -63,4 +63,27 @@ public class SelectedFieldsTree extends TreeItem<TableRow> {
             });
         }
     }
+
+    public void applyChangesString(ListChangeListener.Change<? extends String> change) {
+        TreeItem<TableRow> root = this;
+        if (change.wasAdded()) {
+            change.getAddedSubList().forEach(x -> {
+                TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(new TableRow(x, false));
+                root.getChildren().add(0, tableRowTreeItem);
+//                x.getChildren().forEach(y -> tableRowTreeItem.getChildren().add(newTreeItem(y)));
+            });
+        } else if (change.wasRemoved()) {
+            change.getRemoved().forEach(x -> {
+                TreeItem<TableRow> deleted = null;
+                for (TreeItem<TableRow> item : root.getChildren()) {
+                    if (item.getValue().getName().equals(x)) {
+                        deleted = item;
+                        break;
+                    }
+                }
+                root.getChildren().remove(deleted);
+            });
+        }
+    }
+
 }

@@ -47,4 +47,14 @@ public class TableRow {
     public void setQuery(String query) {
         this.query = query;
     }
+
+    public String getSortingType() {
+        return sortingType;
+    }
+
+    public void setSortingType(String sortingType) {
+        this.sortingType = sortingType;
+    }
+
+    private String sortingType;
 }

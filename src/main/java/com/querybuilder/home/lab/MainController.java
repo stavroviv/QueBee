@@ -11,6 +11,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.ComboBoxTableCell;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -134,7 +136,6 @@ public class MainController {
                 TreeItem<TableRow> selectedItem = databaseTableView.getSelectionModel().getSelectedItem();
                 String parent = selectedItem.getParent().getValue().getName();
                 String field = selectedItem.getValue().getName();
-
                 if (DATABASE_ROOT.equals(parent)) {
                     addTablesRow(field);
                 } else {
@@ -153,6 +154,16 @@ public class MainController {
                     }
                 }
         );
+        fieldTable.getItems().addListener(
+                (ListChangeListener<String>) c -> {
+                    while (c.next()) {
+                        selectedGroupFieldsTree.applyChangesString(c);
+                        selectedOrderFieldsTree.applyChangesString(c);
+                        selectedTotalsFieldsTree.applyChangesString(c);
+                    }
+                }
+        );
+        setResultsTablesHandlers();
         setCellFactory(databaseTableColumn);
         initSelectedTables();
     }
@@ -204,13 +215,11 @@ public class MainController {
         List<String> columns = dbElements.get(tableName);
         if (columns != null) {
             columns.forEach(col ->
-                    {
-                        TableRow tableRow = new TableRow(col);
-                        TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(tableRow);
-                        treeItem.getChildren().add(tableRowTreeItem);
-//                        addRowToGroup(tableName + "." + col);
-                    }
-            );
+            {
+                TableRow tableRow = new TableRow(col);
+                TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(tableRow);
+                treeItem.getChildren().add(tableRowTreeItem);
+            });
         }
         return treeItem;
     }
@@ -349,8 +358,6 @@ public class MainController {
         List<SelectItem> selectItems = getSelectBody().getSelectItems() == null ? new ArrayList<>() : getSelectBody().getSelectItems();
         selectItems.add(nSItem);
         getSelectBody().setSelectItems(selectItems);
-
-//        addRowToGroup(name);
     }
 
     @FXML
@@ -453,7 +460,6 @@ public class MainController {
                     setGraphic(null);
                 } else if (item.isNested()) {
                     setGraphic(nestedQuery);
-//                    setContextMenu();
                 } else {
                     setGraphic(item.isRoot() ? table : element);
                 }
@@ -608,10 +614,6 @@ public class MainController {
     @FXML
     private TreeTableColumn<TableRow, TableRow> groupFieldsTreeColumn;
 
-    private void addRowToGroup(String name) {
-//        groupFieldsTree.getRoot().getChildren().add(new TreeItem<>(name));
-    }
-
     @FXML
     private TreeTableView<TableRow> conditionsTreeTable;
     @FXML
@@ -661,5 +663,48 @@ public class MainController {
         System.out.println(selectBody);
     }
 
+    private void setResultsTablesHandlers() {
+        setOrderHandlers();
+        setTotalsHandlers();
+    }
 
+    @FXML
+    private TableView<TableRow> orderTableResults;
+    @FXML
+    private TableColumn<TableRow, String> orderTableResultsFieldColumn;
+    @FXML
+    private TableColumn<TableRow, String> orderTableResultsSortingColumn;
+
+    private void setOrderHandlers() {
+        orderFieldsTree.setOnMousePressed(e -> {
+            if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
+                TreeItem<TableRow> selectedItem = orderFieldsTree.getSelectionModel().getSelectedItem();
+                TableRow tableRow = new TableRow(selectedItem.getValue().getName());
+                tableRow.setSortingType("Ascending");
+                orderTableResults.getItems().add(0, tableRow);
+                orderFieldsTree.getRoot().getChildren().remove(selectedItem);
+            }
+        });
+
+        orderTableResults.getSelectionModel().setCellSelectionEnabled(true);
+
+        orderTableResultsFieldColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        orderTableResultsFieldColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        orderTableResultsFieldColumn.setEditable(false);
+
+        ObservableList<String> items = FXCollections.observableArrayList();
+        items.add("Ascending");
+        items.add("Descending");
+        orderTableResultsSortingColumn.setEditable(true);
+        orderTableResultsSortingColumn.setCellFactory(ComboBoxTableCell.forTableColumn(items));
+        orderTableResultsSortingColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getSortingType()));
+    }
+
+    @FXML
+    private TableView<TableRow> totalGroupingResults;
+    @FXML
+    private TableView<TableRow> totalTotalsResults;
+
+    private void setTotalsHandlers() {
+    }
 }
