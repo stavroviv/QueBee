@@ -706,5 +706,6 @@ public class MainController {
     private TableView<TableRow> totalTotalsResults;
 
     private void setTotalsHandlers() {
+
     }
 }
