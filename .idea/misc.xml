@@ -6,7 +6,6 @@
     </list>
     <writeAnnotations>
       <writeAnnotation name="javafx.fxml.FXML" />
-
     </writeAnnotations>
   </component>
   <component name="ExternalStorageConfigurationManager" enabled="true" />
