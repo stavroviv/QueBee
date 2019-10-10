@@ -610,24 +610,9 @@ public class MainController {
     }
 
     @FXML
-    private TreeTableView<TableRow> groupFieldsTree;
-    @FXML
-    private TreeTableColumn<TableRow, TableRow> groupFieldsTreeColumn;
-
-    @FXML
     private TreeTableView<TableRow> conditionsTreeTable;
     @FXML
     private TreeTableColumn<TableRow, TableRow> conditionsTreeTableColumn;
-
-    @FXML
-    private TreeTableView<TableRow> orderFieldsTree;
-    @FXML
-    private TreeTableColumn<TableRow, TableRow> orderFieldsTreeColumn;
-
-    @FXML
-    private TreeTableView<TableRow> totalsFieldsTree;
-    @FXML
-    private TreeTableColumn<TableRow, TableRow> totalsFieldsTreeColumn;
 
     /*
     INNER QUERY
@@ -663,10 +648,77 @@ public class MainController {
         System.out.println(selectBody);
     }
 
+
+    private void setResultsFactory(TableColumn<TableRow, String> resultsColumn) {
+        setResultsFactory(resultsColumn, false);
+    }
+
+    private void setResultsFactory(TableColumn<TableRow, String> resultsColumn, boolean editable) {
+        resultsColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        resultsColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        resultsColumn.setEditable(editable);
+    }
+
+    private void setTreeSelectHandler(TreeTableView<TableRow> fieldsTree, TableView<TableRow> resultsTable, boolean orderTable) {
+        fieldsTree.setOnMousePressed(e -> {
+            if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
+                makeSelect(fieldsTree, resultsTable, orderTable);
+            }
+        });
+    }
+
+    private void makeSelect(TreeTableView<TableRow> fieldsTree, TableView<TableRow> resultsTable, boolean orderTable) {
+        TreeItem<TableRow> selectedItem = fieldsTree.getSelectionModel().getSelectedItem();
+        if (selectedItem.getChildren().size() > 0) {
+            return;
+        }
+        TableRow tableRow = new TableRow(selectedItem.getValue().getName());
+        if (orderTable) {
+            tableRow.setSortingType("Ascending");
+        }
+        resultsTable.getItems().add(0, tableRow);
+        fieldsTree.getRoot().getChildren().remove(selectedItem);
+    }
+
     private void setResultsTablesHandlers() {
+        setGroupingHandlers();
         setOrderHandlers();
         setTotalsHandlers();
     }
+
+    @FXML
+    protected void selectGroup(ActionEvent event) {
+        makeSelect(groupFieldsTree, groupTableResults, false);
+    }
+
+    @FXML
+    protected void selectOrder(ActionEvent event) {
+        makeSelect(orderFieldsTree, orderTableResults, true);
+    }
+
+    @FXML
+    protected void selectTotal(ActionEvent event) {
+        makeSelect(totalsFieldsTree, totalGroupingResults, false);
+    }
+
+    @FXML
+    private TreeTableView<TableRow> groupFieldsTree;
+    @FXML
+    private TreeTableColumn<TableRow, TableRow> groupFieldsTreeColumn;
+    @FXML
+    private TableView<TableRow> groupTableResults;
+    @FXML
+    private TableColumn<TableRow, String> groupTableResultsFieldColumn;
+
+    private void setGroupingHandlers() {
+        setTreeSelectHandler(groupFieldsTree, groupTableResults, false);
+        setResultsFactory(groupTableResultsFieldColumn);
+    }
+
+    @FXML
+    private TreeTableView<TableRow> orderFieldsTree;
+    @FXML
+    private TreeTableColumn<TableRow, TableRow> orderFieldsTreeColumn;
 
     @FXML
     private TableView<TableRow> orderTableResults;
@@ -676,21 +728,10 @@ public class MainController {
     private TableColumn<TableRow, String> orderTableResultsSortingColumn;
 
     private void setOrderHandlers() {
-        orderFieldsTree.setOnMousePressed(e -> {
-            if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
-                TreeItem<TableRow> selectedItem = orderFieldsTree.getSelectionModel().getSelectedItem();
-                TableRow tableRow = new TableRow(selectedItem.getValue().getName());
-                tableRow.setSortingType("Ascending");
-                orderTableResults.getItems().add(0, tableRow);
-                orderFieldsTree.getRoot().getChildren().remove(selectedItem);
-            }
-        });
+        setTreeSelectHandler(orderFieldsTree, orderTableResults, true);
+        setResultsFactory(orderTableResultsFieldColumn);
 
         orderTableResults.getSelectionModel().setCellSelectionEnabled(true);
-
-        orderTableResultsFieldColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        orderTableResultsFieldColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-        orderTableResultsFieldColumn.setEditable(false);
 
         ObservableList<String> items = FXCollections.observableArrayList();
         items.add("Ascending");
@@ -701,11 +742,21 @@ public class MainController {
     }
 
     @FXML
+    private TreeTableView<TableRow> totalsFieldsTree;
+    @FXML
+    private TreeTableColumn<TableRow, TableRow> totalsFieldsTreeColumn;
+
+    @FXML
     private TableView<TableRow> totalGroupingResults;
     @FXML
-    private TableView<TableRow> totalTotalsResults;
+    private TableColumn<TableRow, String> totalTableResultsFieldColumn;
+    @FXML
+    private TableColumn<TableRow, String> totalTableResultsAliasColumn;
 
     private void setTotalsHandlers() {
-
+        totalGroupingResults.getSelectionModel().setCellSelectionEnabled(true);
+        setTreeSelectHandler(totalsFieldsTree, totalGroupingResults, false);
+        setResultsFactory(totalTableResultsFieldColumn);
+        setResultsFactory(totalTableResultsAliasColumn, true);
     }
 }
