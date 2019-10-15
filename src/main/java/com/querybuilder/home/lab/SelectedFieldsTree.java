@@ -70,7 +70,6 @@ public class SelectedFieldsTree extends TreeItem<TableRow> {
             change.getAddedSubList().forEach(x -> {
                 TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(new TableRow(x, false));
                 root.getChildren().add(0, tableRowTreeItem);
-//                x.getChildren().forEach(y -> tableRowTreeItem.getChildren().add(newTreeItem(y)));
             });
         } else if (change.wasRemoved()) {
             change.getRemoved().forEach(x -> {

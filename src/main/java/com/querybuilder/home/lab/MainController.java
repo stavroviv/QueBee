@@ -627,6 +627,7 @@ public class MainController {
 
     private void openNestedQuery(String text, TableRow item) {
         QueryBuilder qb = new QueryBuilder(text, false);
+        qb.setDataSource(this.queryBuilder.getDataSource());
         qb.setParentController(this);
         qb.setItem(item);
 //        qb.setParentController(this);
@@ -659,7 +660,7 @@ public class MainController {
         resultsColumn.setEditable(editable);
     }
 
-    private void setTreeSelectHandler(TreeTableView<TableRow> fieldsTree, TableView<TableRow> resultsTable, boolean orderTable) {
+    private void setResultsTableSelectHandler(TreeTableView<TableRow> fieldsTree, TableView<TableRow> resultsTable, boolean orderTable) {
         fieldsTree.setOnMousePressed(e -> {
             if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
                 makeSelect(fieldsTree, resultsTable, orderTable);
@@ -702,6 +703,21 @@ public class MainController {
     }
 
     @FXML
+    protected void deselectGroup(ActionEvent event) {
+        makeDeselect(groupTableResults, groupFieldsTree);
+    }
+
+    @FXML
+    protected void deselectOrder(ActionEvent event) {
+        makeDeselect(orderTableResults, orderFieldsTree);
+    }
+
+    @FXML
+    protected void deselectTotal(ActionEvent event) {
+        makeDeselect(totalGroupingResults, totalsFieldsTree);
+    }
+
+    @FXML
     private TreeTableView<TableRow> groupFieldsTree;
     @FXML
     private TreeTableColumn<TableRow, TableRow> groupFieldsTreeColumn;
@@ -711,8 +727,25 @@ public class MainController {
     private TableColumn<TableRow, String> groupTableResultsFieldColumn;
 
     private void setGroupingHandlers() {
-        setTreeSelectHandler(groupFieldsTree, groupTableResults, false);
+        setResultsTableSelectHandler(groupFieldsTree, groupTableResults, false);
         setResultsFactory(groupTableResultsFieldColumn);
+        setResultsTableSelectHandler(groupTableResults, groupFieldsTree);
+    }
+
+    private void setResultsTableSelectHandler(TableView<TableRow> groupTableResults, TreeTableView<TableRow> groupFieldsTree) {
+        groupTableResults.setOnMousePressed(e -> {
+            if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
+                makeDeselect(groupTableResults, groupFieldsTree);
+            }
+        });
+    }
+
+    private void makeDeselect(TableView<TableRow> groupTableResults, TreeTableView<TableRow> groupFieldsTree) {
+        TableRow selectedItem = groupTableResults.getSelectionModel().getSelectedItem();
+        TableRow tableRow = new TableRow(selectedItem.getName());
+        TreeItem<TableRow> treeItem = new TreeItem(tableRow);
+        groupFieldsTree.getRoot().getChildren().add(0, treeItem);
+        groupTableResults.getItems().remove(selectedItem);
     }
 
     @FXML
@@ -728,7 +761,7 @@ public class MainController {
     private TableColumn<TableRow, String> orderTableResultsSortingColumn;
 
     private void setOrderHandlers() {
-        setTreeSelectHandler(orderFieldsTree, orderTableResults, true);
+        setResultsTableSelectHandler(orderFieldsTree, orderTableResults, true);
         setResultsFactory(orderTableResultsFieldColumn);
 
         orderTableResults.getSelectionModel().setCellSelectionEnabled(true);
@@ -739,6 +772,8 @@ public class MainController {
         orderTableResultsSortingColumn.setEditable(true);
         orderTableResultsSortingColumn.setCellFactory(ComboBoxTableCell.forTableColumn(items));
         orderTableResultsSortingColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getSortingType()));
+
+        setResultsTableSelectHandler(orderTableResults, orderFieldsTree);
     }
 
     @FXML
@@ -755,8 +790,9 @@ public class MainController {
 
     private void setTotalsHandlers() {
         totalGroupingResults.getSelectionModel().setCellSelectionEnabled(true);
-        setTreeSelectHandler(totalsFieldsTree, totalGroupingResults, false);
+        setResultsTableSelectHandler(totalsFieldsTree, totalGroupingResults, false);
         setResultsFactory(totalTableResultsFieldColumn);
         setResultsFactory(totalTableResultsAliasColumn, true);
+        setResultsTableSelectHandler(totalGroupingResults, totalsFieldsTree);
     }
 }
