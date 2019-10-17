@@ -233,7 +233,9 @@
                                              </VBox.margin>
                                           </Button>
                                           <Pane maxWidth="20.0" minWidth="20.0" nodeOrientation="RIGHT_TO_LEFT" prefHeight="220.0" prefWidth="20.0" />
-                                          <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&gt;">
+                                          <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false"
+                                                  onAction="#selectAggregate" prefHeight="25.0" prefWidth="40.0"
+                                                  text="&gt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" />
                                              </VBox.margin>
@@ -243,7 +245,9 @@
                                                 <Insets right="5.0" top="5.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button layoutX="19.0" layoutY="150.0" minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&lt;">
+                                          <Button layoutX="19.0" layoutY="150.0" minHeight="25.0" minWidth="40.0"
+                                                  mnemonicParsing="false" onAction="#deselectAggregate"
+                                                  prefHeight="25.0" prefWidth="40.0" text="&lt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" top="5.0" />
                                              </VBox.margin>
@@ -279,10 +283,15 @@
                                           </AnchorPane>
                                           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                                              <children>
-                                                <TableView layoutX="106.0" layoutY="29.0" prefHeight="323.0" prefWidth="814.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="0.0">
+                                                <TableView fx:id="groupTableAggregates" editable="true" layoutX="106.0"
+                                                           layoutY="29.0" prefHeight="323.0" prefWidth="814.0"
+                                                           AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                                           AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="0.0">
                                                    <columns>
-                                                      <TableColumn prefWidth="75.0" text="Aggregate field" />
-                                                      <TableColumn prefWidth="75.0" text="Function" />
+                                                      <TableColumn fx:id="groupTableAggregatesFieldColumn"
+                                                                   prefWidth="75.0" text="Aggregate field"/>
+                                                      <TableColumn fx:id="groupTableAggregatesFunctionColumn"
+                                                                   prefWidth="75.0" text="Function"/>
                                                    </columns>
                                                    <columnResizePolicy>
                                                       <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -600,10 +609,15 @@
                                           </AnchorPane>
                                           <AnchorPane>
                                              <children>
-                                                <TableView editable="true" prefHeight="331.0" prefWidth="698.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="0.0">
+                                                <TableView fx:id="totalTotalResults" editable="true" prefHeight="331.0"
+                                                           prefWidth="698.0" AnchorPane.bottomAnchor="0.0"
+                                                           AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="10.0"
+                                                           AnchorPane.topAnchor="0.0">
                                                    <columns>
-                                                      <TableColumn prefWidth="75.0" text="Total field" />
-                                                      <TableColumn prefWidth="75.0" text="Expression" />
+                                                      <TableColumn fx:id="totalTotalResultsFieldColumn" prefWidth="75.0"
+                                                                   text="Total field"/>
+                                                      <TableColumn fx:id="totalTotalResultsExprColumn" prefWidth="75.0"
+                                                                   text="Expression"/>
                                                    </columns>
                                                    <columnResizePolicy>
                                                       <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
