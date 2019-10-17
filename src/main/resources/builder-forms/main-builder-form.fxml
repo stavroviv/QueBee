@@ -208,9 +208,9 @@
 
                                        <children>
                                           <Pane layoutX="10.0" layoutY="30.0" maxWidth="53.0" prefHeight="80.0" prefWidth="53.0" />
-                                          <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false"
-                                                  onAction="#selectGroup" prefHeight="25.0" prefWidth="40.0"
-                                                  text="&gt;">
+                                           <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false"
+                                                   onAction="#selectGroup" prefHeight="25.0" prefWidth="40.0"
+                                                   text="&gt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" />
                                              </VBox.margin>
@@ -220,9 +220,9 @@
                                                 <Insets right="5.0" top="5.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false"
-                                                  onAction="#deselectGroup" prefHeight="25.0" prefWidth="40.0"
-                                                  text="&lt;">
+                                           <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false"
+                                                   onAction="#deselectGroup" prefHeight="25.0" prefWidth="40.0"
+                                                   text="&lt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" top="5.0" />
                                              </VBox.margin>
@@ -233,9 +233,9 @@
                                              </VBox.margin>
                                           </Button>
                                           <Pane maxWidth="20.0" minWidth="20.0" nodeOrientation="RIGHT_TO_LEFT" prefHeight="220.0" prefWidth="20.0" />
-                                          <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false"
-                                                  onAction="#selectAggregate" prefHeight="25.0" prefWidth="40.0"
-                                                  text="&gt;">
+                                           <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false"
+                                                   onAction="#selectAggregate" prefHeight="25.0" prefWidth="40.0"
+                                                   text="&gt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" />
                                              </VBox.margin>
@@ -245,9 +245,9 @@
                                                 <Insets right="5.0" top="5.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button layoutX="19.0" layoutY="150.0" minHeight="25.0" minWidth="40.0"
-                                                  mnemonicParsing="false" onAction="#deselectAggregate"
-                                                  prefHeight="25.0" prefWidth="40.0" text="&lt;">
+                                           <Button layoutX="19.0" layoutY="150.0" minHeight="25.0" minWidth="40.0"
+                                                   mnemonicParsing="false" onAction="#deselectAggregate"
+                                                   prefHeight="25.0" prefWidth="40.0" text="&lt;">
                                              <VBox.margin>
                                                 <Insets right="5.0" top="5.0" />
                                              </VBox.margin>
@@ -267,13 +267,13 @@
                                        <items>
                                           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                                              <children>
-                                                <TableView fx:id="groupTableResults" layoutX="28.0" layoutY="35.0"
-                                                           prefHeight="323.0" prefWidth="622.0"
-                                                           AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                                                           AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                                                 <TableView fx:id="groupTableResults" layoutX="28.0" layoutY="35.0"
+                                                            prefHeight="323.0" prefWidth="622.0"
+                                                            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                                            AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
                                                    <columns>
-                                                      <TableColumn fx:id="groupTableResultsFieldColumn" prefWidth="75.0"
-                                                                   text="Grouping field"/>
+                                                       <TableColumn fx:id="groupTableResultsFieldColumn"
+                                                                    prefWidth="75.0" text="Grouping field"/>
                                                    </columns>
                                                    <columnResizePolicy>
                                                       <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -283,15 +283,15 @@
                                           </AnchorPane>
                                           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                                              <children>
-                                                <TableView fx:id="groupTableAggregates" editable="true" layoutX="106.0"
-                                                           layoutY="29.0" prefHeight="323.0" prefWidth="814.0"
-                                                           AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                                                           AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="0.0">
+                                                 <TableView fx:id="groupTableAggregates" editable="true" layoutX="106.0"
+                                                            layoutY="29.0" prefHeight="323.0" prefWidth="814.0"
+                                                            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                                            AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="0.0">
                                                    <columns>
-                                                      <TableColumn fx:id="groupTableAggregatesFieldColumn"
-                                                                   prefWidth="75.0" text="Aggregate field"/>
-                                                      <TableColumn fx:id="groupTableAggregatesFunctionColumn"
-                                                                   prefWidth="75.0" text="Function"/>
+                                                       <TableColumn fx:id="groupTableAggregatesFieldColumn"
+                                                                    prefWidth="75.0" text="Aggregate field"/>
+                                                       <TableColumn fx:id="groupTableAggregatesFunctionColumn"
+                                                                    prefWidth="75.0" text="Function"/>
                                                    </columns>
                                                    <columnResizePolicy>
                                                       <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -374,7 +374,49 @@
                         </SplitPane>
                      </content>
                   </Tab>
-                  <Tab text="More" />
+                   <Tab text="More">
+                       <content>
+                           <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                               <children>
+                                   <TitledPane animated="false" collapsible="false" layoutX="12.0" layoutY="10.0"
+                                               maxWidth="240.0" prefHeight="200.0" prefWidth="238.0"
+                                               text="Record selection">
+                                       <content>
+                                           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0"
+                                                       prefWidth="227.0">
+                                               <children>
+                                                   <CheckBox layoutX="12.0" layoutY="16.0" mnemonicParsing="false"
+                                                             text="Top"/>
+                                                   <Spinner layoutX="78.0" layoutY="12.0" prefHeight="25.0"
+                                                            prefWidth="133.0"/>
+                                                   <CheckBox layoutX="12.0" layoutY="45.0" mnemonicParsing="false"
+                                                             prefHeight="17.0" prefWidth="72.0" text="Distinct"/>
+                                               </children>
+                                           </AnchorPane>
+                                       </content>
+                                   </TitledPane>
+                                   <TitledPane animated="false" collapsible="false" layoutX="263.0" layoutY="10.0"
+                                               prefHeight="200.0" prefWidth="755.0" text="Query type">
+                                       <content>
+                                           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="195.0"
+                                                       prefWidth="739.0">
+                                               <children>
+                                                   <RadioButton layoutX="14.0" layoutY="14.0" mnemonicParsing="false"
+                                                                selected="true" text="Select data"/>
+                                                   <RadioButton layoutX="14.0" layoutY="41.0" mnemonicParsing="false"
+                                                                prefHeight="17.0" prefWidth="90.0" text="Create CTE"/>
+                                                   <TextField layoutX="118.0" layoutY="37.0" prefHeight="25.0"
+                                                              prefWidth="628.0"/>
+                                                   <Label layoutX="118.0" layoutY="14.0" prefHeight="17.0"
+                                                          prefWidth="145.0" text="CTE name:"/>
+                                               </children>
+                                           </AnchorPane>
+                                       </content>
+                                   </TitledPane>
+                               </children>
+                           </AnchorPane>
+                       </content>
+                   </Tab>
                   <Tab text="Union/Aliases">
                      <content>
                         <SplitPane dividerPositions="0.188646288209607" prefHeight="200.0" prefWidth="200.0">
@@ -465,9 +507,9 @@
                                     <VBox alignment="TOP_RIGHT" layoutX="246.0" minWidth="30.0" prefHeight="636.0" prefWidth="50.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="245.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                        <children>
                                           <Pane layoutX="10.0" layoutY="30.0" maxWidth="53.0" prefHeight="44.0" prefWidth="45.0" />
-                                          <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false"
-                                                  onAction="#selectOrder" prefHeight="25.0" prefWidth="40.0"
-                                                  text="&gt;">
+                                           <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false"
+                                                   onAction="#selectOrder" prefHeight="25.0" prefWidth="40.0"
+                                                   text="&gt;">
                                              <VBox.margin>
                                                 <Insets right="4.0" top="5.0" />
                                              </VBox.margin>
@@ -477,9 +519,9 @@
                                                 <Insets right="4.0" top="5.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false"
-                                                  onAction="#deselectOrder" prefHeight="25.0" prefWidth="40.0"
-                                                  text="&lt;">
+                                           <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false"
+                                                   onAction="#deselectOrder" prefHeight="25.0" prefWidth="40.0"
+                                                   text="&lt;">
                                              <VBox.margin>
                                                 <Insets right="4.0" top="5.0" />
                                              </VBox.margin>
