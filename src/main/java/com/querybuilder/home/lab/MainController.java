@@ -480,9 +480,7 @@ public class MainController {
 //            Object item = tablesView.getSelectionModel().getSelectedItem();
 //            System.out.println("Selected item: " + item);
         });
-        deleteContext.setOnAction((ActionEvent event) -> {
-            deleteTableFromSelected();
-        });
+        deleteContext.setOnAction((ActionEvent event) -> deleteTableFromSelected());
         renameContext.setOnAction((ActionEvent event) -> {
 //            System.out.println("renameContext");
 //            Object item = tablesView.getSelectionModel().getSelectedItem();
