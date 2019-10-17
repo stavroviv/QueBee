@@ -29,8 +29,7 @@ public class MainController {
     private final static String TABLES_ROOT = "TablesRoot";
     private final static String DATABASE_ROOT = "Tables";
     private static final String ORDER_DEFAULT_VALUE = "Ascending";
-    private static final String GROUP_DEFAULT_VALUE = "Count distinct";
-    private static final String TOTAL_DEFAULT_VALUE = "Sum";
+    private static final String GROUP_DEFAULT_VALUE = "Sum";
 
     @FXML
     private Button cancelButton;
@@ -131,7 +130,6 @@ public class MainController {
     private SelectedFieldsTree selectedGroupFieldsTree;
     private SelectedFieldsTree selectedConditionsTreeTable;
     private SelectedFieldsTree selectedOrderFieldsTree;
-    private SelectedFieldsTree selectedTotalsFieldsTree;
 
     private void initDatabaseTableView() {
         databaseTableView.setOnMousePressed(e -> {
@@ -153,7 +151,6 @@ public class MainController {
                         selectedGroupFieldsTree.applyChanges(c);
                         selectedConditionsTreeTable.applyChanges(c);
                         selectedOrderFieldsTree.applyChanges(c);
-                        selectedTotalsFieldsTree.applyChanges(c);
                     }
                 }
         );
@@ -162,7 +159,6 @@ public class MainController {
                     while (c.next()) {
                         selectedGroupFieldsTree.applyChangesString(c);
                         selectedOrderFieldsTree.applyChangesString(c);
-                        selectedTotalsFieldsTree.applyChangesString(c);
                     }
                 }
         );
@@ -174,12 +170,12 @@ public class MainController {
     private void initSelectedTables() {
         selectedGroupFieldsTree = new SelectedFieldsTree(tablesView, fieldTable);
         groupFieldsTree.setRoot(selectedGroupFieldsTree);
+
         selectedConditionsTreeTable = new SelectedFieldsTree(tablesView);
         conditionsTreeTable.setRoot(selectedConditionsTreeTable);
+
         selectedOrderFieldsTree = new SelectedFieldsTree(tablesView, fieldTable);
         orderFieldsTree.setRoot(selectedOrderFieldsTree);
-        selectedTotalsFieldsTree = new SelectedFieldsTree(tablesView, fieldTable);
-        totalsFieldsTree.setRoot(selectedTotalsFieldsTree);
     }
 
     private void setCellFactories() {
@@ -190,7 +186,6 @@ public class MainController {
         setCellFactory(groupFieldsTreeColumn);
         setCellFactory(conditionsTreeTableColumn);
         setCellFactory(orderFieldsTreeColumn);
-        setCellFactory(totalsFieldsTreeColumn);
     }
 
     private void addTablesRow(String parent) {
@@ -702,12 +697,14 @@ public class MainController {
         fieldsTree.getRoot().getChildren().remove(selectedItem);
     }
 
+    private void setCellSelectionEnabled(TableView<TableRow> table) {
+        table.getSelectionModel().setCellSelectionEnabled(true);
+    }
+
     private void setResultsTablesHandlers() {
         setGroupingHandlers();
         setOrderHandlers();
-        setTotalsHandlers();
     }
-
 
     @FXML
     protected void selectOrder(ActionEvent event) {
@@ -715,18 +712,8 @@ public class MainController {
     }
 
     @FXML
-    protected void selectTotal(ActionEvent event) {
-        makeSelect(totalsFieldsTree, totalGroupingResults);
-    }
-
-    @FXML
     protected void deselectOrder(ActionEvent event) {
         makeDeselect(orderTableResults, orderFieldsTree);
-    }
-
-    @FXML
-    protected void deselectTotal(ActionEvent event) {
-        makeDeselect(totalGroupingResults, totalsFieldsTree);
     }
 
     private void makeDeselect(TableView<TableRow> groupTableResults, TreeTableView<TableRow> groupFieldsTree) {
@@ -767,7 +754,9 @@ public class MainController {
         setStringColumnFactory(groupTableAggregatesFieldColumn);
 
         setCellSelectionEnabled(groupTableAggregates);
-        setComboBoxColumnFactory(groupTableAggregatesFunctionColumn, GROUP_DEFAULT_VALUE, "Count", "Max", "Min");
+        setComboBoxColumnFactory(groupTableAggregatesFunctionColumn,
+                GROUP_DEFAULT_VALUE,
+                "Average", "Count", "Count Distinct", "Min", "Max");
 
         setTreeSelectHandler(groupFieldsTree, groupTableResults);
         setResultsTableSelectHandler(groupTableResults, groupFieldsTree);
@@ -812,37 +801,5 @@ public class MainController {
 
         setComboBoxColumnFactory(orderTableResultsSortingColumn, ORDER_DEFAULT_VALUE, "Descending");
         setResultsTableSelectHandler(orderTableResults, orderFieldsTree);
-    }
-
-    @FXML
-    private TreeTableView<TableRow> totalsFieldsTree;
-    @FXML
-    private TreeTableColumn<TableRow, TableRow> totalsFieldsTreeColumn;
-
-    @FXML
-    private TableView<TableRow> totalGroupingResults;
-    @FXML
-    private TableColumn<TableRow, String> totalTableResultsFieldColumn;
-    @FXML
-    private TableColumn<TableRow, String> totalTableResultsAliasColumn;
-    @FXML
-    private TableView<TableRow> totalTotalResults;
-    @FXML
-    private TableColumn<TableRow, String> totalTotalResultsFieldColumn;
-    @FXML
-    private TableColumn<TableRow, String> totalTotalResultsExprColumn;
-
-    private void setTotalsHandlers() {
-        setCellSelectionEnabled(totalGroupingResults);
-        setTreeSelectHandler(totalsFieldsTree, totalGroupingResults);
-        setResultsTableSelectHandler(totalGroupingResults, totalsFieldsTree);
-
-        setStringColumnFactory(totalTableResultsFieldColumn);
-        setStringColumnFactory(totalTableResultsAliasColumn, true);
-        setComboBoxColumnFactory(totalTotalResultsExprColumn, ORDER_DEFAULT_VALUE, "Descending");
-    }
-
-    private void setCellSelectionEnabled(TableView<TableRow> table) {
-        table.getSelectionModel().setCellSelectionEnabled(true);
     }
 }
