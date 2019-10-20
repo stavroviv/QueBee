@@ -387,8 +387,6 @@
                                                <children>
                                                    <CheckBox layoutX="12.0" layoutY="16.0" mnemonicParsing="false"
                                                              text="Top"/>
-                                                   <Spinner layoutX="78.0" layoutY="12.0" prefHeight="25.0"
-                                                            prefWidth="133.0"/>
                                                    <CheckBox layoutX="12.0" layoutY="45.0" mnemonicParsing="false"
                                                              prefHeight="17.0" prefWidth="72.0" text="Distinct"/>
                                                </children>
@@ -540,7 +538,10 @@
                               </AnchorPane>
                               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                                  <children>
-                                    <TableView fx:id="orderTableResults" editable="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="11.0">
+                                     <TableView fx:id="orderTableResults" editable="true" prefHeight="620.0"
+                                                prefWidth="632.0" AnchorPane.bottomAnchor="0.0"
+                                                AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="89.0"
+                                                AnchorPane.topAnchor="11.0">
                                        <columns>
                                           <TableColumn fx:id="orderTableResultsFieldColumn" prefWidth="75.0" text="Field" />
                                           <TableColumn fx:id="orderTableResultsSortingColumn" prefWidth="75.0" text="Sorting" />
@@ -549,15 +550,52 @@
                                           <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                                        </columnResizePolicy>
                                     </TableView>
+                                     <VBox prefHeight="631.0" prefWidth="34.0" AnchorPane.bottomAnchor="0.0"
+                                           AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="0.0">
+                                         <children>
+                                             <Pane maxWidth="53.0" prefHeight="68.0" prefWidth="40.0">
+                                                 <VBox.margin>
+                                                     <Insets bottom="10.0"/>
+                                                 </VBox.margin>
+                                             </Pane>
+                                             <Button contentDisplay="GRAPHIC_ONLY" minHeight="25.0" minWidth="25.0"
+                                                     mnemonicParsing="false" onAction="#orderUp" prefHeight="25.0"
+                                                     prefWidth="25.0" text="Button">
+                                                 <graphic>
+                                                     <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true"
+                                                                preserveRatio="true">
+                                                         <image>
+                                                             <Image url="@../myToolWindow/moveup.png"/>
+                                                         </image>
+                                                     </ImageView>
+                                                 </graphic>
+                                                 <VBox.margin>
+                                                     <Insets bottom="5.0" left="5.0" right="5.0"/>
+                                                 </VBox.margin>
+                                             </Button>
+                                             <Button contentDisplay="GRAPHIC_ONLY" minHeight="25.0" minWidth="25.0"
+                                                     mnemonicParsing="false" onAction="#orderDown" prefHeight="25.0"
+                                                     prefWidth="25.0" text="Button">
+                                                 <graphic>
+                                                     <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true"
+                                                                preserveRatio="true">
+                                                         <image>
+                                                             <Image url="@../myToolWindow/movedown.png"/>
+                                                         </image>
+                                                     </ImageView>
+                                                 </graphic>
+                                                 <VBox.margin>
+                                                     <Insets bottom="5.0" left="5.0" right="5.0"/>
+                                                 </VBox.margin>
+                                             </Button>
+                                         </children>
+                                     </VBox>
                                  </children>
                                  <opaqueInsets>
                                     <Insets />
                                  </opaqueInsets>
                               </AnchorPane>
                            </items>
-                           <padding>
-                              <Insets right="30.0" />
-                           </padding>
                         </SplitPane>
                      </content>
                   </Tab>
@@ -606,7 +644,9 @@
                   </Tab>
                </tabs>
             </TabPane>
-            <TabPane id="cteTabPane" fx:id="cteTabPane" layoutX="981.0" layoutY="29.0" prefHeight="191.0" prefWidth="60.0" side="RIGHT" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="981.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="27.0" />
+             <TabPane id="cteTabPane" fx:id="cteTabPane" layoutX="971.0" layoutY="29.0" prefHeight="633.0"
+                      prefWidth="60.0" side="RIGHT" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0"
+                      AnchorPane.leftAnchor="991.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="27.0"/>
 
 
          </children>

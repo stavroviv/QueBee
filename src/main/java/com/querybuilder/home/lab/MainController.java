@@ -16,6 +16,8 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
@@ -94,6 +96,10 @@ public class MainController {
     private void initData() {
         initTables();
 
+        initDatabaseTableView();
+        initTreeTablesView();
+        initLinkTableView();
+
         mainTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
             cteTabPane.setVisible(newTab.getId() == null || !newTab.getId().equals("queryTabPane"));
         });
@@ -109,9 +115,6 @@ public class MainController {
                 showCTE(iii);
             }
         });
-        initDatabaseTableView();
-        initTreeTablesView();
-        initLinkTableView();
     }
 
     private void initTables() {
@@ -272,7 +275,46 @@ public class MainController {
             PlainSelect pSelect = (PlainSelect) selectBody;
             fillFromTables(pSelect);
             for (Object select : pSelect.getSelectItems()) {
-                fieldTable.getItems().add(select.toString());
+                if (select instanceof SelectExpressionItem) {
+                    fieldTable.getItems().add(select.toString());
+                    SelectExpressionItem select1 = (SelectExpressionItem) select;
+                    Expression expression1 = select1.getExpression();
+                    TableRow tableRow;
+                    if (expression1 instanceof Function) {
+                        Function expression = (Function) select1.getExpression();
+                        tableRow = new TableRow(expression.getParameters().toString());
+                        tableRow.setComboBoxValue(expression.getName());
+                    } else {
+                        tableRow = new TableRow(expression1.toString());
+                    }
+                    groupTableAggregates.getItems().add(tableRow);
+                } else {
+                    fieldTable.getItems().add(select.toString());
+                }
+
+            }
+            GroupByElement groupBy = pSelect.getGroupBy();
+            if (groupBy != null) {
+                groupBy.getGroupByExpressions().forEach(x -> {
+//                    for (TreeItem<TableRow> ddd: groupFieldsTree.getRoot().getChildren()) {
+//                        if (ddd.getValue().getName().equals(x.toString())){
+//                            makeSelect(ddd, groupFieldsTree, groupTableResults, null);
+//                        }
+//                    };
+                    TableRow tableRow = new TableRow(x.toString());
+                    groupTableResults.getItems().add(0, tableRow);
+                });
+            }
+            List<OrderByElement> orderByElements = pSelect.getOrderByElements();
+            if (orderByElements != null) {
+                orderByElements.forEach(x -> {
+                    for (TreeItem<TableRow> ddd : orderFieldsTree.getRoot().getChildren()) {
+                        if (ddd.getValue().getName().equals(x.toString())) {
+                            makeSelect(ddd, orderFieldsTree, orderTableResults, x.isAsc() ? "Ascending" : "Descending");
+                            break;
+                        }
+                    }
+                });
             }
         }
     }
@@ -683,7 +725,14 @@ public class MainController {
     }
 
     private void makeSelect(TreeTableView<TableRow> fieldsTree, TableView<TableRow> resultsTable, String defaultValue) {
-        TreeItem<TableRow> selectedItem = fieldsTree.getSelectionModel().getSelectedItem();
+        makeSelect(null, fieldsTree, resultsTable, defaultValue);
+    }
+
+    private void makeSelect(TreeItem<TableRow> selectedItem, TreeTableView<TableRow> fieldsTree, TableView<TableRow> resultsTable, String defaultValue) {
+        if (selectedItem == null) {
+            selectedItem = fieldsTree.getSelectionModel().getSelectedItem();
+        }
+
         if (selectedItem.getChildren().size() > 0) {
             return;
         }
@@ -779,6 +828,17 @@ public class MainController {
     protected void deselectAggregate(ActionEvent event) {
         makeDeselect(groupTableAggregates, groupFieldsTree);
     }
+
+    @FXML
+    protected void orderUp(ActionEvent event) {
+        System.out.println(event);
+    }
+
+    @FXML
+    protected void orderDown(ActionEvent event) {
+        System.out.println(event);
+    }
+
 
     @FXML
     private TreeTableView<TableRow> orderFieldsTree;
