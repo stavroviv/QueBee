@@ -3,10 +3,11 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.control.cell.*?>
+<?import javafx.scene.effect.ColorAdjust?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0"
-            prefWidth="900.0" stylesheets="@dark.css" xmlns="http://javafx.com/javafx/8"
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0"
+            prefWidth="900.0" stylesheets="@dark.css" xmlns="http://javafx.com/javafx/8.0.121"
             xmlns:fx="http://javafx.com/fxml/1">
 
    <children>
@@ -540,6 +541,7 @@
                               </AnchorPane>
                               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                                  <children>
+
                                     <TableView fx:id="orderTableResults" editable="true" prefHeight="620.0"
                                                prefWidth="632.0" AnchorPane.bottomAnchor="0.0"
                                                AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="89.0"
@@ -560,46 +562,46 @@
                                           <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                                        </columnResizePolicy>
                                     </TableView>
-                                    <VBox layoutX="537.0" layoutY="11.0" prefHeight="521.0" prefWidth="32.0"
-                                          AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="50.0"
-                                          AnchorPane.topAnchor="10.0">
+
+                                    <VBox alignment="TOP_RIGHT" layoutX="400.0" layoutY="11.0" maxWidth="0.0"
+                                          minWidth="0.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="571.0"
+                                          prefWidth="0.0" style="-fx-background-color: black;"
+                                          AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="565.0"
+                                          AnchorPane.rightAnchor="54.0" AnchorPane.topAnchor="10.0">
                                        <children>
-                                          <AnchorPane prefHeight="356.0" prefWidth="37.0">
-                                             <children>
-                                                <Button contentDisplay="GRAPHIC_ONLY" minHeight="25.0" minWidth="25.0"
-                                                        mnemonicParsing="false" onAction="#orderUp" prefHeight="25.0"
-                                                        prefWidth="25.0" text="Button">
-                                                   <graphic>
-                                                      <ImageView fitHeight="16.0" fitWidth="58.0" pickOnBounds="true"
-                                                                 preserveRatio="true">
-                                                         <image>
-                                                            <Image url="@../myToolWindow/moveup.png"/>
-                                                         </image>
-                                                      </ImageView>
-                                                   </graphic>
-                                                </Button>
-                                                <Button contentDisplay="GRAPHIC_ONLY" layoutY="32.0" minHeight="25.0"
-                                                        minWidth="25.0" mnemonicParsing="false" onAction="#orderDown"
-                                                        prefHeight="25.0" prefWidth="25.0" text="Button">
-                                                   <graphic>
-                                                      <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true"
-                                                                 preserveRatio="true">
-                                                         <image>
-                                                            <Image url="@../myToolWindow/movedown.png"/>
-                                                         </image>
-                                                      </ImageView>
-                                                   </graphic>
-                                                </Button>
-                                             </children>
+                                          <Button fx:id="orderUpButton" contentDisplay="GRAPHIC_ONLY" minHeight="25.0"
+                                                  minWidth="25.0" mnemonicParsing="false" onAction="#orderUp"
+                                                  prefHeight="25.0" prefWidth="25.0" text="Button">
+                                             <graphic>
+                                                <ImageView fitHeight="16.0" fitWidth="58.0" pickOnBounds="true"
+                                                           preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@../myToolWindow/moveup.png"/>
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
+                                          </Button>
+                                          <Button fx:id="orderDownButton" contentDisplay="GRAPHIC_ONLY" minHeight="25.0"
+                                                  minWidth="25.0" mnemonicParsing="false" onAction="#orderDown"
+                                                  prefHeight="25.0" prefWidth="25.0" text="Button">
+                                             <graphic>
+                                                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true"
+                                                           preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@../myToolWindow/movedown.png"/>
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
                                              <VBox.margin>
-                                                <Insets bottom="5.0"/>
+                                                <Insets top="5.0"/>
                                              </VBox.margin>
-                                             <padding>
-                                                <Insets bottom="10.0"/>
-                                             </padding>
-                                          </AnchorPane>
+                                          </Button>
                                        </children>
+                                       <effect>
+                                          <ColorAdjust/>
+                                       </effect>
                                     </VBox>
+
                                  </children>
                                  <opaqueInsets>
                                     <Insets />

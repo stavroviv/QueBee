@@ -1,6 +1,8 @@
 package com.querybuilder.home.lab;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -307,11 +309,18 @@ public class MainController {
             List<OrderByElement> orderByElements = pSelect.getOrderByElements();
             if (orderByElements != null) {
                 orderByElements.forEach(x -> {
+                    boolean selected = false;
                     for (TreeItem<TableRow> ddd : orderFieldsTree.getRoot().getChildren()) {
-                        if (ddd.getValue().getName().equals(x.toString())) {
+                        if (ddd.getValue().getName().equals(x.getExpression().toString())) {
                             makeSelect(ddd, orderFieldsTree, orderTableResults, x.isAsc() ? "Ascending" : "Descending");
+                            selected = true;
                             break;
                         }
+                    }
+                    if (!selected) {
+                        TableRow tableRow = new TableRow(x.getExpression().toString());
+                        tableRow.setComboBoxValue(x.isAsc() ? "Ascending" : "Descending");
+                        orderTableResults.getItems().add(0, tableRow);
                     }
                 });
             }
@@ -855,21 +864,23 @@ public class MainController {
         makeDeselect(groupTableAggregates, groupFieldsTree);
     }
 
+
+    @FXML
+    private Button orderUpButton;
+    @FXML
+    private Button orderDownButton;
+
     @FXML
     protected void orderUp(ActionEvent event) {
         int index = orderTableResults.getSelectionModel().getSelectedIndex();
-        // swap items
         orderTableResults.getItems().add(index - 1, orderTableResults.getItems().remove(index));
-        // select item at new position
         orderTableResults.getSelectionModel().clearAndSelect(index - 1);
     }
 
     @FXML
     protected void orderDown(ActionEvent event) {
         int index = orderTableResults.getSelectionModel().getSelectedIndex();
-        // swap items
         orderTableResults.getItems().add(index + 1, orderTableResults.getItems().remove(index));
-        // select item at new position
         orderTableResults.getSelectionModel().clearAndSelect(index + 1);
     }
 
@@ -887,11 +898,19 @@ public class MainController {
     private TableColumn<TableRow, String> orderTableResultsSortingColumn;
 
     private void setOrderHandlers() {
-        setCellSelectionEnabled(orderTableResults);
+//        setCellSelectionEnabled(orderTableResults);
         setTreeSelectHandler(orderFieldsTree, orderTableResults, ORDER_DEFAULT_VALUE);
         setStringColumnFactory(orderTableResultsFieldColumn);
 
         setComboBoxColumnFactory(orderTableResultsSortingColumn, ORDER_DEFAULT_VALUE, "Descending");
         setResultsTableSelectHandler(orderTableResults, orderFieldsTree);
+
+        // buttons
+        ReadOnlyIntegerProperty selectedIndex = orderTableResults.getSelectionModel().selectedIndexProperty();
+        orderUpButton.disableProperty().bind(selectedIndex.lessThanOrEqualTo(0));
+        orderDownButton.disableProperty().bind(Bindings.createBooleanBinding(() -> {
+            int index = selectedIndex.get();
+            return index < 0 || index + 1 >= orderTableResults.getItems().size();
+        }, selectedIndex, orderTableResults.getItems()));
     }
 }
