@@ -95,7 +95,6 @@ public class MainController {
 
     private void initData() {
         initTables();
-
         initDatabaseTableView();
         initTreeTablesView();
         initLinkTableView();
@@ -442,13 +441,32 @@ public class MainController {
     }
 
     @FXML
-    public void onClickMethod() {
+    public void okClick() {
         fillCurrentQuery();
         queryBuilder.closeForm(sQuery.toString());
     }
 
     private void fillCurrentQuery() {
+        PlainSelect selectBody = getSelectBody();
 
+        try {
+            fillOrder(selectBody);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void fillOrder(PlainSelect selectBody) {
+        List<OrderByElement> orderElements = new ArrayList<>();
+        orderTableResults.getItems().forEach(x -> {
+            OrderByElement orderByElement = new OrderByElement();
+            Column column = new Column(x.getName());
+            orderByElement.setExpression(column);
+            orderByElement.setAsc(x.getComboBoxValue().equals("Ascending"));
+            orderElements.add(orderByElement);
+
+        });
+        selectBody.setOrderByElements(orderElements);
     }
 
     @FXML
@@ -457,7 +475,7 @@ public class MainController {
     }
 
     @FXML
-    public void onCancelClickMethod(ActionEvent actionEvent) {
+    public void cancelClick(ActionEvent actionEvent) {
         queryBuilder.closeForm();
     }
 
@@ -567,23 +585,6 @@ public class MainController {
     @FXML
     private Tab linkTablesPane;
 
-    @FXML
-    protected void addLinkElement(ActionEvent event) {
-        linkTable.getItems().add(new LinkElement("", "", false, false, false, dbElements));
-    }
-
-    @FXML
-    protected void copyLinkElement(ActionEvent event) {
-        LinkElement selectedItem = linkTable.getSelectionModel().getSelectedItem();
-        linkTable.getItems().add(selectedItem.clone());
-    }
-
-    @FXML
-    protected void deleteLinkElement(ActionEvent event) {
-        LinkElement selectedItem = linkTable.getSelectionModel().getSelectedItem();
-        linkTable.getItems().remove(selectedItem);
-    }
-
     private void initLinkTableView() {
         linkTable.setEditable(true);
         linkTable.getSelectionModel().cellSelectionEnabledProperty().set(true);
@@ -646,6 +647,24 @@ public class MainController {
             }
         });
     }
+
+    @FXML
+    protected void addLinkElement(ActionEvent event) {
+        linkTable.getItems().add(new LinkElement("", "", false, false, false, dbElements));
+    }
+
+    @FXML
+    protected void copyLinkElement(ActionEvent event) {
+        LinkElement selectedItem = linkTable.getSelectionModel().getSelectedItem();
+        linkTable.getItems().add(selectedItem.clone());
+    }
+
+    @FXML
+    protected void deleteLinkElement(ActionEvent event) {
+        LinkElement selectedItem = linkTable.getSelectionModel().getSelectedItem();
+        linkTable.getItems().remove(selectedItem);
+    }
+
 
     @FXML
     private TreeTableView<TableRow> conditionsTreeTable;
@@ -765,7 +784,14 @@ public class MainController {
 
     private void makeDeselect(TableView<TableRow> groupTableResults, TreeTableView<TableRow> groupFieldsTree) {
         TableRow selectedItem = groupTableResults.getSelectionModel().getSelectedItem();
+        if (groupTableResults.getId().equals("orderTableResults")
+                && groupTableResults.getSelectionModel().getSelectedCells().get(0).getColumn() == 1) {
+            return;
+        }
         TableRow tableRow = new TableRow(selectedItem.getName());
+        if (tableRow.isNotSelectable()) {
+            return;
+        }
         TreeItem<TableRow> treeItem = new TreeItem(tableRow);
         groupFieldsTree.getRoot().getChildren().add(0, treeItem);
         groupTableResults.getItems().remove(selectedItem);
@@ -776,19 +802,19 @@ public class MainController {
         column.setCellFactory(
                 ComboBoxTableCell.forTableColumn(FXCollections.observableArrayList(items))
         );
-        column.setCellValueFactory(
-                data -> new SimpleStringProperty(data.getValue().getComboBoxValue())
-        );
+        column.setCellValueFactory(cellData -> cellData.getValue().comboBoxValueProperty());
     }
 
     @FXML
     private TreeTableView<TableRow> groupFieldsTree;
     @FXML
     private TreeTableColumn<TableRow, TableRow> groupFieldsTreeColumn;
+
     @FXML
     private TableView<TableRow> groupTableResults;
     @FXML
     private TableColumn<TableRow, String> groupTableResultsFieldColumn;
+
     @FXML
     private TableView<TableRow> groupTableAggregates;
     @FXML
@@ -831,12 +857,20 @@ public class MainController {
 
     @FXML
     protected void orderUp(ActionEvent event) {
-        System.out.println(event);
+        int index = orderTableResults.getSelectionModel().getSelectedIndex();
+        // swap items
+        orderTableResults.getItems().add(index - 1, orderTableResults.getItems().remove(index));
+        // select item at new position
+        orderTableResults.getSelectionModel().clearAndSelect(index - 1);
     }
 
     @FXML
     protected void orderDown(ActionEvent event) {
-        System.out.println(event);
+        int index = orderTableResults.getSelectionModel().getSelectedIndex();
+        // swap items
+        orderTableResults.getItems().add(index + 1, orderTableResults.getItems().remove(index));
+        // select item at new position
+        orderTableResults.getSelectionModel().clearAndSelect(index + 1);
     }
 
 

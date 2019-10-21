@@ -1,5 +1,6 @@
 package com.querybuilder.home.lab;
 
+import javafx.beans.property.SimpleStringProperty;
 import lombok.Data;
 
 @Data
@@ -8,7 +9,9 @@ public class TableRow {
     private String name;
     private String query;
     private boolean root;
-    private String comboBoxValue;
+    private boolean notSelectable;
+
+    private SimpleStringProperty comboBoxValue = new SimpleStringProperty();
 
     public TableRow(String name) {
         this(name, false);
@@ -17,6 +20,18 @@ public class TableRow {
     public TableRow(String name, boolean root) {
         this.name = name;
         this.root = root;
+    }
+
+    public String getComboBoxValue() {
+        return comboBoxValue.get();
+    }
+
+    public void setComboBoxValue(String comboBoxValue) {
+        this.comboBoxValue.set(comboBoxValue);
+    }
+
+    public SimpleStringProperty comboBoxValueProperty() {
+        return comboBoxValue;
     }
 
 }
