@@ -5,16 +5,19 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableView;
 
+import static com.querybuilder.home.lab.Constants.ALL_FIELDS;
+import static com.querybuilder.home.lab.Constants.DATABASE_ROOT;
+
 public class SelectedFieldsTree extends TreeItem<TableRow> {
     TreeItem<TableRow> allFieldsRoot;
 
     public SelectedFieldsTree(TreeTableView<TableRow> tablesView, TableView<String> fieldTable) {
-        super(new TableRow("Tables"));
+        super(new TableRow(DATABASE_ROOT));
         fieldTable.getItems().forEach(x -> {
             TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(new TableRow(x));
             this.getChildren().add(tableRowTreeItem);
         });
-        TableRow allFieldsRootRow = new TableRow("All fields");
+        TableRow allFieldsRootRow = new TableRow(ALL_FIELDS);
         allFieldsRoot = new TreeItem<>(allFieldsRootRow);
         this.getChildren().add(allFieldsRoot);
         tablesView.getRoot().getChildren().forEach(x -> {
@@ -25,7 +28,7 @@ public class SelectedFieldsTree extends TreeItem<TableRow> {
     }
 
     public SelectedFieldsTree(TreeTableView<TableRow> tablesView) {
-        super(new TableRow("Tables"));
+        super(new TableRow(DATABASE_ROOT));
         tablesView.getRoot().getChildren().forEach(x -> {
             TreeItem<TableRow> tableRowTreeItem = newTreeItem(x, true);
             this.getChildren().add(tableRowTreeItem);

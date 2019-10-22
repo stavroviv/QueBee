@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.querybuilder.home.lab.Constants.DATABASE_ROOT;
+
 public class DBStructureImpl implements DBStructure {
     private Map<String, List<String>> dbElements;
 
@@ -18,7 +20,7 @@ public class DBStructureImpl implements DBStructure {
     public TreeItem<TableRow> getDBStructure(LocalDataSource dataSource) {
         dbElements = new HashMap<>();
 
-        TableRow tablesRoot = new TableRow("Tables");
+        TableRow tablesRoot = new TableRow(DATABASE_ROOT);
         tablesRoot.setRoot(true);
         TreeItem<TableRow> root = new TreeItem<>(tablesRoot);
         root.setExpanded(true);

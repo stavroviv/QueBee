@@ -29,11 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.querybuilder.home.lab.Constants.*;
+
 public class MainController {
-    private final static String TABLES_ROOT = "TablesRoot";
-    private final static String DATABASE_ROOT = "Tables";
-    private static final String ORDER_DEFAULT_VALUE = "Ascending";
-    private static final String GROUP_DEFAULT_VALUE = "Sum";
 
     @FXML
     private Button cancelButton;
@@ -278,17 +276,21 @@ public class MainController {
             for (Object select : pSelect.getSelectItems()) {
                 if (select instanceof SelectExpressionItem) {
                     fieldTable.getItems().add(select.toString());
+
+                    // GROUPING
                     SelectExpressionItem select1 = (SelectExpressionItem) select;
                     Expression expression1 = select1.getExpression();
                     TableRow tableRow;
                     if (expression1 instanceof Function) {
                         Function expression = (Function) select1.getExpression();
-                        tableRow = new TableRow(expression.getParameters().toString());
-                        tableRow.setComboBoxValue(expression.getName());
-                    } else {
-                        tableRow = new TableRow(expression1.toString());
+                        if (expression.getParameters().getExpressions().size() == 1) {
+                            String columnName = expression.getParameters().getExpressions().get(0).toString();
+                            tableRow = new TableRow(columnName);
+                            tableRow.setComboBoxValue(expression.getName());
+                            groupTableAggregates.getItems().add(tableRow);
+                        }
                     }
-                    groupTableAggregates.getItems().add(tableRow);
+
                 } else {
                     fieldTable.getItems().add(select.toString());
                 }
@@ -764,7 +766,15 @@ public class MainController {
         if (selectedItem.getChildren().size() > 0) {
             return;
         }
-        TableRow tableRow = new TableRow(selectedItem.getValue().getName());
+        String name = selectedItem.getValue().getName();
+        TreeItem<TableRow> parent = selectedItem.getParent();
+        if (parent != null) {
+            String parentName = parent.getValue().getName();
+            if (!parentName.equals(DATABASE_ROOT)) {
+                name = parentName + "." + name;
+            }
+        }
+        TableRow tableRow = new TableRow(name);
         if (defaultValue != null) {
             tableRow.setComboBoxValue(defaultValue);
         }
@@ -837,8 +847,7 @@ public class MainController {
 
         setCellSelectionEnabled(groupTableAggregates);
         setComboBoxColumnFactory(groupTableAggregatesFunctionColumn,
-                GROUP_DEFAULT_VALUE,
-                "Average", "Count", "Count Distinct", "Min", "Max");
+                GROUP_DEFAULT_VALUE, "AVG", "COUNT", "MIN", "MAX");
 
         setTreeSelectHandler(groupFieldsTree, groupTableResults);
         setResultsTableSelectHandler(groupTableResults, groupFieldsTree);
