@@ -10,6 +10,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.ComboBoxTableCell;
@@ -96,8 +97,7 @@ public class MainController {
     private void initData() {
         initTables();
         initDatabaseTableView();
-        initTreeTablesView();
-        initLinkTableView();
+
 
         mainTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
             cteTabPane.setVisible(newTab.getId() == null || !newTab.getId().equals("queryTabPane"));
@@ -167,6 +167,10 @@ public class MainController {
         setResultsTablesHandlers();
         setCellFactory(databaseTableColumn);
         initSelectedTables();
+
+        initTreeTablesView();
+        initLinkTableView();
+        initConditionTableView();
     }
 
     private void initSelectedTables() {
@@ -682,6 +686,95 @@ public class MainController {
     @FXML
     private TreeTableColumn<TableRow, TableRow> conditionsTreeTableColumn;
 
+    @FXML
+    private TableView<ConditionElement> conditionTableResults;
+    @FXML
+    private TableColumn<ConditionElement, String> conditionTableResultsCustom;
+    @FXML
+    private TableColumn<ConditionElement, ConditionElement> conditionTableResultsCondition;
+
+    private void initConditionTableView() {
+        conditionTableResults.setEditable(true);
+        conditionTableResults.getSelectionModel().cellSelectionEnabledProperty().set(true);
+
+        conditionTableResultsCustom.setCellFactory(tc -> new CheckBoxTableCell<>());
+//        conditionTableResultsCondition.setOnEditStart(x->conditionTableResults.com);
+
+        conditionTableResultsCondition.setCellValueFactory(features -> new ReadOnlyObjectWrapper(features.getValue()));
+//        conditionTableResultsCondition.setCellFactory(CheckBoxTreeCell.<ConditionElement>forTreeView());
+
+
+        conditionTableResultsCondition.setCellFactory(column -> new TableCell<ConditionElement, ConditionElement>() {
+            //            private final ObservableList<String> comparison = FXCollections.observableArrayList("=", "<>", "<", ">", "<=", ">=");
+//            private final ComboBox<String> comparisonComboBox = new ComboBox<>(comparison);
+//            private final TextField customConditon = new TextField();
+            private final TextField customConditon = new TextField();
+            private TreeView<String> treeView;
+            private PopupControl popup;
+
+            {
+                treeView = new TreeView<>();
+                TreeItem<String> root = new TreeItem<>("root");
+                treeView.setRoot(root);
+                root.getChildren().add(new TreeItem<>("table1.column"));
+                root.getChildren().add(new TreeItem<>("table1.column22"));
+//                treeView.setMaxHeight(25);
+//                treeView.setMinHeight(25);
+
+                popup = new PopupControl();
+//                popup.getScene().setRoot(treeView);
+//                popup.getStyleClass().add("combo-box-popup");
+                popup.setAutoHide(true);
+                popup.setAutoFix(true);
+
+                popup.setHideOnEscape(true);
+//                popup.setX(500);
+//                popup.setY(400);
+                popup.setSkin(new Skin<Skinnable>() {
+                    @Override
+                    public Skinnable getSkinnable() {
+                        return null;
+                    }
+
+                    @Override
+                    public Node getNode() {
+                        return treeView;
+                    }
+
+                    @Override
+                    public void dispose() {
+                    }
+                });
+//                popup.
+                customConditon.focusedProperty().addListener((arg0, arg1, arg2) -> {
+                    if (!arg2) {
+                        commitEdit(new ConditionElement(customConditon.getText()));
+                        popup.show(customConditon, 400, 200);
+                    }
+                });
+                // configure tree view, etc
+            }
+
+            @Override
+            public void startEdit() {
+//                customConditon.setOnMouseClicked(event -> {
+                popup.show(customConditon, 0, 0);
+//                });
+            }
+
+            @Override
+            protected void updateItem(ConditionElement item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    customConditon.setText(item.getCondition());
+                    setGraphic(customConditon);
+                }
+            }
+        });
+    }
+
     /*
     INNER QUERY
      */
@@ -789,6 +882,32 @@ public class MainController {
     private void setResultsTablesHandlers() {
         setGroupingHandlers();
         setOrderHandlers();
+        setConditionHandlers();
+    }
+
+    private void setConditionHandlers() {
+        conditionsTreeTable.setOnMousePressed(e -> {
+            if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
+                TreeItem<TableRow> selectedItem = conditionsTreeTable.getSelectionModel().getSelectedItem();
+                if (selectedItem == null) {
+                    return;
+                }
+                if (selectedItem.getChildren().size() > 0) {
+                    return;
+                }
+                String name = selectedItem.getValue().getName();
+                TreeItem<TableRow> parent = selectedItem.getParent();
+                if (parent != null) {
+                    String parentName = parent.getValue().getName();
+                    if (!parentName.equals(DATABASE_ROOT)) {
+                        name = parentName + "." + name;
+                    }
+                }
+                ConditionElement tableRow = new ConditionElement(name);
+                conditionTableResults.getItems().add(0, tableRow);
+                conditionsTreeTable.getRoot().getChildren().remove(selectedItem);
+            }
+        });
     }
 
     @FXML
