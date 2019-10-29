@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.querybuilder.home.lab.Constants.*;
+import static javafx.scene.control.TreeTableView.CONSTRAINED_RESIZE_POLICY;
 
 public class MainController {
 
@@ -129,10 +130,6 @@ public class MainController {
     @FXML
     private TreeTableColumn<TableRow, TableRow> databaseTableColumn;
 
-    private SelectedFieldsTree selectedGroupFieldsTree;
-    private SelectedFieldsTree selectedConditionsTreeTable;
-    private SelectedFieldsTree selectedOrderFieldsTree;
-
     private void initDatabaseTableView() {
         databaseTableView.setOnMousePressed(e -> {
             if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
@@ -152,6 +149,7 @@ public class MainController {
                     while (c.next()) {
                         selectedGroupFieldsTree.applyChanges(c);
                         selectedConditionsTreeTable.applyChanges(c);
+                        selectedConditionsTreeTable2.applyChanges(c);
                         selectedOrderFieldsTree.applyChanges(c);
                     }
                 }
@@ -173,12 +171,26 @@ public class MainController {
         initConditionTableView();
     }
 
+    private SelectedFieldsTree selectedGroupFieldsTree;
+    private SelectedFieldsTree selectedConditionsTreeTable;
+    private SelectedFieldsTree selectedConditionsTreeTable2;
+    private SelectedFieldsTree selectedOrderFieldsTree;
+
     private void initSelectedTables() {
         selectedGroupFieldsTree = new SelectedFieldsTree(tablesView, fieldTable);
         groupFieldsTree.setRoot(selectedGroupFieldsTree);
 
         selectedConditionsTreeTable = new SelectedFieldsTree(tablesView);
         conditionsTreeTable.setRoot(selectedConditionsTreeTable);
+
+        conditionsTreeTable2 = new TreeTableView<>();
+        conditionsTreeTable2.setShowRoot(false);
+        conditionsTreeTable2.setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
+
+        conditionsTreeTableColumn2 = new TreeTableColumn<>();
+        conditionsTreeTable2.getColumns().add(conditionsTreeTableColumn2);
+        selectedConditionsTreeTable2 = new SelectedFieldsTree(tablesView);
+        conditionsTreeTable2.setRoot(selectedConditionsTreeTable2);
 
         selectedOrderFieldsTree = new SelectedFieldsTree(tablesView, fieldTable);
         orderFieldsTree.setRoot(selectedOrderFieldsTree);
@@ -191,6 +203,7 @@ public class MainController {
         // tree columns
         setCellFactory(groupFieldsTreeColumn);
         setCellFactory(conditionsTreeTableColumn);
+        setCellFactory(conditionsTreeTableColumn2);
         setCellFactory(orderFieldsTreeColumn);
     }
 
@@ -683,8 +696,10 @@ public class MainController {
 
     @FXML
     private TreeTableView<TableRow> conditionsTreeTable;
+    private TreeTableView<TableRow> conditionsTreeTable2;
     @FXML
     private TreeTableColumn<TableRow, TableRow> conditionsTreeTableColumn;
+    private TreeTableColumn<TableRow, TableRow> conditionsTreeTableColumn2;
 
     @FXML
     private TableView<ConditionElement> conditionTableResults;
@@ -721,45 +736,7 @@ public class MainController {
 //                treeView.setMaxHeight(25);
 //                treeView.setMinHeight(25);
 
-                popup = new PopupControl();
-//                popup.getScene().setRoot(treeView);
-//                popup.getStyleClass().add("combo-box-popup");
-                popup.setAutoHide(true);
-                popup.setAutoFix(true);
 
-                popup.setHideOnEscape(true);
-//                popup.setX(500);
-//                popup.setY(400);
-                popup.setSkin(new Skin<Skinnable>() {
-                    @Override
-                    public Skinnable getSkinnable() {
-                        return null;
-                    }
-
-                    @Override
-                    public Node getNode() {
-                        return treeView;
-                    }
-
-                    @Override
-                    public void dispose() {
-                    }
-                });
-//                popup.
-                customConditon.focusedProperty().addListener((arg0, arg1, arg2) -> {
-                    if (!arg2) {
-                        commitEdit(new ConditionElement(customConditon.getText()));
-                        popup.show(customConditon, 400, 200);
-                    }
-                });
-                // configure tree view, etc
-            }
-
-            @Override
-            public void startEdit() {
-//                customConditon.setOnMouseClicked(event -> {
-                popup.show(customConditon, 0, 0);
-//                });
             }
 
             @Override
@@ -768,8 +745,44 @@ public class MainController {
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    customConditon.setText(item.getCondition());
-                    setGraphic(customConditon);
+                    HBox pane = new HBox();
+                    String condition1 = item.getCondition();
+                    Button but = new Button(condition1);
+                    pane.getChildren().add(but);
+                    Button but2 = new Button("=");
+                    pane.getChildren().add(but2);
+                    Button but3 = new Button("?");
+                    pane.getChildren().add(but3);
+                    setGraphic(pane);
+                    but.setOnMouseClicked(event -> {
+                        PopupControl popup = new PopupControl();
+                        popup.setAutoHide(true);
+                        popup.setAutoFix(true);
+
+                        popup.setHideOnEscape(true);
+
+                        popup.setSkin(new Skin<Skinnable>() {
+                            @Override
+                            public Skinnable getSkinnable() {
+                                return null;
+                            }
+
+                            @Override
+                            public Node getNode() {
+                                HBox pane = new HBox();
+                                pane.getChildren().add(conditionsTreeTable2);
+                                return pane;
+                            }
+
+                            @Override
+                            public void dispose() {
+                            }
+                        });
+//                        Bounds bounds = popup.getSkin().getNode().getBoundsInParent();
+//                        Bounds bounds = this.localToScene(this.getBoundsInLocal());
+                        popup.show(this, event.getScreenX(), event.getScreenY());
+//                        System.out.println("" + bounds.getMinX() + " " + bounds.getMinY());
+                    });
                 }
             }
         });
