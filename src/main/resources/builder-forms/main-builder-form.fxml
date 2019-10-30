@@ -362,10 +362,9 @@
                                                AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="10.0"
                                                AnchorPane.topAnchor="30.0">
                                        <columns>
-                                          <TableColumn maxWidth="100.0" minWidth="0.0" prefWidth="41.0" text="Number"/>
                                           <TableColumn fx:id="conditionTableResultsCustom" maxWidth="115.0"
-                                                       minWidth="60.0" prefWidth="74.0" text="Custom"/>
-                                          <TableColumn fx:id="conditionTableResultsCondition" prefWidth="75.0"
+                                                       minWidth="26.0" prefWidth="71.0" text="Custom"/>
+                                          <TableColumn fx:id="conditionTableResultsCondition" prefWidth="589.0"
                                                        text="Condition"/>
                                        </columns>
                                        <columnResizePolicy>
