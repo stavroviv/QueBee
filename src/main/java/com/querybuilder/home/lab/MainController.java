@@ -155,7 +155,7 @@ public class MainController {
                     while (c.next()) {
                         selectedGroupFieldsTree.applyChanges(c);
                         selectedConditionsTreeTable.applyChanges(c);
-                        selectedConditionsTreeTable2.applyChanges(c);
+                        selectedConditionsTreeTableContext.applyChanges(c);
                         selectedOrderFieldsTree.applyChanges(c);
                     }
                 }
@@ -179,7 +179,7 @@ public class MainController {
 
     private SelectedFieldsTree selectedGroupFieldsTree;
     private SelectedFieldsTree selectedConditionsTreeTable;
-    private SelectedFieldsTree selectedConditionsTreeTable2;
+    private SelectedFieldsTree selectedConditionsTreeTableContext;
     private SelectedFieldsTree selectedOrderFieldsTree;
 
     private void initSelectedTables() {
@@ -196,15 +196,15 @@ public class MainController {
     }
 
     private void initConditionTableForPopup() {
-        conditionsTreeTable2 = new TreeTableView<>();
-        conditionsTreeTable2.setShowRoot(false);
-        conditionsTreeTable2.setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
-        conditionsTreeTableColumn2 = new TreeTableColumn<>();
-        conditionsTreeTable2.getColumns().add(conditionsTreeTableColumn2);
-        selectedConditionsTreeTable2 = new SelectedFieldsTree(tablesView);
-        conditionsTreeTable2.setRoot(selectedConditionsTreeTable2);
-        conditionsTreeTable2.widthProperty().addListener((ov, t, t1) -> {
-            Pane header = (Pane) conditionsTreeTable2.lookup("TableHeaderRow");
+        conditionsTreeTableContext = new TreeTableView<>();
+        conditionsTreeTableContext.setShowRoot(false);
+        conditionsTreeTableContext.setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
+        conditionsTreeTableContextColumn = new TreeTableColumn<>();
+        conditionsTreeTableContext.getColumns().add(conditionsTreeTableContextColumn);
+        selectedConditionsTreeTableContext = new SelectedFieldsTree(tablesView);
+        conditionsTreeTableContext.setRoot(selectedConditionsTreeTableContext);
+        conditionsTreeTableContext.widthProperty().addListener((ov, t, t1) -> {
+            Pane header = (Pane) conditionsTreeTableContext.lookup("TableHeaderRow");
             if (header != null && header.isVisible()) {
                 header.setMaxHeight(0);
                 header.setMinHeight(0);
@@ -213,11 +213,18 @@ public class MainController {
                 header.setManaged(false);
             }
         });
-        conditionsTreeTable2.setOnMousePressed(e -> {
+        conditionsTreeTableContext.setOnMousePressed(e -> {
             if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
-                TreeItem<TableRow> item = conditionsTreeTable2.getSelectionModel().getSelectedItem();
+                TreeItem<TableRow> item = conditionsTreeTableContext.getSelectionModel().getSelectedItem();
+                String parentName = item.getParent().getValue().getName();
+                if (DATABASE_ROOT.equals(parentName)) {
+                    return;
+                }
                 ConditionElement conditionElement = conditionTableResults.getSelectionModel().getSelectedItem();
-                conditionElement.setCondition(item.getValue().getName());
+                String name = parentName + "." + item.getValue().getName();
+                conditionElement.setCondition(name);
+                conditionPopup.hide();
+                conditionTableResults.refresh();
             }
         });
     }
@@ -229,7 +236,7 @@ public class MainController {
         // tree columns
         setCellFactory(groupFieldsTreeColumn);
         setCellFactory(conditionsTreeTableColumn);
-        setCellFactory(conditionsTreeTableColumn2);
+        setCellFactory(conditionsTreeTableContextColumn);
         setCellFactory(orderFieldsTreeColumn);
     }
 
@@ -722,41 +729,59 @@ public class MainController {
 
     @FXML
     private TreeTableView<TableRow> conditionsTreeTable;
-    private TreeTableView<TableRow> conditionsTreeTable2;
+    private TreeTableView<TableRow> conditionsTreeTableContext;
     @FXML
     private TreeTableColumn<TableRow, TableRow> conditionsTreeTableColumn;
-    private TreeTableColumn<TableRow, TableRow> conditionsTreeTableColumn2;
+    private TreeTableColumn<TableRow, TableRow> conditionsTreeTableContextColumn;
 
     @FXML
     private TableView<ConditionElement> conditionTableResults;
     @FXML
-    private TableColumn<ConditionElement, String> conditionTableResultsCustom;
+    private TableColumn<ConditionElement, Boolean> conditionTableResultsCustom;
     @FXML
     private TableColumn<ConditionElement, ConditionElement> conditionTableResultsCondition;
 
     private void initConditionTableView() {
+        conditionPopup = new PopupControl();
+
         conditionTableResults.setEditable(true);
         conditionTableResults.getSelectionModel().cellSelectionEnabledProperty().set(true);
+
+        conditionTableResultsCustom.setCellFactory(column -> new CheckBoxTableCell<>());
+        conditionTableResultsCustom.setCellValueFactory(cellData -> {
+            ConditionElement cellValue = cellData.getValue();
+            BooleanProperty property = cellValue.customProperty();
+            property.addListener((observable, oldValue, newValue) -> {
+                cellValue.setCustom(newValue);
+                conditionTableResults.refresh();
+            });
+            return property;
+        });
 
         conditionTableResultsCustom.setCellFactory(tc -> new CheckBoxTableCell<>());
         conditionTableResultsCondition.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue()));
         conditionTableResultsCondition.setCellFactory(column -> new TableCell<ConditionElement, ConditionElement>() {
             private final ObservableList<String> comparison = FXCollections.observableArrayList("=", "<>", "<", ">", "<=", ">=");
             private final ComboBox<String> comparisonComboBox = new ComboBox<>(comparison);
+            private final TextField customConditon = new TextField();
 
             @Override
             protected void updateItem(ConditionElement item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty) {
                     setGraphic(null);
+                } else if (item.isCustom()) {
+                    customConditon.setText(item.getCondition());
+                    setGraphic(customConditon);
                 } else {
                     HBox pane = new HBox();
                     String condition1 = item.getCondition();
 
                     Button but = new Button(condition1);
+                    but.setMnemonicParsing(false);
                     but.setAlignment(Pos.CENTER_LEFT);
                     but.prefWidthProperty().bind(pane.widthProperty());
-                    but.setOnMouseClicked(event -> showPopup(event, this));
+                    but.setOnMouseClicked(event -> showPopup(event, this, item));
                     pane.getChildren().add(but);
 
                     comparisonComboBox.setMinWidth(70);
@@ -771,8 +796,29 @@ public class MainController {
         });
     }
 
-    private void showPopup(MouseEvent event, TableCell<ConditionElement, ConditionElement> cell) {
-        PopupControl conditionPopup = new PopupControl();
+    @FXML
+    public void addCondition() {
+        conditionTableResults.getItems().add(new ConditionElement(""));
+    }
+
+    @FXML
+    public void deleteCondition() {
+        ConditionElement selectedItem = conditionTableResults.getSelectionModel().getSelectedItem();
+        conditionTableResults.getItems().remove(selectedItem);
+    }
+
+    @FXML
+    public void copyCondition() {
+        ConditionElement selectedItem = conditionTableResults.getSelectionModel().getSelectedItem();
+        ConditionElement conditionElement = new ConditionElement("");
+        conditionElement.setName(selectedItem.getName());
+        conditionTableResults.getItems().add(conditionElement);
+    }
+
+    private PopupControl conditionPopup;
+
+    private void showPopup(MouseEvent event, TableCell<ConditionElement, ConditionElement> cell, ConditionElement item) {
+//        conditionPopup = new PopupControl();
         conditionPopup.setAutoHide(true);
         conditionPopup.setAutoFix(true);
         conditionPopup.setHideOnEscape(true);
@@ -800,9 +846,9 @@ public class MainController {
 
             @Override
             public Node getNode() {
-                conditionsTreeTable2.setMinWidth(targetButton.getWidth());
-                conditionsTreeTable2.setMaxWidth(targetButton.getWidth());
-                return conditionsTreeTable2;
+                conditionsTreeTableContext.setMinWidth(targetButton.getWidth());
+                conditionsTreeTableContext.setMaxWidth(targetButton.getWidth());
+                return conditionsTreeTableContext;
             }
 
             @Override
@@ -810,6 +856,7 @@ public class MainController {
             }
         });
         conditionPopup.show(cell, clickX, clickY + targetButton.getHeight());
+        conditionTableResults.getSelectionModel().select(item);
     }
 
     /*
