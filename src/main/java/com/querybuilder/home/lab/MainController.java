@@ -26,10 +26,14 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 
 import java.util.ArrayList;
@@ -104,7 +108,6 @@ public class MainController {
     private void initData() {
         initTables();
         initDatabaseTableView();
-
 
         mainTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
             cteTabPane.setVisible(newTab.getId() == null || !newTab.getId().equals("queryTabPane"));
@@ -358,24 +361,55 @@ public class MainController {
                     groupTableResults.getItems().add(0, tableRow);
                 });
             }
-            List<OrderByElement> orderByElements = pSelect.getOrderByElements();
-            if (orderByElements != null) {
-                orderByElements.forEach(x -> {
-                    boolean selected = false;
-                    for (TreeItem<TableRow> ddd : orderFieldsTree.getRoot().getChildren()) {
-                        if (ddd.getValue().getName().equals(x.getExpression().toString())) {
-                            makeSelect(ddd, orderFieldsTree, orderTableResults, x.isAsc() ? "Ascending" : "Descending");
-                            selected = true;
-                            break;
-                        }
+            loadOrderBy(pSelect);
+            loadConditions(pSelect);
+        }
+    }
+
+    private void loadConditions(PlainSelect pSelect) {
+        Expression where = pSelect.getWhere();
+        if (where instanceof AndExpression) {
+            parseAndExpression((AndExpression) where);
+        } else {
+            ConditionElement conditionElement = new ConditionElement(where.toString());
+            conditionElement.setCustom(true);
+            conditionTableResults.getItems().add(conditionElement);
+        }
+    }
+
+    private void parseAndExpression(AndExpression where) {
+        ConditionElement conditionElement = new ConditionElement(where.getRightExpression().toString());
+        conditionTableResults.getItems().add(conditionElement);
+
+        Expression leftExpression = where.getLeftExpression();
+        while (leftExpression instanceof AndExpression) {
+            AndExpression left = (AndExpression) leftExpression;
+            ConditionElement condition = new ConditionElement(left.getRightExpression().toString());
+            conditionTableResults.getItems().add(condition);
+            leftExpression = left.getLeftExpression();
+        }
+        ConditionElement condition = new ConditionElement(leftExpression.toString());
+        conditionTableResults.getItems().add(condition);
+    }
+
+    private void loadOrderBy(PlainSelect pSelect) {
+        List<OrderByElement> orderByElements = pSelect.getOrderByElements();
+        if (orderByElements != null) {
+            orderByElements.forEach(x -> {
+                boolean selected = false;
+                for (TreeItem<TableRow> ddd : orderFieldsTree.getRoot().getChildren()) {
+                    if (ddd.getValue().getName().equals(x.getExpression().toString())) {
+                        makeSelect(ddd, orderFieldsTree, orderTableResults, x.isAsc() ? "Ascending" : "Descending");
+                        selected = true;
+                        break;
                     }
-                    if (!selected) {
-                        TableRow tableRow = new TableRow(x.getExpression().toString());
-                        tableRow.setComboBoxValue(x.isAsc() ? "Ascending" : "Descending");
-                        orderTableResults.getItems().add(0, tableRow);
-                    }
-                });
-            }
+                }
+                if (!selected) {
+                    TableRow tableRow = new TableRow(x.getExpression().toString());
+                    tableRow.setComboBoxValue(x.isAsc() ? "Ascending" : "Descending");
+                    orderTableResults.getItems().add(0, tableRow);
+                }
+            });
         }
     }
 
@@ -512,9 +546,22 @@ public class MainController {
 
         try {
             fillOrder(selectBody);
+            fillConditions(selectBody);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void fillConditions(PlainSelect selectBody) throws JSQLParserException {
+        StringBuilder where = new StringBuilder();
+        for (ConditionElement items : conditionTableResults.getItems()) {
+            where.append(items.getCondition()).append(" AND ");
+        }
+        Statement stmt = CCJSqlParserUtil.parse(
+                "SELECT * FROM TABLES WHERE " + where.substring(0, where.length() - 4)
+        );
+        Select select = (Select) stmt;
+        selectBody.setWhere(((PlainSelect) select.getSelectBody()).getWhere());
     }
 
     private void fillOrder(PlainSelect selectBody) {
@@ -777,7 +824,14 @@ public class MainController {
                     HBox pane = new HBox();
                     String condition1 = item.getCondition();
 
-                    Button but = new Button(condition1);
+                    String[] array = condition1.split("[>=<=<>]+");
+                    String buttonName = condition1;
+                    if (array.length == 2) {
+                        buttonName = array[0];
+                        comparisonComboBox.setValue(condition1.replace(array[0], "").replace(array[1], ""));
+                    }
+
+                    Button but = new Button(buttonName);
                     but.setMnemonicParsing(false);
                     but.setAlignment(Pos.CENTER_LEFT);
                     but.prefWidthProperty().bind(pane.widthProperty());
