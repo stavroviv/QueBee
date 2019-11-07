@@ -225,7 +225,7 @@ public class MainController {
                 }
                 ConditionElement conditionElement = conditionTableResults.getSelectionModel().getSelectedItem();
                 String name = parentName + "." + item.getValue().getName();
-                conditionElement.setCondition(name);
+                conditionElement.setLeftExpression(name);
                 conditionPopup.hide();
                 conditionTableResults.refresh();
             }
@@ -554,8 +554,12 @@ public class MainController {
 
     private void fillConditions(PlainSelect selectBody) throws JSQLParserException {
         StringBuilder where = new StringBuilder();
-        for (ConditionElement items : conditionTableResults.getItems()) {
-            where.append(items.getCondition()).append(" AND ");
+        for (ConditionElement item : conditionTableResults.getItems()) {
+            String whereExpr = item.getCondition();
+            if (whereExpr.isEmpty()) {
+                whereExpr = item.getLeftExpression() + item.getExpression() + item.getRightExpression();
+            }
+            where.append(whereExpr).append(" AND ");
         }
         Statement stmt = CCJSqlParserUtil.parse(
                 "SELECT * FROM TABLES WHERE " + where.substring(0, where.length() - 4)
@@ -805,45 +809,74 @@ public class MainController {
             return property;
         });
 
-        conditionTableResultsCustom.setCellFactory(tc -> new CheckBoxTableCell<>());
-        conditionTableResultsCondition.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue()));
+        conditionTableResultsCondition.setCellValueFactory(column -> new ReadOnlyObjectWrapper<>(column.getValue()));
         conditionTableResultsCondition.setCellFactory(column -> new TableCell<ConditionElement, ConditionElement>() {
-            private final ObservableList<String> comparison = FXCollections.observableArrayList("=", "<>", "<", ">", "<=", ">=");
-            private final ComboBox<String> comparisonComboBox = new ComboBox<>(comparison);
-            private final TextField customConditon = new TextField();
+
+            private final ComboBox<String> comparisonComboBox = new ComboBox<>(
+                    FXCollections.observableArrayList("=", "<>", "<", ">", "<=", ">=")
+            );
+            private final TextField customCondition = new TextField();
 
             @Override
             protected void updateItem(ConditionElement item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty) {
+                if (empty || item == null) {
                     setGraphic(null);
                 } else if (item.isCustom()) {
-                    customConditon.setText(item.getCondition());
-                    setGraphic(customConditon);
+                    if (item.getCondition().isEmpty()) {
+                        String cond = item.getLeftExpression() + item.getExpression() + item.getRightExpression();
+                        item.setCondition(cond);
+                        item.setLeftExpression("");
+                        item.setExpression("");
+                        item.setRightExpression("");
+                    }
+                    customCondition.setText(item.getCondition());
+                    customCondition.textProperty().addListener(
+                            (observable, oldValue, newValue) -> {
+                                item.setCondition(newValue);
+                            });
+                    setGraphic(customCondition);
                 } else {
                     HBox pane = new HBox();
                     String condition1 = item.getCondition();
-
-                    String[] array = condition1.split("[>=<=<>]+");
-                    String buttonName = condition1;
-                    if (array.length == 2) {
-                        buttonName = array[0];
-                        comparisonComboBox.setValue(condition1.replace(array[0], "").replace(array[1], ""));
+                    if (!condition1.isEmpty()) {
+                        String[] array = condition1.split("[>=<=<>]+");
+                        String leftExpresion = condition1;
+                        String expression = "=";
+                        String rightExpression = "?";
+                        if (array.length == 2) {
+                            leftExpresion = array[0];
+                            expression = condition1.replace(array[0], "").replace(array[1], "");
+                            comparisonComboBox.setValue(expression);
+                            rightExpression = array[1];
+                        }
+                        item.setLeftExpression(leftExpresion);
+                        item.setExpression(expression);
+                        item.setRightExpression(rightExpression);
+                        item.setCondition("");
                     }
 
-                    Button but = new Button(buttonName);
-                    but.setMnemonicParsing(false);
-                    but.setAlignment(Pos.CENTER_LEFT);
-                    but.prefWidthProperty().bind(pane.widthProperty());
-                    but.setOnMouseClicked(event -> showPopup(event, this, item));
-                    pane.getChildren().add(but);
+                    Button leftPart = new Button(item.getLeftExpression());
+                    leftPart.setMnemonicParsing(false);
+                    leftPart.setAlignment(Pos.CENTER_LEFT);
+                    leftPart.prefWidthProperty().bind(pane.widthProperty());
+                    leftPart.setOnMouseClicked(event -> showPopup(event, this, item));
+                    pane.getChildren().add(leftPart);
 
                     comparisonComboBox.setMinWidth(70);
+                    comparisonComboBox.setValue(item.getExpression());
+                    comparisonComboBox.valueProperty().addListener(
+                            (observable, oldValue, newValue) -> item.setExpression(newValue)
+                    );
                     pane.getChildren().add(comparisonComboBox);
 
-                    Button but3 = new Button("?");
-                    but3.prefWidthProperty().bind(pane.widthProperty());
-                    pane.getChildren().add(but3);
+                    TextField rightPart = new TextField(item.getRightExpression());
+                    rightPart.textProperty().addListener(
+                            (observable, oldValue, newValue) -> item.setRightExpression(newValue)
+                    );
+                    rightPart.prefWidthProperty().bind(pane.widthProperty());
+                    pane.getChildren().add(rightPart);
+
                     setGraphic(pane);
                 }
             }
@@ -872,7 +905,6 @@ public class MainController {
     private PopupControl conditionPopup;
 
     private void showPopup(MouseEvent event, TableCell<ConditionElement, ConditionElement> cell, ConditionElement item) {
-//        conditionPopup = new PopupControl();
         conditionPopup.setAutoHide(true);
         conditionPopup.setAutoFix(true);
         conditionPopup.setHideOnEscape(true);

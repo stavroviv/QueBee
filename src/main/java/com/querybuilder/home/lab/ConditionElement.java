@@ -3,27 +3,24 @@ package com.querybuilder.home.lab;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.control.ComboBox;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@Data
+@EqualsAndHashCode(callSuper = false)
 public class ConditionElement extends TableRow {
     private BooleanProperty custom = new SimpleBooleanProperty();
     private String condition;
     private ComboBox<String> conditionComboBox1;
 
+    private String leftExpression;
+    private String expression;
+    private String rightExpression;
+
     public ConditionElement(String name) {
         super(name);
         condition = name;
     }
-
-//    public ConditionElement(String table1, String table2, boolean allTable1, boolean allTable2, boolean custom, Map<String, List<String>> dbElements) {
-//        setTable1(table1);
-//        setTable2(table2);
-//        setAllTable1(allTable1);
-//        setAllTable2(allTable2);
-//        setCustom(custom);
-//        setConditionComboBox1(new ComboBox<>());
-//        setConditionComboBox2(new ComboBox<>());
-//        this.dbElements = dbElements;
-//    }
 
     public ComboBox<String> getConditionComboBox1() {
         return conditionComboBox1;
