@@ -439,11 +439,12 @@
                            <items>
                               <AnchorPane>
                                  <children>
-                                    <TableView fx:id="unionTable" prefHeight="671.0" prefWidth="200.0"
+                                    <TableView fx:id="unionTable" editable="true" prefHeight="671.0" prefWidth="200.0"
                                                AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0"
                                                AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
                                        <columns>
-                                          <TableColumn fx:id="unionTableNameColumn" prefWidth="75.0" text="Name"/>
+                                          <TableColumn fx:id="unionTableNameColumn" editable="false" prefWidth="75.0"
+                                                       text="Name"/>
                                           <TableColumn fx:id="unionTableDistinctColumn" maxWidth="60.0" minWidth="60.0"
                                                        prefWidth="60.0" text="Distinct"/>
                                        </columns>
@@ -484,7 +485,7 @@
                               </AnchorPane>
                               <AnchorPane>
                                  <children>
-                                    <TableView fx:id="aliasTable" prefHeight="671.0" prefWidth="810.0"
+                                    <TableView fx:id="aliasTable" editable="true" prefHeight="671.0" prefWidth="810.0"
                                                AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                                                AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="30.0">
                                        <columns>
@@ -664,9 +665,11 @@
                   </Tab>
                </tabs>
             </TabPane>
-            <TabPane id="cteTabPane" fx:id="cteTabPane" layoutX="971.0" layoutY="29.0" prefHeight="633.0"
-                     prefWidth="60.0" side="RIGHT" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0"
-                     AnchorPane.leftAnchor="991.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="27.0"/>
+            <TabPane id="cteTabPane" fx:id="cteTabPane" layoutX="860.0" layoutY="29.0" prefHeight="583.0"
+                     prefWidth="40.0" side="RIGHT" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0"
+                     AnchorPane.leftAnchor="860.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="27.0"/>
+            <TabPane id="cteTabPane" fx:id="cteTabPane" layoutX="870.0" layoutY="39.0" prefHeight="583.0"
+                     prefWidth="40.0" side="RIGHT" tabClosingPolicy="UNAVAILABLE"/>
 
 
          </children>

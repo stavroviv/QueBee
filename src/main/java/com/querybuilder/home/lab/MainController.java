@@ -57,8 +57,11 @@ public class MainController {
     private TabPane mainTabPane;
     @FXML
     private TableColumn<String, String> fieldColumn;
+
     @FXML
     private TabPane cteTabPane;
+    @FXML
+    private TabPane unionTabPane;
 
     private Select sQuery;
 
@@ -76,7 +79,7 @@ public class MainController {
     @FXML
     private TableColumn<String, String> queryCteColumn;
     private Map<String, Integer> withItemMap;
-
+    private Map<String, Integer> unionItemMap;
 
     protected QueryBuilder queryBuilder;
     private Map<String, List<String>> dbElements;
@@ -89,14 +92,14 @@ public class MainController {
     }
 
     public void init(Select sQuery) {
+        this.withItemMap = new HashMap<>();
+        this.unionItemMap = new HashMap<>();
         if (this.sQuery != null) {
             this.sQuery = sQuery;
-            this.withItemMap = new HashMap<>();
             reloadData();
             return;
         }
         this.sQuery = sQuery;
-        this.withItemMap = new HashMap<>();
     }
 
     public void initialize() {
@@ -114,14 +117,29 @@ public class MainController {
         setCellFactories();
         reloadData();
         cteTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
-            if (newTab == null) {
-                return;
-            }
-            Integer iii = withItemMap.get(newTab.getId());
-            if (iii != null) {
-                showCTE(iii);
-            }
+//            if (newTab == null) {
+//                return;
+//            }
+//            Integer iii = withItemMap.get(newTab.getId());
+//            if (iii != null) {
+//                showCTE(iii, 0);
+//            }
+            showCteUnion(newTab.getId(), "");
         });
+        unionTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
+//            if (newTab == null) {
+//                return;
+//            }
+//            Integer iii = unionItemMap.get(newTab.getId());
+//            if (iii != null) {
+//                showCTE(iii, iii);
+//            }
+            showCteUnion("", newTab.getId());
+        });
+    }
+
+    private void showCteUnion(String cteId, String unionId) {
+        showCTE(withItemMap.get(cteId), unionItemMap.get(unionId));
     }
 
     private void initTables() {
@@ -283,9 +301,11 @@ public class MainController {
         queryCteTable.getItems().clear();
         List<WithItem> withItemsList = sQuery.getWithItemsList();
         if (withItemsList == null) {
-            showCTE(0);
+            showCTE(0, 0);
             return;
         }
+
+        // CTE
         int i = 0;
         for (WithItem x : withItemsList) {
             String cteName = x.getName();
@@ -295,6 +315,16 @@ public class MainController {
             withItemMap.put(cteName, i);
             i++;
         }
+
+        // Current unions
+//        for (WithItem x : withItemsList) {
+//            String unionName = x.getName();
+//            Tab tab = new Tab(cteName);
+//            tab.setId(cteName);
+//            unionTabPane.getTabs().add(tab);
+//            withItemMap.put(cteName, i);
+//            i++;
+//        }
         String cteName = "Query of CTE " + (withItemsList.size() + 1);
         Tab tab = new Tab(cteName);
         tab.setId(cteName);
@@ -302,10 +332,10 @@ public class MainController {
         cteTabPane.getSelectionModel().select(0);
         withItemMap.put(cteName, i);
         queryCteTable.getItems().addAll(withItemMap.keySet());
-        showCTE(0);
+        showCTE(0, 0);
     }
 
-    private void showCTE(int cteNumber) {
+    private void showCTE(int cteNumber, int unionNumber) {
         clearTables();
         Object selectBody;
         if (sQuery.getWithItemsList() == null || cteNumber == sQuery.getWithItemsList().size()) {
@@ -316,24 +346,26 @@ public class MainController {
 
         if (selectBody instanceof SetOperationList) {
             SetOperationList setOperationList = (SetOperationList) selectBody;
-            List selects = setOperationList.getSelects();
-            int i = 1;
-            for (Object select : selects) {
-                if (select instanceof PlainSelect) {
-                    loadSelectData((PlainSelect) select, i);
-                } else if (select instanceof SelectExpressionItem) {
-                    fieldTable.getItems().add(select.toString());
-//                    aliasTable.getItems().add(newAliasItem(select));
-                }
-                i++;
-            }
+            SelectBody selectBody1 = setOperationList.getSelects().get(unionNumber);
+            loadSelectData((PlainSelect) selectBody1);
+//            int i = 1;
+//            for (Object select : selects) {
+//                if (select instanceof PlainSelect) {
+//                    loadSelectData((PlainSelect) select, i);
+//                    // ???????????????
+//                } else if (select instanceof SelectExpressionItem) {
+//                    fieldTable.getItems().add(select.toString());
+//                    // ???????????????
+//                }
+//                i++;
+//            }
         } else if (selectBody instanceof PlainSelect) {
-            loadSelectData((PlainSelect) selectBody, 1);
+            loadSelectData((PlainSelect) selectBody);
         }
     }
 
-    private void loadSelectData(PlainSelect pSelect, int i) {
-        unionTable.getItems().add(new TableRow("Query " + i));
+    private void loadSelectData(PlainSelect pSelect) {
+//        unionTable.getItems().add(new TableRow("Query " + i));
         fillFromTables(pSelect);
         for (Object select : pSelect.getSelectItems()) {
             if (select instanceof SelectExpressionItem) {
@@ -433,6 +465,10 @@ public class MainController {
         joinItems.clear();
         unionTable.getItems().clear();
         aliasTable.getItems().clear();
+        conditionTableResults.getItems().clear();
+        groupTableResults.getItems().clear();
+        groupTableAggregates.getItems().clear();
+        orderTableResults.getItems().clear();
     }
 
     private void fillFromTables(PlainSelect pSelect) {
