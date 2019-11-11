@@ -2,10 +2,7 @@ package com.querybuilder.home.lab;
 
 import com.sun.javafx.scene.control.skin.LabeledText;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ReadOnlyIntegerProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -27,6 +24,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
@@ -172,13 +170,15 @@ public class MainController {
                 }
         );
         setResultsTablesHandlers();
-        setCellFactory(databaseTableColumn);
+//        setCellFactory(databaseTableColumn);
         initSelectedTables();
 
         initTreeTablesView();
         initLinkTableView();
         initConditionTableView();
+        initAliasTable();
     }
+
 
     private SelectedFieldsTree selectedGroupFieldsTree;
     private SelectedFieldsTree selectedConditionsTreeTable;
@@ -236,11 +236,12 @@ public class MainController {
         // table columns
         fieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
         queryCteColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
-        // tree columns
+        // cell factory
         setCellFactory(groupFieldsTreeColumn);
         setCellFactory(conditionsTreeTableColumn);
         setCellFactory(conditionsTreeTableContextColumn);
         setCellFactory(orderFieldsTreeColumn);
+        setCellFactory(databaseTableColumn);
     }
 
     private void addTablesRow(String parent) {
@@ -316,58 +317,71 @@ public class MainController {
         if (selectBody instanceof SetOperationList) {
             SetOperationList setOperationList = (SetOperationList) selectBody;
             List selects = setOperationList.getSelects();
+            int i = 1;
             for (Object select : selects) {
                 if (select instanceof PlainSelect) {
-
+                    loadSelectData((PlainSelect) select, i);
                 } else if (select instanceof SelectExpressionItem) {
                     fieldTable.getItems().add(select.toString());
+//                    aliasTable.getItems().add(newAliasItem(select));
                 }
+                i++;
             }
         } else if (selectBody instanceof PlainSelect) {
-            PlainSelect pSelect = (PlainSelect) selectBody;
-            fillFromTables(pSelect);
-            for (Object select : pSelect.getSelectItems()) {
-                if (select instanceof SelectExpressionItem) {
-                    fieldTable.getItems().add(select.toString());
+            loadSelectData((PlainSelect) selectBody, 1);
+        }
+    }
 
-                    // GROUPING
-                    SelectExpressionItem select1 = (SelectExpressionItem) select;
-                    Expression expression1 = select1.getExpression();
-                    TableRow tableRow;
-                    if (expression1 instanceof Function) {
-                        Function expression = (Function) select1.getExpression();
-                        if (expression.getParameters().getExpressions().size() == 1) {
-                            String columnName = expression.getParameters().getExpressions().get(0).toString();
-                            tableRow = new TableRow(columnName);
-                            tableRow.setComboBoxValue(expression.getName());
-                            groupTableAggregates.getItems().add(tableRow);
-                        }
+    private void loadSelectData(PlainSelect pSelect, int i) {
+        unionTable.getItems().add(new TableRow("Query " + i));
+        fillFromTables(pSelect);
+        for (Object select : pSelect.getSelectItems()) {
+            if (select instanceof SelectExpressionItem) {
+
+                fieldTable.getItems().add(select.toString());
+                aliasTable.getItems().add(newAliasItem((SelectExpressionItem) select));
+
+                // GROUPING
+                SelectExpressionItem select1 = (SelectExpressionItem) select;
+                Expression expression1 = select1.getExpression();
+                TableRow tableRow;
+                if (expression1 instanceof Function) {
+                    Function expression = (Function) select1.getExpression();
+                    if (expression.getParameters().getExpressions().size() == 1) {
+                        String columnName = expression.getParameters().getExpressions().get(0).toString();
+                        tableRow = new TableRow(columnName);
+                        tableRow.setComboBoxValue(expression.getName());
+                        groupTableAggregates.getItems().add(tableRow);
                     }
-
-                } else {
-                    fieldTable.getItems().add(select.toString());
                 }
 
+            } else {
+                fieldTable.getItems().add(select.toString());
+//                    aliasTable.getItems().add(newAliasItem(select));
             }
-            GroupByElement groupBy = pSelect.getGroupBy();
-            if (groupBy != null) {
-                groupBy.getGroupByExpressions().forEach(x -> {
+
+        }
+        GroupByElement groupBy = pSelect.getGroupBy();
+        if (groupBy != null) {
+            groupBy.getGroupByExpressions().forEach(x -> {
 //                    for (TreeItem<TableRow> ddd: groupFieldsTree.getRoot().getChildren()) {
 //                        if (ddd.getValue().getName().equals(x.toString())){
 //                            makeSelect(ddd, groupFieldsTree, groupTableResults, null);
 //                        }
 //                    };
-                    TableRow tableRow = new TableRow(x.toString());
-                    groupTableResults.getItems().add(0, tableRow);
-                });
-            }
-            loadOrderBy(pSelect);
-            loadConditions(pSelect);
+                TableRow tableRow = new TableRow(x.toString());
+                groupTableResults.getItems().add(0, tableRow);
+            });
         }
+        loadOrderBy(pSelect);
+        loadConditions(pSelect);
     }
 
     private void loadConditions(PlainSelect pSelect) {
         Expression where = pSelect.getWhere();
+        if (where == null) {
+            return;
+        }
         if (where instanceof AndExpression) {
             parseAndExpression((AndExpression) where);
         } else {
@@ -417,6 +431,8 @@ public class MainController {
         fieldTable.getItems().clear();
         tablesView.getRoot().getChildren().clear();
         joinItems.clear();
+        unionTable.getItems().clear();
+        aliasTable.getItems().clear();
     }
 
     private void fillFromTables(PlainSelect pSelect) {
@@ -1212,4 +1228,40 @@ public class MainController {
             return index < 0 || index + 1 >= orderTableResults.getItems().size();
         }, selectedIndex, orderTableResults.getItems()));
     }
+
+    @FXML
+    private TableView<TableRow> aliasTable;
+    @FXML
+    private TableColumn<TableRow, String> aliasFieldColumn;
+    @FXML
+    private TableColumn<TableRow, String> queryFieldColumn;
+
+    private void initAliasTable() {
+        aliasFieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getAlias()));
+        queryFieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
+
+        unionTableNameColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
+        unionTableDistinctColumn.setCellFactory(tc -> new CheckBoxTableCell<>());
+        unionTableDistinctColumn.setCellValueFactory(data -> new SimpleBooleanProperty(data.getValue().isDistinct()));
+    }
+
+    private TableRow newAliasItem(SelectExpressionItem select) {
+        Alias alias = select.getAlias();
+        String strAlias = alias != null ? select.getAlias().getName() : select.getExpression().toString();
+        return new TableRow(select.toString(), strAlias);
+    }
+
+    @FXML
+    protected void addUnionQuery(ActionEvent event) {
+        TableColumn<TableRow, String> newColumn = new TableColumn<>("Query 2");
+        aliasTable.getColumns().add(newColumn);
+    }
+
+
+    @FXML
+    private TableView<TableRow> unionTable;
+    @FXML
+    private TableColumn<TableRow, String> unionTableNameColumn;
+    @FXML
+    private TableColumn<TableRow, Boolean> unionTableDistinctColumn;
 }

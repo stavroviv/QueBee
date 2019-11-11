@@ -14,7 +14,9 @@
       <AnchorPane minHeight="-Infinity" minWidth="-Infinity" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
          <children>
 
-            <TabPane fx:id="mainTabPane" prefHeight="700.0" prefWidth="1031.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <TabPane fx:id="mainTabPane" prefHeight="700.0" prefWidth="930.0" tabClosingPolicy="UNAVAILABLE"
+                     AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                     AnchorPane.topAnchor="0.0">
                <!--AnchorPane.bottomAnchor="0.0"-->
                <!--AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">-->
                <tabs>
@@ -78,9 +80,12 @@
                                           </Button>
                                        </children>
                                     </AnchorPane>
-                                    <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                                    <AnchorPane prefHeight="200.0" prefWidth="274.0">
                                        <children>
-                                          <TableView fx:id="fieldTable" layoutY="31.0" prefHeight="633.0" prefWidth="435.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="30.0">
+                                          <TableView fx:id="fieldTable" layoutY="31.0" prefHeight="549.0"
+                                                     prefWidth="276.0" AnchorPane.bottomAnchor="0.0"
+                                                     AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="10.0"
+                                                     AnchorPane.topAnchor="30.0">
                                              <columns>
                                                 <TableColumn fx:id="fieldColumn" prefWidth="75.0" text="Fields">
                                                    <!--<cellValueFactory><PropertyValueFactory property="field" />-->
@@ -434,16 +439,21 @@
                            <items>
                               <AnchorPane>
                                  <children>
-                                    <TableView prefHeight="671.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
+                                    <TableView fx:id="unionTable" prefHeight="671.0" prefWidth="200.0"
+                                               AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0"
+                                               AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
                                        <columns>
-                                          <TableColumn prefWidth="75.0" text="Name" />
-                                          <TableColumn maxWidth="60.0" minWidth="60.0" prefWidth="60.0" text="Distinct" />
+                                          <TableColumn fx:id="unionTableNameColumn" prefWidth="75.0" text="Name"/>
+                                          <TableColumn fx:id="unionTableDistinctColumn" maxWidth="60.0" minWidth="60.0"
+                                                       prefWidth="60.0" text="Distinct"/>
                                        </columns>
                                        <columnResizePolicy>
                                           <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                                        </columnResizePolicy>
                                     </TableView>
-                                    <Button contentDisplay="GRAPHIC_ONLY" layoutX="10.0" layoutY="3.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="Button">
+                                    <Button contentDisplay="GRAPHIC_ONLY" layoutX="10.0" layoutY="3.0" minHeight="25.0"
+                                            minWidth="25.0" mnemonicParsing="false" onAction="#addUnionQuery"
+                                            prefHeight="25.0" prefWidth="25.0" text="Button">
                                        <graphic>
                                           <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
@@ -474,10 +484,13 @@
                               </AnchorPane>
                               <AnchorPane>
                                  <children>
-                                    <TableView prefHeight="671.0" prefWidth="810.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="30.0">
+                                    <TableView fx:id="aliasTable" prefHeight="671.0" prefWidth="810.0"
+                                               AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                               AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="30.0">
                                        <columns>
-                                          <TableColumn maxWidth="200.0" minWidth="200.0" prefWidth="75.0" text="Field name" />
-                                          <TableColumn prefWidth="75.0" text="Query 1" />
+                                          <TableColumn fx:id="aliasFieldColumn" maxWidth="304.0" minWidth="200.0"
+                                                       prefWidth="304.0" text="Field name"/>
+                                          <TableColumn fx:id="queryFieldColumn" prefWidth="387.0" text="Query 1"/>
                                        </columns>
                                        <columnResizePolicy>
                                           <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

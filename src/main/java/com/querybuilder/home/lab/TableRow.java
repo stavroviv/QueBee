@@ -7,7 +7,9 @@ import lombok.Data;
 public class TableRow {
     private boolean nested;
     private String name;
+    private String alias;
     private String query;
+    private boolean distinct;
     private boolean root;
     private boolean notSelectable;
 
@@ -15,6 +17,11 @@ public class TableRow {
 
     public TableRow(String name) {
         this(name, false);
+    }
+
+    public TableRow(String name, String alias) {
+        this(name, false);
+        this.alias = alias;
     }
 
     public TableRow(String name, boolean root) {
