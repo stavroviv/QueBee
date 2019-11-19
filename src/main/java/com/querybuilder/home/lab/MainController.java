@@ -120,13 +120,14 @@ public class MainController {
 //            cteTabPane.setVisible(newTab.getId() == null || !newTab.getId().equals("queryTabPane"));
 //        });
         cteTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
-            fillCurrentQuery(oldTab);
+            fillCurrentQuery(oldTab, null);
             showCurrentQuery();
         });
         unionTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
             if (oldTab == null || newTab == null) {
                 return;
             }
+            fillCurrentQuery(null, oldTab);
             showCurrentQuery();
         });
     }
@@ -552,10 +553,10 @@ public class MainController {
     }
 
     private SelectBody getSelectBody() {
-        return getSelectBody(null);
+        return getSelectBody(null, null);
     }
 
-    private SelectBody getSelectBody(Tab tab) {
+    private SelectBody getSelectBody(Tab tab, Tab unionTab) {
         SelectBody selectBody;
         if (withItemMap.size() == 0) {
             selectBody = sQuery.getSelectBody();
@@ -587,12 +588,12 @@ public class MainController {
 
     @FXML
     public void okClick() {
-        fillCurrentQuery(null);
+        fillCurrentQuery(null, null);
         queryBuilder.closeForm(sQuery.toString());
     }
 
-    private void fillCurrentQuery(Tab tab) {
-        SelectBody selectBody = getSelectBody(tab);
+    private void fillCurrentQuery(Tab tab, Tab unionTab) {
+        SelectBody selectBody = getSelectBody(tab, unionTab);
         try {
             fillOrder(selectBody);
             fillConditions(selectBody);
