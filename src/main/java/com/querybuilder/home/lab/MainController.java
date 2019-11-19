@@ -110,36 +110,25 @@ public class MainController {
         initTables();
         initDatabaseTableView();
 
-        mainTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
-            cteTabPane.setVisible(newTab.getId() == null || !newTab.getId().equals("queryTabPane"));
-        });
-
         setCellFactories();
         reloadData();
-        cteTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
-//            if (newTab == null) {
-//                return;
-//            }
-//            Integer iii = withItemMap.get(newTab.getId());
-//            if (iii != null) {
-//                showCTE(iii, 0);
-//            }
-            showCteUnion(newTab.getId(), "");
-        });
-        unionTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
-//            if (newTab == null) {
-//                return;
-//            }
-//            Integer iii = unionItemMap.get(newTab.getId());
-//            if (iii != null) {
-//                showCTE(iii, iii);
-//            }
-            showCteUnion("", newTab.getId());
-        });
+        setPagesHandlers();
     }
 
-    private void showCteUnion(String cteId, String unionId) {
-        showCTE(withItemMap.get(cteId), unionItemMap.get(unionId));
+    private void setPagesHandlers() {
+//        mainTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
+//            cteTabPane.setVisible(newTab.getId() == null || !newTab.getId().equals("queryTabPane"));
+//        });
+        cteTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
+            fillCurrentQuery(oldTab);
+            showCurrentQuery();
+        });
+        unionTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
+            if (oldTab == null || newTab == null) {
+                return;
+            }
+            showCurrentQuery();
+        });
     }
 
     private void initTables() {
@@ -267,16 +256,16 @@ public class MainController {
         if (children.stream().noneMatch(x -> x.getValue().getName().equals(parent))) {
             tablesView.getRoot().getChildren().add(getTableItemWithFields(parent));
 //            joinItems.add(parent);
-            if (getSelectBody().getFromItem() == null) {
-                getSelectBody().setFromItem(new Table(parent));
-            } else {
-                List<Join> jList = (getSelectBody().getJoins() == null) ? new ArrayList<>() : getSelectBody().getJoins();
-                Join join = new Join();
-                join.setRightItem(new Table(parent));
-                join.setSimple(true);
-                jList.add(join);
-                getSelectBody().setJoins(jList);
-            }
+//            if (getSelectBody().getFromItem() == null) {
+//                getSelectBody().setFromItem(new Table(parent));
+//            } else {
+//                List<Join> jList = (getSelectBody().getJoins() == null) ? new ArrayList<>() : getSelectBody().getJoins();
+//                Join join = new Join();
+//                join.setRightItem(new Table(parent));
+//                join.setSimple(true);
+//                jList.add(join);
+//                getSelectBody().setJoins(jList);
+//            }
         }
     }
 
@@ -301,7 +290,7 @@ public class MainController {
         queryCteTable.getItems().clear();
         List<WithItem> withItemsList = sQuery.getWithItemsList();
         if (withItemsList == null) {
-            showCTE(0, 0);
+            showCurrentQuery();
             return;
         }
 
@@ -316,15 +305,6 @@ public class MainController {
             i++;
         }
 
-        // Current unions
-//        for (WithItem x : withItemsList) {
-//            String unionName = x.getName();
-//            Tab tab = new Tab(cteName);
-//            tab.setId(cteName);
-//            unionTabPane.getTabs().add(tab);
-//            withItemMap.put(cteName, i);
-//            i++;
-//        }
         String cteName = "Query of CTE " + (withItemsList.size() + 1);
         Tab tab = new Tab(cteName);
         tab.setId(cteName);
@@ -332,10 +312,15 @@ public class MainController {
         cteTabPane.getSelectionModel().select(0);
         withItemMap.put(cteName, i);
         queryCteTable.getItems().addAll(withItemMap.keySet());
-        showCTE(0, 0);
+        showCurrentQuery();
     }
 
-    private void showCTE(int cteNumber, int unionNumber) {
+    private int cteNumberPrev = -1;
+
+    private void showCurrentQuery() {
+        int cteNumber = cteTabPane.getSelectionModel().getSelectedIndex();
+        int unionNumber = 0;
+
         clearTables();
         Object selectBody;
         if (sQuery.getWithItemsList() == null || cteNumber == sQuery.getWithItemsList().size()) {
@@ -344,24 +329,31 @@ public class MainController {
             selectBody = sQuery.getWithItemsList().get(cteNumber).getSelectBody();
         }
 
+        if (cteNumberPrev != cteNumber) {
+            unionTabPane.getTabs().clear();
+        }
+
+        // UNION
         if (selectBody instanceof SetOperationList) {
             SetOperationList setOperationList = (SetOperationList) selectBody;
-            SelectBody selectBody1 = setOperationList.getSelects().get(unionNumber);
-            loadSelectData((PlainSelect) selectBody1);
-//            int i = 1;
-//            for (Object select : selects) {
-//                if (select instanceof PlainSelect) {
-//                    loadSelectData((PlainSelect) select, i);
-//                    // ???????????????
-//                } else if (select instanceof SelectExpressionItem) {
-//                    fieldTable.getItems().add(select.toString());
-//                    // ???????????????
-//                }
-//                i++;
-//            }
-        } else if (selectBody instanceof PlainSelect) {
+            if (cteNumberPrev != cteNumber) {
+                int i = 1;
+                for (SelectBody sBody : setOperationList.getSelects()) {
+                    Tab tab = new Tab("Query " + i);
+                    tab.setId("Query " + i);
+                    unionTabPane.getTabs().add(tab);
+                    i++;
+                }
+            }
+            unionNumber = unionTabPane.getSelectionModel().getSelectedIndex();
+            SelectBody body = setOperationList.getSelects().get(unionNumber == -1 ? 0 : unionNumber);
+            loadSelectData((PlainSelect) body);
+        }
+        // ONE QUERY
+        else if (selectBody instanceof PlainSelect) {
             loadSelectData((PlainSelect) selectBody);
         }
+        cteNumberPrev = cteNumber;
     }
 
     private void loadSelectData(PlainSelect pSelect) {
@@ -472,7 +464,7 @@ public class MainController {
     }
 
     private void fillFromTables(PlainSelect pSelect) {
-        linkTablesPane.setDisable(true);
+//        linkTablesPane.setDisable(true);
         FromItem fromItem = pSelect.getFromItem();
         Table table = null;
         if (fromItem instanceof Table) {
@@ -485,7 +477,7 @@ public class MainController {
             return;
         }
 
-        linkTablesPane.setDisable(false);
+//        linkTablesPane.setDisable(false);
         linkTable.getItems().clear();
         joinItems.add(table.getName());
         for (Join join : joins) {
@@ -541,16 +533,16 @@ public class MainController {
 //        nSItem.setAlias(new Alias("test"));
         nSItem.setExpression(new Column(name));
 
-        List<SelectItem> selectItems = getSelectBody().getSelectItems() == null ? new ArrayList<>() : getSelectBody().getSelectItems();
-        selectItems.add(nSItem);
-        getSelectBody().setSelectItems(selectItems);
+//        List<SelectItem> selectItems = getSelectBody().getSelectItems() == null ? new ArrayList<>() : getSelectBody().getSelectItems();
+//        selectItems.add(nSItem);
+//        getSelectBody().setSelectItems(selectItems);
     }
 
     @FXML
     public void deleteFieldRow() {
-        int selectedItem = fieldTable.getSelectionModel().getSelectedIndex();
-        fieldTable.getItems().remove(selectedItem);
-        getSelectBody().getSelectItems().remove(selectedItem);
+//        int selectedItem = fieldTable.getSelectionModel().getSelectedIndex();
+//        fieldTable.getItems().remove(selectedItem);
+//        getSelectBody().getSelectItems().remove(selectedItem);
     }
 
     @FXML
@@ -559,7 +551,11 @@ public class MainController {
         tablesView.getRoot().getChildren().remove(selectedItem);
     }
 
-    private PlainSelect getSelectBody() {
+    private SelectBody getSelectBody() {
+        return getSelectBody(null);
+    }
+
+    private SelectBody getSelectBody(Tab tab) {
         SelectBody selectBody;
         if (withItemMap.size() == 0) {
             selectBody = sQuery.getSelectBody();
@@ -567,10 +563,12 @@ public class MainController {
                 initEmptyQuery();
             }
         } else {
-            Tab tab = cteTabPane.getSelectionModel().selectedItemProperty().get();
+            if (tab == null) {
+                tab = cteTabPane.getSelectionModel().selectedItemProperty().get();
+            }
             selectBody = sQuery.getWithItemsList().get(withItemMap.get(tab.getId())).getSelectBody();
         }
-        return (PlainSelect) selectBody;
+        return selectBody;
     }
 
     private void initEmptyQuery() {
@@ -589,13 +587,12 @@ public class MainController {
 
     @FXML
     public void okClick() {
-        fillCurrentQuery();
+        fillCurrentQuery(null);
         queryBuilder.closeForm(sQuery.toString());
     }
 
-    private void fillCurrentQuery() {
-        PlainSelect selectBody = getSelectBody();
-
+    private void fillCurrentQuery(Tab tab) {
+        SelectBody selectBody = getSelectBody(tab);
         try {
             fillOrder(selectBody);
             fillConditions(selectBody);
@@ -604,7 +601,29 @@ public class MainController {
         }
     }
 
-    private void fillConditions(PlainSelect selectBody) throws JSQLParserException {
+    private void fillOrder(SelectBody selectBody) {
+        List<OrderByElement> orderElements = new ArrayList<>();
+        orderTableResults.getItems().forEach(x -> {
+            OrderByElement orderByElement = new OrderByElement();
+            Column column = new Column(x.getName());
+            orderByElement.setExpression(column);
+            orderByElement.setAsc(x.getComboBoxValue().equals("Ascending"));
+            orderElements.add(orderByElement);
+
+        });
+        if (selectBody instanceof PlainSelect) {
+            ((PlainSelect) selectBody).setOrderByElements(orderElements);
+        }
+//
+    }
+
+    private void fillConditions(SelectBody selectBody) throws JSQLParserException {
+        if (conditionTableResults.getItems().size() == 0) {
+            if (selectBody instanceof PlainSelect) {
+                ((PlainSelect) selectBody).setWhere(null);
+            }
+            return;
+        }
         StringBuilder where = new StringBuilder();
         for (ConditionElement item : conditionTableResults.getItems()) {
             String whereExpr = item.getCondition();
@@ -617,20 +636,9 @@ public class MainController {
                 "SELECT * FROM TABLES WHERE " + where.substring(0, where.length() - 4)
         );
         Select select = (Select) stmt;
-        selectBody.setWhere(((PlainSelect) select.getSelectBody()).getWhere());
-    }
-
-    private void fillOrder(PlainSelect selectBody) {
-        List<OrderByElement> orderElements = new ArrayList<>();
-        orderTableResults.getItems().forEach(x -> {
-            OrderByElement orderByElement = new OrderByElement();
-            Column column = new Column(x.getName());
-            orderByElement.setExpression(column);
-            orderByElement.setAsc(x.getComboBoxValue().equals("Ascending"));
-            orderElements.add(orderByElement);
-
-        });
-        selectBody.setOrderByElements(orderElements);
+        if (selectBody instanceof PlainSelect) {
+            ((PlainSelect) selectBody).setWhere(((PlainSelect) select.getSelectBody()).getWhere());
+        }
     }
 
     @FXML
@@ -1017,18 +1025,18 @@ public class MainController {
     }
 
     public void insertResult(String result, TableRow item, SubSelect subSelect) {
-        item.setQuery(result);
-        PlainSelect selectBody = getSelectBody();
-        if (selectBody.getFromItem().getAlias() != null && selectBody.getFromItem().getAlias().getName().equals(item.getName())) {
-            selectBody.setFromItem(subSelect);
-        } else {
-            selectBody.getJoins().forEach((x) -> {
-                if (x.getRightItem().getAlias() != null && x.getRightItem().getAlias().getName().equals(item.getName())) {
-                    x.setRightItem(subSelect);
-                }
-            });
-        }
-        System.out.println(selectBody);
+//        item.setQuery(result);
+//        PlainSelect selectBody = getSelectBody();
+//        if (selectBody.getFromItem().getAlias() != null && selectBody.getFromItem().getAlias().getName().equals(item.getName())) {
+//            selectBody.setFromItem(subSelect);
+//        } else {
+//            selectBody.getJoins().forEach((x) -> {
+//                if (x.getRightItem().getAlias() != null && x.getRightItem().getAlias().getName().equals(item.getName())) {
+//                    x.setRightItem(subSelect);
+//                }
+//            });
+//        }
+//        System.out.println(selectBody);
     }
 
 

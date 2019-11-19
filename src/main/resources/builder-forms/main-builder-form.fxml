@@ -130,7 +130,7 @@
                               </SplitPane>
                            </children>
                            <padding>
-                              <Insets right="5.0" />
+                              <Insets right="35.0"/>
                            </padding>
                         </AnchorPane>
                      </content>
@@ -191,7 +191,7 @@
                               </TableView>
                            </children>
                            <padding>
-                              <Insets right="30.0" />
+                              <Insets right="40.0"/>
                            </padding>
                         </AnchorPane>
                      </content>
@@ -312,7 +312,7 @@
                               </AnchorPane>
                            </items>
                            <padding>
-                              <Insets right="30.0" />
+                              <Insets right="50.0"/>
                            </padding>
                         </SplitPane>
                      </content>
@@ -387,7 +387,7 @@
                               </AnchorPane>
                            </items>
                            <padding>
-                              <Insets right="30.0" />
+                              <Insets right="50.0"/>
                            </padding>
                         </SplitPane>
                      </content>
@@ -510,7 +510,7 @@
                               </AnchorPane>
                            </items>
                            <padding>
-                              <Insets right="30.0" />
+                              <Insets right="50.0"/>
                            </padding>
                         </SplitPane>
                      </content>
@@ -568,7 +568,7 @@
 
                                     <TableView fx:id="orderTableResults" editable="true" prefHeight="620.0"
                                                prefWidth="632.0" AnchorPane.bottomAnchor="0.0"
-                                               AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="40.0"
+                                               AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="10.0"
                                                AnchorPane.topAnchor="30.0">
                                        <columns>
                                           <TableColumn fx:id="orderTableResultsFieldColumn" prefWidth="75.0"
@@ -617,6 +617,9 @@
                                  </opaqueInsets>
                               </AnchorPane>
                            </items>
+                           <padding>
+                              <Insets right="50.0"/>
+                           </padding>
                         </SplitPane>
                      </content>
                   </Tab>
@@ -667,21 +670,33 @@
             </TabPane>
             <TabPane id="cteTabPane" fx:id="cteTabPane" layoutX="860.0" layoutY="29.0" prefHeight="583.0"
                      prefWidth="40.0" side="RIGHT" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0"
-                     AnchorPane.leftAnchor="860.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="27.0"/>
-            <TabPane id="cteTabPane" fx:id="cteTabPane" layoutX="870.0" layoutY="39.0" prefHeight="583.0"
-                     prefWidth="40.0" side="RIGHT" tabClosingPolicy="UNAVAILABLE"/>
+                     AnchorPane.leftAnchor="860.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="27.0">
+               <tabs>
+                  <Tab text="Untitled Tab">
+                     <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0"/>
+                     </content>
+                  </Tab>
+               </tabs>
+            </TabPane>
+            <TabPane id="cteTabPane" fx:id="unionTabPane" layoutX="870.0" layoutY="39.0" prefHeight="583.0"
+                     prefWidth="27.0" side="RIGHT" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0"
+                     AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="27.0">
+               <tabs>
+                  <Tab text="Untitled Tab">
+                     <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0"/>
+                     </content>
+                  </Tab>
+               </tabs>
+            </TabPane>
 
 
          </children>
       </AnchorPane>
       <HBox alignment="BOTTOM_LEFT" layoutY="665.0" prefHeight="35.0" prefWidth="1031.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="665.0">
          <children>
-            <Button minWidth="80.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="80.0" text="Query">
-               <HBox.margin>
-                  <Insets bottom="5.0" left="5.0" />
-               </HBox.margin>
-            </Button>
-            <Pane prefHeight="35.0" prefWidth="707.0" HBox.hgrow="ALWAYS">
+            <Pane prefHeight="0.0" prefWidth="0.0" HBox.hgrow="ALWAYS">
                <HBox.margin>
                   <Insets />
                </HBox.margin></Pane>
