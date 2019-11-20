@@ -339,10 +339,13 @@ public class MainController {
             SetOperationList setOperationList = (SetOperationList) selectBody;
             if (cteNumberPrev != cteNumber) {
                 int i = 1;
+                unionItemMap.clear();
                 for (SelectBody sBody : setOperationList.getSelects()) {
-                    Tab tab = new Tab("Query " + i);
-                    tab.setId("Query " + i);
+                    String unionName = "Query " + i;
+                    Tab tab = new Tab(unionName);
+                    tab.setId(unionName);
                     unionTabPane.getTabs().add(tab);
+                    unionItemMap.put(unionName, i - 1);
                     i++;
                 }
             }
@@ -418,38 +421,39 @@ public class MainController {
 
     private void parseAndExpression(AndExpression where) {
         ConditionElement conditionElement = new ConditionElement(where.getRightExpression().toString());
-        conditionTableResults.getItems().add(conditionElement);
+        conditionTableResults.getItems().add(0, conditionElement);
 
         Expression leftExpression = where.getLeftExpression();
         while (leftExpression instanceof AndExpression) {
             AndExpression left = (AndExpression) leftExpression;
             ConditionElement condition = new ConditionElement(left.getRightExpression().toString());
-            conditionTableResults.getItems().add(condition);
+            conditionTableResults.getItems().add(0, condition);
             leftExpression = left.getLeftExpression();
         }
         ConditionElement condition = new ConditionElement(leftExpression.toString());
-        conditionTableResults.getItems().add(condition);
+        conditionTableResults.getItems().add(0, condition);
     }
 
     private void loadOrderBy(PlainSelect pSelect) {
         List<OrderByElement> orderByElements = pSelect.getOrderByElements();
-        if (orderByElements != null) {
-            orderByElements.forEach(x -> {
-                boolean selected = false;
-                for (TreeItem<TableRow> ddd : orderFieldsTree.getRoot().getChildren()) {
-                    if (ddd.getValue().getName().equals(x.getExpression().toString())) {
-                        makeSelect(ddd, orderFieldsTree, orderTableResults, x.isAsc() ? "Ascending" : "Descending");
-                        selected = true;
-                        break;
-                    }
-                }
-                if (!selected) {
-                    TableRow tableRow = new TableRow(x.getExpression().toString());
-                    tableRow.setComboBoxValue(x.isAsc() ? "Ascending" : "Descending");
-                    orderTableResults.getItems().add(0, tableRow);
-                }
-            });
+        if (orderByElements == null) {
+            return;
         }
+        orderByElements.forEach(x -> {
+            boolean selected = false;
+            for (TreeItem<TableRow> ddd : orderFieldsTree.getRoot().getChildren()) {
+                if (ddd.getValue().getName().equals(x.getExpression().toString())) {
+                    makeSelect(ddd, orderFieldsTree, orderTableResults, x.isAsc() ? "Ascending" : "Descending");
+                    selected = true;
+                    break;
+                }
+            }
+            if (!selected) {
+                TableRow tableRow = new TableRow(x.getExpression().toString());
+                tableRow.setComboBoxValue(x.isAsc() ? "Ascending" : "Descending");
+                orderTableResults.getItems().add(tableRow);
+            }
+        });
     }
 
     private void clearTables() {
@@ -552,12 +556,20 @@ public class MainController {
         tablesView.getRoot().getChildren().remove(selectedItem);
     }
 
-    private SelectBody getSelectBody() {
+    private PlainSelect getSelectBody() {
         return getSelectBody(null, null);
     }
 
-    private SelectBody getSelectBody(Tab tab, Tab unionTab) {
+    private PlainSelect getSelectBody(Tab tab, Tab unionTab) {
         SelectBody selectBody;
+        int unionNumber = 0;
+        if (unionTab == null) {
+            int selectedIndex = unionTabPane.getSelectionModel().getSelectedIndex();
+            unionNumber = (selectedIndex == -1 ? 0 : selectedIndex);
+        } else {
+            unionNumber = unionItemMap.get(unionTab.getId());
+        }
+
         if (withItemMap.size() == 0) {
             selectBody = sQuery.getSelectBody();
             if (selectBody == null) {
@@ -567,9 +579,17 @@ public class MainController {
             if (tab == null) {
                 tab = cteTabPane.getSelectionModel().selectedItemProperty().get();
             }
-            selectBody = sQuery.getWithItemsList().get(withItemMap.get(tab.getId())).getSelectBody();
+            Integer cteNumber = withItemMap.get(tab.getId());
+            if (cteNumber.equals(sQuery.getWithItemsList().size())) {
+                selectBody = sQuery.getSelectBody();
+            } else {
+                selectBody = sQuery.getWithItemsList().get(cteNumber).getSelectBody();
+            }
         }
-        return selectBody;
+        if (selectBody instanceof SetOperationList) {
+            selectBody = ((SetOperationList) selectBody).getSelects().get(unionNumber);
+        }
+        return (PlainSelect) selectBody;
     }
 
     private void initEmptyQuery() {
@@ -593,7 +613,7 @@ public class MainController {
     }
 
     private void fillCurrentQuery(Tab tab, Tab unionTab) {
-        SelectBody selectBody = getSelectBody(tab, unionTab);
+        PlainSelect selectBody = getSelectBody(tab, unionTab);
         try {
             fillOrder(selectBody);
             fillConditions(selectBody);
@@ -602,7 +622,7 @@ public class MainController {
         }
     }
 
-    private void fillOrder(SelectBody selectBody) {
+    private void fillOrder(PlainSelect selectBody) {
         List<OrderByElement> orderElements = new ArrayList<>();
         orderTableResults.getItems().forEach(x -> {
             OrderByElement orderByElement = new OrderByElement();
@@ -610,19 +630,13 @@ public class MainController {
             orderByElement.setExpression(column);
             orderByElement.setAsc(x.getComboBoxValue().equals("Ascending"));
             orderElements.add(orderByElement);
-
         });
-        if (selectBody instanceof PlainSelect) {
-            ((PlainSelect) selectBody).setOrderByElements(orderElements);
-        }
-//
+        selectBody.setOrderByElements(orderElements);
     }
 
-    private void fillConditions(SelectBody selectBody) throws JSQLParserException {
+    private void fillConditions(PlainSelect selectBody) throws JSQLParserException {
         if (conditionTableResults.getItems().size() == 0) {
-            if (selectBody instanceof PlainSelect) {
-                ((PlainSelect) selectBody).setWhere(null);
-            }
+            selectBody.setWhere(null);
             return;
         }
         StringBuilder where = new StringBuilder();
@@ -637,9 +651,8 @@ public class MainController {
                 "SELECT * FROM TABLES WHERE " + where.substring(0, where.length() - 4)
         );
         Select select = (Select) stmt;
-        if (selectBody instanceof PlainSelect) {
-            ((PlainSelect) selectBody).setWhere(((PlainSelect) select.getSelectBody()).getWhere());
-        }
+        Expression whereExpression = ((PlainSelect) select.getSelectBody()).getWhere();
+        selectBody.setWhere(whereExpression);
     }
 
     @FXML
@@ -1136,7 +1149,7 @@ public class MainController {
                     }
                 }
                 ConditionElement tableRow = new ConditionElement(name);
-                conditionTableResults.getItems().add(0, tableRow);
+                conditionTableResults.getItems().add(tableRow);
                 conditionsTreeTable.getRoot().getChildren().remove(selectedItem);
             }
         });
