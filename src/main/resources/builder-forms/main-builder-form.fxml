@@ -463,7 +463,9 @@
                                           </ImageView>
                                        </graphic>
                                     </Button>
-                                    <Button contentDisplay="GRAPHIC_ONLY" layoutX="69.0" layoutY="3.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="Button">
+                                    <Button contentDisplay="GRAPHIC_ONLY" layoutX="69.0" layoutY="3.0" minHeight="25.0"
+                                            minWidth="25.0" mnemonicParsing="false" onAction="#deleteUnion"
+                                            prefHeight="25.0" prefWidth="25.0" text="Button">
                                        <graphic>
                                           <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
@@ -491,7 +493,6 @@
                                        <columns>
                                           <TableColumn fx:id="aliasFieldColumn" maxWidth="304.0" minWidth="200.0"
                                                        prefWidth="304.0" text="Field name"/>
-                                          <TableColumn fx:id="queryFieldColumn" prefWidth="387.0" text="Query 1"/>
                                        </columns>
                                        <columnResizePolicy>
                                           <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

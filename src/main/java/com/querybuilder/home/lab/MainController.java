@@ -289,6 +289,8 @@ public class MainController {
     private void reloadData() {
         cteTabPane.getTabs().clear();
         queryCteTable.getItems().clear();
+        curMaxUnion = 0;
+
         List<WithItem> withItemsList = sQuery.getWithItemsList();
         if (withItemsList == null) {
             showCurrentQuery();
@@ -321,8 +323,8 @@ public class MainController {
     private void showCurrentQuery() {
         int cteNumber = cteTabPane.getSelectionModel().getSelectedIndex();
         int unionNumber = 0;
-
-        clearTables();
+        boolean cteChange = (cteNumberPrev != cteNumber);
+        clearTables(cteChange);
         Object selectBody;
         if (sQuery.getWithItemsList() == null || cteNumber == sQuery.getWithItemsList().size()) {
             selectBody = sQuery.getSelectBody();
@@ -330,8 +332,13 @@ public class MainController {
             selectBody = sQuery.getWithItemsList().get(cteNumber).getSelectBody();
         }
 
-        if (cteNumberPrev != cteNumber) {
+        if (cteChange) {
             unionTabPane.getTabs().clear();
+            unionTable.getItems().clear();
+            curMaxUnion = 0;
+            unionColumns = new HashMap<>();
+            unionTabs = new HashMap<>();
+            aliasTable.getColumns().remove(1, aliasTable.getColumns().size());
         }
 
         // UNION
@@ -342,11 +349,10 @@ public class MainController {
                 unionItemMap.clear();
                 for (SelectBody sBody : setOperationList.getSelects()) {
                     String unionName = "Query " + i;
-                    Tab tab = new Tab(unionName);
-                    tab.setId(unionName);
-                    unionTabPane.getTabs().add(tab);
-                    unionItemMap.put(unionName, i - 1);
+                    addUnionTabPane(unionName);
+                    addUnionColumn(unionName);
                     i++;
+                    curMaxUnion++;
                 }
             }
             unionNumber = unionTabPane.getSelectionModel().getSelectedIndex();
@@ -355,14 +361,45 @@ public class MainController {
         }
         // ONE QUERY
         else if (selectBody instanceof PlainSelect) {
+            addUnionColumn("Query 1");
             loadSelectData((PlainSelect) selectBody);
         }
         cteNumberPrev = cteNumber;
     }
 
+    private void addUnionColumn(String unionName) {
+        TableColumn<TableRow, String> newColumn = new TableColumn<>(unionName);
+        newColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
+        aliasTable.getColumns().add(newColumn);
+        unionColumns.put(unionName, newColumn);
+        unionTable.getItems().add(new TableRow(unionName));
+    }
+
     private void loadSelectData(PlainSelect pSelect) {
 //        unionTable.getItems().add(new TableRow("Query " + i));
         fillFromTables(pSelect);
+        loadSelectedFields(pSelect);
+        loadGroupBy(pSelect);
+        loadOrderBy(pSelect);
+        loadConditions(pSelect);
+    }
+
+    private void loadGroupBy(PlainSelect pSelect) {
+        GroupByElement groupBy = pSelect.getGroupBy();
+        if (groupBy != null) {
+            groupBy.getGroupByExpressions().forEach(x -> {
+//                    for (TreeItem<TableRow> ddd: groupFieldsTree.getRoot().getChildren()) {
+//                        if (ddd.getValue().getName().equals(x.toString())){
+//                            makeSelect(ddd, groupFieldsTree, groupTableResults, null);
+//                        }
+//                    };
+                TableRow tableRow = new TableRow(x.toString());
+                groupTableResults.getItems().add(0, tableRow);
+            });
+        }
+    }
+
+    private void loadSelectedFields(PlainSelect pSelect) {
         for (Object select : pSelect.getSelectItems()) {
             if (select instanceof SelectExpressionItem) {
 
@@ -389,20 +426,6 @@ public class MainController {
             }
 
         }
-        GroupByElement groupBy = pSelect.getGroupBy();
-        if (groupBy != null) {
-            groupBy.getGroupByExpressions().forEach(x -> {
-//                    for (TreeItem<TableRow> ddd: groupFieldsTree.getRoot().getChildren()) {
-//                        if (ddd.getValue().getName().equals(x.toString())){
-//                            makeSelect(ddd, groupFieldsTree, groupTableResults, null);
-//                        }
-//                    };
-                TableRow tableRow = new TableRow(x.toString());
-                groupTableResults.getItems().add(0, tableRow);
-            });
-        }
-        loadOrderBy(pSelect);
-        loadConditions(pSelect);
     }
 
     private void loadConditions(PlainSelect pSelect) {
@@ -456,16 +479,18 @@ public class MainController {
         });
     }
 
-    private void clearTables() {
+    private void clearTables(boolean cteChange) {
         fieldTable.getItems().clear();
         tablesView.getRoot().getChildren().clear();
         joinItems.clear();
-        unionTable.getItems().clear();
-        aliasTable.getItems().clear();
         conditionTableResults.getItems().clear();
         groupTableResults.getItems().clear();
         groupTableAggregates.getItems().clear();
         orderTableResults.getItems().clear();
+        if (cteChange) {
+            unionTable.getItems().clear();
+            aliasTable.getItems().clear();
+        }
     }
 
     private void fillFromTables(PlainSelect pSelect) {
@@ -615,11 +640,21 @@ public class MainController {
     private void fillCurrentQuery(Tab tab, Tab unionTab) {
         PlainSelect selectBody = getSelectBody(tab, unionTab);
         try {
+            fillSelectedFields(selectBody);
             fillOrder(selectBody);
             fillConditions(selectBody);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void fillSelectedFields(PlainSelect selectBody) {
+        selectBody.getSelectItems().clear();
+        fieldTable.getItems().forEach(x -> {
+            SelectExpressionItem sItem = new SelectExpressionItem();
+            sItem.setExpression(new Column(x));
+            selectBody.getSelectItems().add(sItem);
+        });
     }
 
     private void fillOrder(PlainSelect selectBody) {
@@ -1116,7 +1151,7 @@ public class MainController {
         if (defaultValue != null) {
             tableRow.setComboBoxValue(defaultValue);
         }
-        resultsTable.getItems().add(0, tableRow);
+        resultsTable.getItems().add(tableRow);
         fieldsTree.getRoot().getChildren().remove(selectedItem);
     }
 
@@ -1291,12 +1326,12 @@ public class MainController {
     private TableView<TableRow> aliasTable;
     @FXML
     private TableColumn<TableRow, String> aliasFieldColumn;
-    @FXML
-    private TableColumn<TableRow, String> queryFieldColumn;
+//    @FXML
+//    private TableColumn<TableRow, String> queryFieldColumn;
 
     private void initAliasTable() {
         aliasFieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getAlias()));
-        queryFieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
+//        queryFieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
 
         unionTableNameColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
         unionTableDistinctColumn.setCellFactory(tc -> new CheckBoxTableCell<>());
@@ -1309,12 +1344,37 @@ public class MainController {
         return new TableRow(select.toString(), strAlias);
     }
 
+    private int curMaxUnion;
+    private Map<String, TableColumn> unionColumns;
+    private Map<String, Tab> unionTabs;
+
     @FXML
     protected void addUnionQuery(ActionEvent event) {
-        TableColumn<TableRow, String> newColumn = new TableColumn<>("Query 2");
-        aliasTable.getColumns().add(newColumn);
+        curMaxUnion++;
+        String unionName = "Query " + curMaxUnion;
+        addUnionColumn(unionName);
+        addUnionTabPane(unionName);
     }
 
+    private void addUnionTabPane(String unionName) {
+        Tab tab = new Tab(unionName);
+        tab.setId(unionName);
+        unionTabPane.getTabs().add(tab);
+        unionTabs.put(unionName, tab);
+        unionItemMap.put(unionName, curMaxUnion);
+    }
+
+    @FXML
+    protected void deleteUnion(ActionEvent event) {
+        if (unionTable.getItems().size() == 1) {
+            return;
+        }
+        TableRow selectedItem = unionTable.getSelectionModel().getSelectedItem();
+        aliasTable.getColumns().remove(unionColumns.get(selectedItem.getName()));
+        unionTabPane.getTabs().remove(unionTabs.get(selectedItem.getName()));
+        unionTable.getItems().remove(selectedItem);
+        unionItemMap.remove(selectedItem.getName());
+    }
 
     @FXML
     private TableView<TableRow> unionTable;
