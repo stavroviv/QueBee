@@ -212,7 +212,6 @@ public class MainController {
                         SelectExpressionItem select = (SelectExpressionItem) x;
                         Alias alias = select.getAlias();
                         String strAlias = alias != null ? select.getAlias().getName() : select.getExpression().toString();
-
                         AliasRow aliasEl = aliasTable.getItems().get(j);
                         aliasEl.getValues().add(strAlias);
                         j++;
@@ -430,10 +429,18 @@ public class MainController {
     private int cteNumberPrev = -1;
 
     private void addUnionColumn(String unionName, int i) {
-
         TableColumn<AliasRow, String> newColumn = new TableColumn<>(unionName);
-
         newColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValues().get(i)));
+        newColumn.setCellFactory(ttc -> new TableCell<AliasRow, String>() {
+
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                TextField textField = new TextField(empty ? null : item);
+                setGraphic(textField);
+                textField.setOnMouseClicked(event -> showPopup(null, null, null));
+            }
+        });
 
         aliasTable.getColumns().add(newColumn);
         unionColumns.put(unionName, newColumn);
@@ -1382,7 +1389,16 @@ public class MainController {
     private TableColumn<AliasRow, String> aliasFieldColumn;
 
     private void initAliasTable() {
-        aliasFieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getAlias()));
+        aliasFieldColumn.setCellValueFactory(new PropertyValueFactory<>("alias"));
+        aliasFieldColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        aliasFieldColumn.setOnEditCommit((TableColumn.CellEditEvent<AliasRow, String> event) -> {
+            TablePosition<AliasRow, String> pos = event.getTablePosition();
+            String newFullName = event.getNewValue();
+            int row = pos.getRow();
+            AliasRow person = event.getTableView().getItems().get(row);
+            person.setAlias(newFullName);
+        });
+
         unionTableNameColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
         unionTableDistinctColumn.setCellFactory(tc -> new CheckBoxTableCell<>());
         unionTableDistinctColumn.setCellValueFactory(data -> new SimpleBooleanProperty(data.getValue().isDistinct()));
