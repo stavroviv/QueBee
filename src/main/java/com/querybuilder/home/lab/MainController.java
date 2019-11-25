@@ -430,21 +430,85 @@ public class MainController {
 
     private void addUnionColumn(String unionName, int i) {
         TableColumn<AliasRow, String> newColumn = new TableColumn<>(unionName);
+        newColumn.setEditable(true);
         newColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValues().get(i)));
+
+
         newColumn.setCellFactory(ttc -> new TableCell<AliasRow, String>() {
+            private TextField textField;
+
+            private String getString() {
+                return getItem();
+            }
+
+            private void createTextField() {
+                textField = new TextField(getString());
+                textField.setMinWidth(this.getWidth() - this.getGraphicTextGap() * 2);
+                textField.focusedProperty().addListener((arg0, arg1, arg2) -> {
+                    if (!arg2) {
+                        commitEdit(textField.getText());
+                    }
+                });
+            }
+
+            @Override
+            public void startEdit() {
+                if (!isEmpty()) {
+                    super.startEdit();
+                    createTextField();
+                    setText(null);
+                    setGraphic(textField);
+                    textField.selectAll();
+                }
+            }
+
+            @Override
+            public void cancelEdit() {
+                super.cancelEdit();
+                setText(getItem());
+                setGraphic(null);
+            }
 
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                TextField textField = new TextField(empty ? null : item);
-                setGraphic(textField);
-                textField.setOnMouseClicked(event -> showPopup(null, null, null));
+                if (empty) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    pppp(item, empty, this);
+
+                }
             }
+        });
+        newColumn.setOnEditCommit(
+                t -> (t.getTableView().getItems().get(
+                        t.getTablePosition().getRow())
+                ).setAlias(t.getNewValue())
+        );
+
+
+        aliasTable.getSelectionModel().selectedIndexProperty().addListener((num) -> {
+            TablePosition focusedCell = aliasTable.getFocusModel().getFocusedCell();
+            aliasTable.edit(focusedCell.getRow(), focusedCell.getTableColumn());
         });
 
         aliasTable.getColumns().add(newColumn);
         unionColumns.put(unionName, newColumn);
         unionTable.getItems().add(new TableRow(unionName));
+    }
+
+    private void pppp(String item, boolean empty, TableCell<AliasRow, String> aliasRowStringTableCell) {
+        if (aliasRowStringTableCell.isEditing()) {
+            TextField textField = new TextField(empty ? null : item);
+            aliasRowStringTableCell.setGraphic(textField);
+            textField.setOnMouseClicked(event -> {
+                System.out.println(event);
+            });
+        } else {
+            Label textField = new Label(empty ? null : item);
+            aliasRowStringTableCell.setGraphic(textField);
+        }
     }
 
     private void loadSelectData(PlainSelect pSelect, boolean cteChange) {
@@ -1389,6 +1453,8 @@ public class MainController {
     private TableColumn<AliasRow, String> aliasFieldColumn;
 
     private void initAliasTable() {
+        aliasTable.getSelectionModel().cellSelectionEnabledProperty().set(true);
+
         aliasFieldColumn.setCellValueFactory(new PropertyValueFactory<>("alias"));
         aliasFieldColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         aliasFieldColumn.setOnEditCommit((TableColumn.CellEditEvent<AliasRow, String> event) -> {
