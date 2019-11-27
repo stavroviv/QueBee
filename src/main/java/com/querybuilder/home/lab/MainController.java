@@ -11,7 +11,6 @@ import javafx.event.EventTarget;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
@@ -22,7 +21,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
@@ -40,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 
 import static com.querybuilder.home.lab.Constants.*;
+import static com.querybuilder.home.lab.Utils.setDefaultSkin;
+import static com.querybuilder.home.lab.Utils.setEmptyHeader;
 import static javafx.scene.control.TreeTableView.CONSTRAINED_RESIZE_POLICY;
 
 public class MainController {
@@ -322,16 +322,7 @@ public class MainController {
         conditionsTreeTableContext.getColumns().add(conditionsTreeTableContextColumn);
         selectedConditionsTreeTableContext = new SelectedFieldsTree(tablesView);
         conditionsTreeTableContext.setRoot(selectedConditionsTreeTableContext);
-        conditionsTreeTableContext.widthProperty().addListener((ov, t, t1) -> {
-            Pane header = (Pane) conditionsTreeTableContext.lookup("TableHeaderRow");
-            if (header != null && header.isVisible()) {
-                header.setMaxHeight(0);
-                header.setMinHeight(0);
-                header.setPrefHeight(0);
-                header.setVisible(false);
-                header.setManaged(false);
-            }
-        });
+        setEmptyHeader(conditionsTreeTableContext);
         conditionsTreeTableContext.setOnMousePressed(e -> {
             if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
                 TreeItem<TableRow> item = conditionsTreeTableContext.getSelectionModel().getSelectedItem();
@@ -434,53 +425,7 @@ public class MainController {
         newColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValues().get(i)));
 
 
-        newColumn.setCellFactory(ttc -> new TableCell<AliasRow, String>() {
-            private TextField textField;
-
-            private String getString() {
-                return getItem();
-            }
-
-            private void createTextField() {
-                textField = new TextField(getString());
-                textField.setMinWidth(this.getWidth() - this.getGraphicTextGap() * 2);
-                textField.focusedProperty().addListener((arg0, arg1, arg2) -> {
-                    if (!arg2) {
-                        commitEdit(textField.getText());
-                    }
-                });
-            }
-
-            @Override
-            public void startEdit() {
-                if (!isEmpty()) {
-                    super.startEdit();
-                    createTextField();
-                    setText(null);
-                    setGraphic(textField);
-                    textField.selectAll();
-                }
-            }
-
-            @Override
-            public void cancelEdit() {
-                super.cancelEdit();
-                setText(getItem());
-                setGraphic(null);
-            }
-
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setText(null);
-                    setGraphic(null);
-                } else {
-                    pppp(item, empty, this);
-
-                }
-            }
-        });
+        newColumn.setCellFactory(x -> new AliasCell(x, getSeletedItems()));
         newColumn.setOnEditCommit(
                 t -> (t.getTableView().getItems().get(
                         t.getTablePosition().getRow())
@@ -498,18 +443,12 @@ public class MainController {
         unionTable.getItems().add(new TableRow(unionName));
     }
 
-    private void pppp(String item, boolean empty, TableCell<AliasRow, String> aliasRowStringTableCell) {
-        if (aliasRowStringTableCell.isEditing()) {
-            TextField textField = new TextField(empty ? null : item);
-            aliasRowStringTableCell.setGraphic(textField);
-            textField.setOnMouseClicked(event -> {
-                System.out.println(event);
-            });
-        } else {
-            Label textField = new Label(empty ? null : item);
-            aliasRowStringTableCell.setGraphic(textField);
-        }
+    private List<String> getSeletedItems() {
+        List<String> items = new ArrayList<>();
+        fieldTable.getItems().forEach(x -> items.add(x));
+        return items;
     }
+
 
     private void loadSelectData(PlainSelect pSelect, boolean cteChange) {
 //        unionTable.getItems().add(new TableRow("Query " + i));
@@ -1014,9 +953,10 @@ public class MainController {
 
     @FXML
     private TreeTableView<TableRow> conditionsTreeTable;
-    private TreeTableView<TableRow> conditionsTreeTableContext;
     @FXML
     private TreeTableColumn<TableRow, TableRow> conditionsTreeTableColumn;
+
+    private TreeTableView<TableRow> conditionsTreeTableContext;
     private TreeTableColumn<TableRow, TableRow> conditionsTreeTableContextColumn;
 
     @FXML
@@ -1027,7 +967,7 @@ public class MainController {
     private TableColumn<ConditionElement, ConditionElement> conditionTableResultsCondition;
 
     private void initConditionTableView() {
-        conditionPopup = new PopupControl();
+//        conditionPopup = new PopupControl();
 
         conditionTableResults.setEditable(true);
         conditionTableResults.getSelectionModel().cellSelectionEnabledProperty().set(true);
@@ -1139,6 +1079,7 @@ public class MainController {
     private PopupControl conditionPopup;
 
     private void showPopup(MouseEvent event, TableCell<ConditionElement, ConditionElement> cell, ConditionElement item) {
+        conditionPopup = new PopupControl();
         conditionPopup.setAutoHide(true);
         conditionPopup.setAutoFix(true);
         conditionPopup.setHideOnEscape(true);
@@ -1158,23 +1099,8 @@ public class MainController {
         final double clickX = Math.round(windowCoord.getX() + sceneCoord.getX() + nodeCoord.getX());
         final double clickY = Math.round(windowCoord.getY() + sceneCoord.getY() + nodeCoord.getY());
 
-        conditionPopup.setSkin(new Skin<Skinnable>() {
-            @Override
-            public Skinnable getSkinnable() {
-                return null;
-            }
+        setDefaultSkin(conditionPopup, conditionsTreeTableContext, targetButton);
 
-            @Override
-            public Node getNode() {
-                conditionsTreeTableContext.setMinWidth(targetButton.getWidth());
-                conditionsTreeTableContext.setMaxWidth(targetButton.getWidth());
-                return conditionsTreeTableContext;
-            }
-
-            @Override
-            public void dispose() {
-            }
-        });
         conditionPopup.show(cell, clickX, clickY + targetButton.getHeight());
         conditionTableResults.getSelectionModel().select(item);
     }
