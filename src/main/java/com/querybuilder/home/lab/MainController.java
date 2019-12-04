@@ -422,16 +422,9 @@ public class MainController {
     private void addUnionColumn(String unionName, int i) {
         TableColumn<AliasRow, String> newColumn = new TableColumn<>(unionName);
         newColumn.setEditable(true);
+
         newColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValues().get(i)));
-
-
-        newColumn.setCellFactory(x -> new AliasCell(x, getSeletedItems()));
-        newColumn.setOnEditCommit(
-                t -> (t.getTableView().getItems().get(
-                        t.getTablePosition().getRow())
-                ).setAlias(t.getNewValue())
-        );
-
+        newColumn.setCellFactory(x -> new AliasCell(x, i, getSeletedItems()));
 
         aliasTable.getSelectionModel().selectedIndexProperty().addListener((num) -> {
             TablePosition focusedCell = aliasTable.getFocusModel().getFocusedCell();

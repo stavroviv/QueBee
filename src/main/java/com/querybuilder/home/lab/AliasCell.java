@@ -13,19 +13,20 @@ import static com.querybuilder.home.lab.Utils.setDefaultSkin;
 import static com.querybuilder.home.lab.Utils.setEmptyHeader;
 
 public class AliasCell extends TableCell<AliasRow, String> {
-
     private TableColumn<AliasRow, String> aliasRow;
-
     private List<String> items;
 
-//    static {
-//        aliasPopup = new PopupControl();
-//    }
-
-    public AliasCell(TableColumn<AliasRow, String> aliasRow, List<String> items) {
+    public AliasCell(TableColumn<AliasRow, String> aliasRow, int column, List<String> items) {
         this.aliasRow = aliasRow;
         this.items = items;
         initConditionTableForPopup();
+        aliasRow.setOnEditCommit(
+                t -> {
+                    int row = t.getTablePosition().getRow();
+                    AliasRow currentRow = t.getTableView().getItems().get(row);
+                    currentRow.getValues().set(column, t.getNewValue());
+                }
+        );
     }
 
     @Override
@@ -77,11 +78,8 @@ public class AliasCell extends TableCell<AliasRow, String> {
         final Point2D nodeCoord = cell.localToScene(0.0, 0.0);
         final double clickX = Math.round(windowCoord.getX() + sceneCoord.getX() + nodeCoord.getX());
         final double clickY = Math.round(windowCoord.getY() + sceneCoord.getY() + nodeCoord.getY());
-
         setDefaultSkin(aliasPopup, aliasTableContext, cell);
-
         aliasPopup.show(cell, clickX, clickY + cell.getHeight());
-//        conditionTableResults.getSelectionModel().select(item);
     }
 
     @Override
@@ -127,6 +125,7 @@ public class AliasCell extends TableCell<AliasRow, String> {
         aliasTableContextColumn.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue()));
 
         aliasTableContext.getItems().addAll(items);
+        aliasTableContext.getSelectionModel().select(0);
 
         setEmptyHeader(aliasTableContext);
 
@@ -135,9 +134,7 @@ public class AliasCell extends TableCell<AliasRow, String> {
                 String selectedItem = aliasTableContext.getSelectionModel().getSelectedItem();
                 commitEdit(selectedItem);
                 aliasPopup.hide();
-//                conditionTableResults.refresh();
             }
         });
     }
-
 }
