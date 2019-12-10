@@ -43,11 +43,7 @@ public class AliasCell extends TableCell<AliasRow, String> {
 
         TextField textField = new TextField(getItem());
         textField.prefWidthProperty().bind(pane.widthProperty());
-//        textField.focusedProperty().addListener((arg0, arg1, arg2) -> {
-//            if (!arg2) {
-//                commitEdit(textField.getText());
-//            }
-//        });
+
         pane.getChildren().add(textField);
 
         Button leftPart = new Button("...");
