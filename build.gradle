@@ -20,6 +20,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.10'
 }
 
+
 intellij {
     version 'IU-2018.2.2'
     plugins = ['DatabaseTools']

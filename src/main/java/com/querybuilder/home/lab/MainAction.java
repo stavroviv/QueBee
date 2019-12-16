@@ -21,16 +21,6 @@ public class MainAction extends AnAction {
     private Project project;
     private AnActionEvent e;
 
-    private String getSelectionText(AnActionEvent e) {
-        editor = e.getRequiredData(CommonDataKeys.EDITOR);
-        project = e.getRequiredData(CommonDataKeys.PROJECT);
-        this.e = e;
-        CaretModel caretModel = editor.getCaretModel();
-        Caret currentCaret = caretModel.getCurrentCaret();
-        return currentCaret.hasSelection()
-                ? currentCaret.getSelectedText() : e.getData(CommonDataKeys.PSI_FILE).getText();
-    }
-
     @Override
     public void actionPerformed(AnActionEvent e) {
         QueryBuilder qb = new QueryBuilder(getSelectionText(e));
@@ -41,7 +31,17 @@ public class MainAction extends AnAction {
         qb.setDataSource(dataSource);
     }
 
-    public void insertResult(String resultQuery) {
+    private String getSelectionText(AnActionEvent e) {
+        editor = e.getRequiredData(CommonDataKeys.EDITOR);
+        project = e.getRequiredData(CommonDataKeys.PROJECT);
+        this.e = e;
+        CaretModel caretModel = editor.getCaretModel();
+        Caret currentCaret = caretModel.getCurrentCaret();
+        return currentCaret.hasSelection()
+                ? currentCaret.getSelectedText() : e.getData(CommonDataKeys.PSI_FILE).getText();
+    }
+
+    void insertResult(String resultQuery) {
         ApplicationManager.getApplication().invokeLater(() -> {
             final Document document = editor.getDocument();
             // Work off of the primary caret to get the selection info
