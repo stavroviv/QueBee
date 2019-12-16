@@ -740,11 +740,11 @@ public class MainController {
             }
         });
         setCellFactory(tablesViewColumn);
-        tablesViewColumn.setCellFactory(ttc -> new TreeTableCell<TableRow, TableRow>() {
+        tablesViewColumn.setCellFactory(ttc -> new CustomCell() {
             @Override
             protected void updateItem(TableRow item, boolean empty) {
                 super.updateItem(item, empty);
-                Utils.setItem(this, item, empty);
+                setItem(this, item, empty);
                 setContextMenu(tableViewGetContextMenu(item, empty));
             }
         });

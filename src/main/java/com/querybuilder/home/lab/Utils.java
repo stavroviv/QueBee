@@ -44,19 +44,27 @@ class Utils {
 
     static void setCellFactory(TreeTableColumn<TableRow, TableRow> tablesViewColumn) {
         tablesViewColumn.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().getValue()));
-        tablesViewColumn.setCellFactory(ttc -> new TreeTableCell<TableRow, TableRow>() {
-            @Override
-            protected void updateItem(TableRow item, boolean empty) {
-                super.updateItem(item, empty);
-                Utils.setItem(this, item, empty);
-            }
-        });
+        tablesViewColumn.setCellFactory(ttc -> new CustomCell());
     }
 
-    static void setItem(TreeTableCell<TableRow, TableRow> cell, TableRow item, boolean empty) {
-        ImageView element = new ImageView(new Image(Utils.class.getResourceAsStream("/myToolWindow/element.png")));
-        ImageView table = new ImageView(new Image(Utils.class.getResourceAsStream("/myToolWindow/table.png")));
-        ImageView nestedQuery = new ImageView(new Image(Utils.class.getResourceAsStream("/myToolWindow/nestedQuery.png")));
+}
+
+class CustomCell extends TreeTableCell<TableRow, TableRow> {
+    private final ImageView element = getImage("/myToolWindow/element.png");
+    private final ImageView table = getImage("/myToolWindow/table.png");
+    private final ImageView nestedQuery = getImage("/myToolWindow/nestedQuery.png");
+
+    private static ImageView getImage(String resourcePath) {
+        return new ImageView(new Image(Utils.class.getResourceAsStream(resourcePath)));
+    }
+
+    @Override
+    protected void updateItem(TableRow item, boolean empty) {
+        super.updateItem(item, empty);
+        setItem(this, item, empty);
+    }
+
+    void setItem(TreeTableCell<TableRow, TableRow> cell, TableRow item, boolean empty) {
         cell.setText(empty ? null : item.getName());
         // icons
         if (empty) {
@@ -67,5 +75,4 @@ class Utils {
             cell.setGraphic(item.isRoot() ? table : element);
         }
     }
-
 }
