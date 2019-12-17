@@ -1,4 +1,4 @@
-package com.querybuilder.home.lab;
+package com.querybuilder.home.lab.domain;
 
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.geometry.Point2D;
@@ -9,8 +9,8 @@ import javafx.scene.layout.HBox;
 
 import java.util.List;
 
-import static com.querybuilder.home.lab.Utils.setDefaultSkin;
-import static com.querybuilder.home.lab.Utils.setEmptyHeader;
+import static com.querybuilder.home.lab.utils.Utils.setDefaultSkin;
+import static com.querybuilder.home.lab.utils.Utils.setEmptyHeader;
 
 public class AliasCell extends TableCell<AliasRow, String> {
     private TableColumn<AliasRow, String> aliasRow;

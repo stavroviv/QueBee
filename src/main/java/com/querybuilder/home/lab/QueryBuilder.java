@@ -1,6 +1,8 @@
 package com.querybuilder.home.lab;
 
 import com.intellij.database.dataSource.LocalDataSource;
+import com.querybuilder.home.lab.controllers.MainController;
+import com.querybuilder.home.lab.domain.TableRow;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;

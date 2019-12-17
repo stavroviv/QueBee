@@ -1,5 +1,12 @@
-package com.querybuilder.home.lab;
+package com.querybuilder.home.lab.controllers;
 
+import com.querybuilder.home.lab.QueryBuilder;
+import com.querybuilder.home.lab.database.DBStructure;
+import com.querybuilder.home.lab.database.DBStructureImpl;
+import com.querybuilder.home.lab.domain.*;
+import com.querybuilder.home.lab.domain.TableRow;
+import com.querybuilder.home.lab.utils.CustomCell;
+import com.querybuilder.home.lab.utils.Utils;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
@@ -7,17 +14,12 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
@@ -29,14 +31,13 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.querybuilder.home.lab.Constants.*;
-import static com.querybuilder.home.lab.Utils.setCellFactory;
+import static com.querybuilder.home.lab.utils.Constants.*;
+import static com.querybuilder.home.lab.utils.Utils.setCellFactory;
 
 public class MainController {
 
@@ -589,20 +590,19 @@ public class MainController {
 
     @FXML
     public void addFieldRowAction() {
-        try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/builder-forms/new-field-form.fxml"));
-            // УКА !!!!!!!!!!!!!!!
-            FXMLLoader.setDefaultClassLoader(getClass().getClassLoader());
-            // УКА !!!!!!!!!!!!!!!
-            Parent root1 = fxmlLoader.load();
-            Stage stage = new Stage();
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setTitle("Custom expression");
-            stage.setScene(new Scene(root1));
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/builder-forms/selected-field-form.fxml"));
+//            FXMLLoader.setDefaultClassLoader(getClass().getClassLoader());
+//            Parent root1 = fxmlLoader.load();
+//            Stage stage = new Stage();
+//            stage.initModality(Modality.APPLICATION_MODAL);
+//            stage.setTitle("Custom expression");
+//            stage.setScene(new Scene(root1));
+//            stage.show();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+        Utils.openForm("/builder-forms/selected-field-form.fxml", "Custom expression");
     }
 
     private void addFieldRow(String name) {

@@ -1,4 +1,4 @@
-package com.querybuilder.home.lab;
+package com.querybuilder.home.lab.domain;
 
 import com.sun.javafx.scene.control.skin.LabeledText;
 import javafx.collections.FXCollections;
@@ -10,8 +10,8 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 
-import static com.querybuilder.home.lab.Constants.DATABASE_ROOT;
-import static com.querybuilder.home.lab.Utils.*;
+import static com.querybuilder.home.lab.utils.Constants.DATABASE_ROOT;
+import static com.querybuilder.home.lab.utils.Utils.*;
 import static javafx.scene.control.TreeTableView.CONSTRAINED_RESIZE_POLICY;
 
 public class ConditionCell extends TableCell<ConditionElement, ConditionElement> {

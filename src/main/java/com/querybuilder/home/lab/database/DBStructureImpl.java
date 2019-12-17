@@ -1,9 +1,10 @@
-package com.querybuilder.home.lab;
+package com.querybuilder.home.lab.database;
 
 import com.intellij.database.dataSource.LocalDataSource;
 import com.intellij.database.model.DasObject;
 import com.intellij.database.model.ObjectKind;
 import com.intellij.util.containers.JBIterable;
+import com.querybuilder.home.lab.domain.TableRow;
 import javafx.scene.control.TreeItem;
 
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.querybuilder.home.lab.Constants.DATABASE_ROOT;
+import static com.querybuilder.home.lab.utils.Constants.DATABASE_ROOT;
 
 public class DBStructureImpl implements DBStructure {
     private Map<String, List<String>> dbElements;

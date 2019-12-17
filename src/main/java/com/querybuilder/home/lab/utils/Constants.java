@@ -1,4 +1,4 @@
-package com.querybuilder.home.lab;
+package com.querybuilder.home.lab.utils;
 
 public class Constants {
     public static final String ALL_FIELDS = "All fields";

@@ -1,4 +1,4 @@
-package com.querybuilder.home.lab;
+package com.querybuilder.home.lab.domain;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;

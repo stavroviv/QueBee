@@ -1,13 +1,11 @@
-package com.querybuilder.home.lab;
+package com.querybuilder.home.lab.domain;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.TreeItem;
 
 import java.util.List;
 import java.util.Map;
