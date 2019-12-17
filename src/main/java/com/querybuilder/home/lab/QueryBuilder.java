@@ -67,7 +67,7 @@ public class QueryBuilder {
         JFXPanel fxPanel = new JFXPanel(); // это должно быть перед загрузкой формы
         Platform.setImplicitExit(false);
         Platform.runLater(() -> {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/builder-forms/main-builder-form.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/forms/main-form.fxml"));
             fxmlLoader.setController(mainController);
             Parent root1 = null;
             try {

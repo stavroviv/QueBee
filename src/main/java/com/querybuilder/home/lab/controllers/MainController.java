@@ -590,19 +590,7 @@ public class MainController {
 
     @FXML
     public void addFieldRowAction() {
-//        try {
-//            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/builder-forms/selected-field-form.fxml"));
-//            FXMLLoader.setDefaultClassLoader(getClass().getClassLoader());
-//            Parent root1 = fxmlLoader.load();
-//            Stage stage = new Stage();
-//            stage.initModality(Modality.APPLICATION_MODAL);
-//            stage.setTitle("Custom expression");
-//            stage.setScene(new Scene(root1));
-//            stage.show();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-        Utils.openForm("/builder-forms/selected-field-form.fxml", "Custom expression");
+        Utils.openForm("/forms/selected-field.fxml", "Custom expression");
     }
 
     private void addFieldRow(String name) {

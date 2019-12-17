@@ -78,7 +78,7 @@
                                              <graphic>
                                                 <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                                    <image>
-                                                      <Image url="@../myToolWindow/addNestedQuery.png" />
+                                                       <Image url="@../images/addNestedQuery.png"/>
                                                    </image>
                                                 </ImageView>
                                              </graphic>
@@ -87,7 +87,7 @@
                                              <graphic>
                                                 <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                                    <image>
-                                                      <Image url="@../myToolWindow/edit.png" />
+                                                       <Image url="@../images/edit.png"/>
                                                    </image>
                                                 </ImageView>
                                              </graphic>
@@ -96,7 +96,7 @@
                                              <graphic>
                                                 <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                                    <image>
-                                                      <Image url="@../myToolWindow/delete.png" />
+                                                       <Image url="@../images/delete.png"/>
                                                    </image>
                                                 </ImageView>
                                              </graphic>
@@ -124,7 +124,7 @@
                                              <graphic>
                                                 <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                                    <image>
-                                                      <Image url="@../myToolWindow/add.png" />
+                                                       <Image url="@../images/add.png"/>
                                                    </image>
                                                 </ImageView>
                                              </graphic>
@@ -133,7 +133,7 @@
                                              <graphic>
                                                 <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                                    <image>
-                                                      <Image url="@../myToolWindow/delete.png" />
+                                                       <Image url="@../images/delete.png"/>
                                                    </image>
                                                 </ImageView>
                                              </graphic>
@@ -142,7 +142,7 @@
                                              <graphic>
                                                 <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                                    <image>
-                                                      <Image url="@../myToolWindow/edit.png" />
+                                                       <Image url="@../images/edit.png"/>
                                                    </image>
                                                 </ImageView>
                                              </graphic>
@@ -163,7 +163,7 @@
                                  <graphic>
                                     <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
-                                          <Image url="@../myToolWindow/add.png" />
+                                           <Image url="@../images/add.png"/>
                                        </image>
                                     </ImageView>
                                  </graphic>
@@ -172,7 +172,7 @@
                                  <graphic>
                                     <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
-                                          <Image url="@../myToolWindow/copy.png" />
+                                           <Image url="@../images/copy.png"/>
                                        </image>
                                     </ImageView>
                                  </graphic>
@@ -181,7 +181,7 @@
                                  <graphic>
                                     <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
-                                          <Image url="@../myToolWindow/delete.png" />
+                                           <Image url="@../images/delete.png"/>
                                        </image>
                                     </ImageView>
                                  </graphic>
@@ -355,7 +355,7 @@
                                        <graphic>
                                           <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
-                                                <Image url="@../myToolWindow/add.png" />
+                                                 <Image url="@../images/add.png"/>
                                              </image>
                                           </ImageView>
                                        </graphic>
@@ -366,7 +366,7 @@
                                        <graphic>
                                           <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
-                                                <Image url="@../myToolWindow/delete.png" />
+                                                 <Image url="@../images/delete.png"/>
                                              </image>
                                           </ImageView>
                                        </graphic>
@@ -377,7 +377,7 @@
                                        <graphic>
                                           <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
-                                                <Image url="@../myToolWindow/copy.png" />
+                                                 <Image url="@../images/copy.png"/>
                                              </image>
                                           </ImageView>
                                        </graphic>
@@ -469,7 +469,7 @@
                                        <graphic>
                                           <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
-                                                <Image url="@../myToolWindow/add.png" />
+                                                 <Image url="@../images/add.png"/>
                                              </image>
                                           </ImageView>
                                        </graphic>
@@ -480,7 +480,7 @@
                                        <graphic>
                                           <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
-                                                <Image url="@../myToolWindow/delete.png" />
+                                                 <Image url="@../images/delete.png"/>
                                              </image>
                                           </ImageView>
                                        </graphic>
@@ -489,7 +489,7 @@
                                        <graphic>
                                           <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
-                                                <Image url="@../myToolWindow/copy.png" />
+                                                 <Image url="@../images/copy.png"/>
                                              </image>
                                           </ImageView>
                                        </graphic>
@@ -516,7 +516,7 @@
                                        <graphic>
                                           <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
-                                                <Image url="@../myToolWindow/delete.png" />
+                                                 <Image url="@../images/delete.png"/>
                                              </image>
                                           </ImageView>
                                        </graphic>
@@ -605,7 +605,7 @@
                                              <ImageView fitHeight="16.0" fitWidth="58.0" pickOnBounds="true"
                                                         preserveRatio="true">
                                                  <image>
-                                                     <Image url="@../myToolWindow/moveup.png"/>
+                                                     <Image url="@../images/moveup.png"/>
                                                  </image>
                                              </ImageView>
                                          </graphic>
@@ -617,7 +617,7 @@
                                              <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true"
                                                         preserveRatio="true">
                                                  <image>
-                                                     <Image url="@../myToolWindow/movedown.png"/>
+                                                     <Image url="@../images/movedown.png"/>
                                                  </image>
                                              </ImageView>
                                          </graphic>
@@ -640,7 +640,7 @@
                                  <graphic>
                                     <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
-                                          <Image url="@../myToolWindow/add.png" />
+                                           <Image url="@../images/add.png"/>
                                        </image>
                                     </ImageView>
                                  </graphic>
@@ -649,7 +649,7 @@
                                  <graphic>
                                     <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
-                                          <Image url="@../myToolWindow/delete.png" />
+                                           <Image url="@../images/delete.png"/>
                                        </image>
                                     </ImageView>
                                  </graphic>
@@ -658,7 +658,7 @@
                                  <graphic>
                                     <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
-                                          <Image url="@../myToolWindow/copy.png" />
+                                           <Image url="@../images/copy.png"/>
                                        </image>
                                     </ImageView>
                                  </graphic>

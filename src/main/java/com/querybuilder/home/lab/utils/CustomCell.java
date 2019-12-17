@@ -7,9 +7,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 public class CustomCell extends TreeTableCell<TableRow, TableRow> {
-    private final ImageView element = getImage("/myToolWindow/element.png");
-    private final ImageView table = getImage("/myToolWindow/table.png");
-    private final ImageView nestedQuery = getImage("/myToolWindow/nestedQuery.png");
+    private final ImageView element = getImage("/images/element.png");
+    private final ImageView table = getImage("/images/table.png");
+    private final ImageView nestedQuery = getImage("/images/nestedQuery.png");
 
     private static ImageView getImage(String resourcePath) {
         return new ImageView(new Image(Utils.class.getResourceAsStream(resourcePath)));
@@ -21,7 +21,7 @@ public class CustomCell extends TreeTableCell<TableRow, TableRow> {
         setItem(this, item, empty);
     }
 
-    public void setItem(TreeTableCell<TableRow, TableRow> cell, TableRow item, boolean empty) {
+    protected void setItem(TreeTableCell<TableRow, TableRow> cell, TableRow item, boolean empty) {
         cell.setText(empty ? null : item.getName());
         // icons
         if (empty) {
