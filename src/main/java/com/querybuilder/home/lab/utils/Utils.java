@@ -1,5 +1,6 @@
 package com.querybuilder.home.lab.utils;
 
+import com.querybuilder.home.lab.controllers.SelectedFieldController;
 import com.querybuilder.home.lab.domain.TableRow;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.fxml.FXMLLoader;
@@ -12,6 +13,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.Map;
 
 public class Utils {
 
@@ -53,7 +55,7 @@ public class Utils {
         tablesViewColumn.setCellFactory(ttc -> new CustomCell());
     }
 
-    public static void openForm(String formName, String title) {
+    public static void openForm(String formName, String title, Map<String, Object> userData) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(Utils.class.getResource(formName));
             FXMLLoader.setDefaultClassLoader(Utils.class.getClassLoader());
@@ -61,6 +63,11 @@ public class Utils {
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle(title);
+
+            SelectedFieldController controller =
+                    fxmlLoader.getController();
+            controller.initData(userData);
+
             stage.setScene(new Scene(root1));
             stage.show();
         } catch (IOException e) {

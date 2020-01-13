@@ -3,8 +3,8 @@ package com.querybuilder.home.lab.controllers;
 import com.querybuilder.home.lab.QueryBuilder;
 import com.querybuilder.home.lab.database.DBStructure;
 import com.querybuilder.home.lab.database.DBStructureImpl;
-import com.querybuilder.home.lab.domain.*;
 import com.querybuilder.home.lab.domain.TableRow;
+import com.querybuilder.home.lab.domain.*;
 import com.querybuilder.home.lab.utils.CustomCell;
 import com.querybuilder.home.lab.utils.Utils;
 import javafx.beans.binding.Bindings;
@@ -590,7 +590,9 @@ public class MainController {
 
     @FXML
     public void addFieldRowAction() {
-        Utils.openForm("/forms/selected-field.fxml", "Custom expression");
+        Map<String, Object> data = new HashMap<>();
+        data.put("selectedFieldsTree", selectedGroupFieldsTree);
+        Utils.openForm("/forms/selected-field.fxml", "Custom expression", data);
     }
 
     private void addFieldRow(String name) {
