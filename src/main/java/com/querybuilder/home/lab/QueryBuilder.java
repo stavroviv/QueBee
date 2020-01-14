@@ -3,13 +3,11 @@ package com.querybuilder.home.lab;
 import com.intellij.database.dataSource.LocalDataSource;
 import com.querybuilder.home.lab.controllers.MainController;
 import com.querybuilder.home.lab.domain.TableRow;
-import javafx.animation.FadeTransition;
-import javafx.application.Platform;
+import com.querybuilder.home.lab.utils.Utils;
 import javafx.embed.swing.JFXPanel;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.util.Duration;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -65,17 +63,14 @@ public class QueryBuilder {
         this.controller = mainController;
 
         JFXPanel fxPanel = new JFXPanel(); // это должно быть перед загрузкой формы
-        Platform.setImplicitExit(false);
-        Platform.runLater(() -> {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/forms/main-form.fxml"));
-            fxmlLoader.setController(mainController);
-            Parent root1 = null;
-            try {
-                root1 = fxmlLoader.load();
-            } catch (Exception e1) {
-                e1.printStackTrace();
-                System.out.println(e1);
-            }
+//        Platform.setImplicitExit(false);
+//        Platform.runLater(() -> {
+        FXMLLoader fxmlLoader = new FXMLLoader(Utils.class.getResource("/forms/main-form.fxml"));
+        FXMLLoader.setDefaultClassLoader(Utils.class.getClassLoader());
+        fxmlLoader.setController(mainController);
+        Parent root1 = null;
+        try {
+            root1 = fxmlLoader.load();
             fxPanel.setScene(new Scene(root1));
 
             frame = new JFrame("Query builder");
@@ -84,13 +79,17 @@ public class QueryBuilder {
             frame.setSize(1200, 800);
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
-            root1.setOpacity(0.1f);
-            FadeTransition ft = new FadeTransition(Duration.millis(500), root1);
-            ft.setToValue(1);
-            ft.play();
-        });
-    }
+        } catch (Exception e1) {
+            e1.printStackTrace();
+            System.out.println(e1);
+        }
 
+//            root1.setOpacity(0.1f);
+//            FadeTransition ft = new FadeTransition(Duration.millis(500), root1);
+//            ft.setToValue(1);
+//            ft.play();
+//        });
+    }
 
     public void closeForm() {
         frame.setVisible(false);

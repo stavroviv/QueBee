@@ -9,7 +9,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -61,7 +60,7 @@ public class Utils {
             FXMLLoader.setDefaultClassLoader(Utils.class.getClassLoader());
             Parent root1 = fxmlLoader.load();
             Stage stage = new Stage();
-            stage.initModality(Modality.APPLICATION_MODAL);
+//            stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle(title);
 
             SelectedFieldController controller =

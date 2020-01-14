@@ -100,7 +100,7 @@ public class MainController {
     }
 
     public void initialize() {
-        initData();
+//        initData();
     }
 
     private void initData() {
