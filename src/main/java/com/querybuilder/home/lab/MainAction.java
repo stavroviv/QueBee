@@ -15,20 +15,23 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.codeStyle.CodeStyleManager;
+import javafx.embed.swing.JFXPanel;
 
 public class MainAction extends AnAction {
     private Editor editor;
     private Project project;
     private AnActionEvent e;
 
+    {
+        new JFXPanel();
+    }
+
     @Override
     public void actionPerformed(AnActionEvent e) {
-        QueryBuilder qb = new QueryBuilder(getSelectionText(e));
-        qb.setMainAction(this);
-
         JdbcConsole maybeAttachedSession = JdbcConsole.ScriptingJdbcSessionHolder.INSTANCE.getMaybeAttachedSession(e);
         LocalDataSource dataSource = maybeAttachedSession.getDataSource();
-        qb.setDataSource(dataSource);
+        QueryBuilder qb = new QueryBuilder(getSelectionText(e), true, dataSource);
+        qb.setMainAction(this);
     }
 
     private String getSelectionText(AnActionEvent e) {

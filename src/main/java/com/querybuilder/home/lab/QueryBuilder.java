@@ -3,11 +3,7 @@ package com.querybuilder.home.lab;
 import com.intellij.database.dataSource.LocalDataSource;
 import com.querybuilder.home.lab.controllers.MainController;
 import com.querybuilder.home.lab.domain.TableRow;
-import com.querybuilder.home.lab.utils.Utils;
 import javafx.embed.swing.JFXPanel;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -16,6 +12,10 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
 import javax.swing.*;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.querybuilder.home.lab.utils.Utils.getScene;
 
 public class QueryBuilder {
     private JFrame frame;
@@ -23,24 +23,13 @@ public class QueryBuilder {
 
     private MainAction mainAction;
     private MainController parentController;
-    private MainController controller;
+    private MainController mainController;
     private TableRow item;
 
-    public MainController getParentController() {
-        return parentController;
-    }
-
-    public void setParentController(MainController parentController) {
-        this.parentController = parentController;
-    }
-
-
-    public QueryBuilder(String text) {
-        this(text, true);
-    }
-
-    public QueryBuilder(String text, boolean mainForm) {
+    public QueryBuilder(String text, boolean mainForm, LocalDataSource dataSource) {
         this.mainForm = mainForm;
+        this.dataSource = dataSource;
+
         Statement stmt;
         if (text != null && !text.isEmpty()) {
             try {
@@ -57,38 +46,20 @@ public class QueryBuilder {
         if (!(stmt instanceof Select)) {
             return;
         }
-        Select sQuery = (Select) stmt;
 
-        MainController mainController = new MainController(sQuery, this);
-        this.controller = mainController;
+        Map<String, Object> data = new HashMap<>();
+        data.put("sQuery", stmt);
+        data.put("queryBuilder", this);
 
-        JFXPanel fxPanel = new JFXPanel(); // это должно быть перед загрузкой формы
-//        Platform.setImplicitExit(false);
-//        Platform.runLater(() -> {
-        FXMLLoader fxmlLoader = new FXMLLoader(Utils.class.getResource("/forms/main-form.fxml"));
-        FXMLLoader.setDefaultClassLoader(Utils.class.getClassLoader());
-        fxmlLoader.setController(mainController);
-        Parent root1 = null;
-        try {
-            root1 = fxmlLoader.load();
-            fxPanel.setScene(new Scene(root1));
+        JFXPanel fxPanel = new JFXPanel();
+        fxPanel.setScene(getScene("/forms/main-form.fxml", data));
 
-            frame = new JFrame("Query builder");
-            frame.setContentPane(fxPanel);
-            frame.pack();
-            frame.setSize(1200, 800);
-            frame.setLocationRelativeTo(null);
-            frame.setVisible(true);
-        } catch (Exception e1) {
-            e1.printStackTrace();
-            System.out.println(e1);
-        }
-
-//            root1.setOpacity(0.1f);
-//            FadeTransition ft = new FadeTransition(Duration.millis(500), root1);
-//            ft.setToValue(1);
-//            ft.play();
-//        });
+        frame = new JFrame("Query builder");
+        frame.setContentPane(fxPanel);
+        frame.pack();
+        frame.setSize(1200, 800);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
     }
 
     public void closeForm() {
@@ -107,7 +78,7 @@ public class QueryBuilder {
 
     private SubSelect castResultToSubSelect(String alias) {
         SubSelect result = new SubSelect();
-        Select select = this.controller.getsQuery();
+        Select select = mainController.getsQuery();
         result.setSelectBody(select.getSelectBody());
         result.setWithItemsList(select.getWithItemsList());
         result.setAlias(new Alias(alias));
@@ -120,6 +91,14 @@ public class QueryBuilder {
 
     public MainAction getMainAction() {
         return mainAction;
+    }
+
+    public MainController getParentController() {
+        return parentController;
+    }
+
+    public void setParentController(MainController parentController) {
+        this.parentController = parentController;
     }
 
     public void setItem(TableRow item) {

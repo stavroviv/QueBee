@@ -1,5 +1,6 @@
 package com.querybuilder.home.lab.controllers;
 
+import com.google.common.eventbus.Subscribe;
 import com.querybuilder.home.lab.QueryBuilder;
 import com.querybuilder.home.lab.database.DBStructure;
 import com.querybuilder.home.lab.database.DBStructureImpl;
@@ -36,10 +37,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.querybuilder.home.lab.controllers.SelectedFieldController.FIELD_FORM_CLOSED_EVENT;
 import static com.querybuilder.home.lab.utils.Constants.*;
 import static com.querybuilder.home.lab.utils.Utils.setCellFactory;
 
-public class MainController {
+public class MainController implements Argumentative {
 
     @FXML
     private Button cancelButton;
@@ -83,33 +85,26 @@ public class MainController {
 
     private ObservableList<String> joinItems;
 
-    public MainController(Select sQuery, QueryBuilder queryBuilder) {
-        this.queryBuilder = queryBuilder;
-        init(sQuery);
-    }
-
-    public void init(Select sQuery) {
-        this.withItemMap = new HashMap<>();
-        this.unionItemMap = new HashMap<>();
+    @Override
+    public void initData(Map<String, Object> userData) {
+        this.queryBuilder = (QueryBuilder) userData.get("queryBuilder");
+        Select sQuery = (Select) userData.get("sQuery");
         if (this.sQuery != null) {
             this.sQuery = sQuery;
             reloadData();
             return;
         }
+
         this.sQuery = sQuery;
-    }
+        this.withItemMap = new HashMap<>();
+        this.unionItemMap = new HashMap<>();
 
-    public void initialize() {
-//        initData();
-    }
-
-    private void initData() {
         initTables();
         initDatabaseTableView();
-
         setCellFactories();
         reloadData();
         setPagesHandlers();
+        CustomEventBus.register(this);
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -595,6 +590,13 @@ public class MainController {
         Utils.openForm("/forms/selected-field.fxml", "Custom expression", data);
     }
 
+    @Subscribe
+    public void someCustomEvent(CustomEvent event) {
+        if (FIELD_FORM_CLOSED_EVENT.equals(event.getName())) {
+            addFieldRow(event.getData());
+        }
+    }
+
     private void addFieldRow(String name) {
         fieldTable.getItems().add(name);
         SelectExpressionItem nSItem = new SelectExpressionItem();
@@ -674,7 +676,6 @@ public class MainController {
         fillCurrentQuery(null, null);
         queryBuilder.closeForm(sQuery.toString());
     }
-
 
     private void fillSelectedFields(PlainSelect selectBody) {
         selectBody.getSelectItems().clear();
@@ -895,7 +896,6 @@ public class MainController {
         linkTable.getItems().remove(selectedItem);
     }
 
-
     @FXML
     private TreeTableView<TableRow> conditionsTreeTable;
     @FXML
@@ -957,8 +957,8 @@ public class MainController {
     }
 
     private void openNestedQuery(String text, TableRow item) {
-        QueryBuilder qb = new QueryBuilder(text, false);
-        qb.setDataSource(this.queryBuilder.getDataSource());
+        QueryBuilder qb = new QueryBuilder(text, false, this.queryBuilder.getDataSource());
+//        qb.setDataSource();,
         qb.setParentController(this);
         qb.setItem(item);
 //        qb.setParentController(this);
@@ -1163,7 +1163,6 @@ public class MainController {
         makeDeselect(groupTableAggregates, groupFieldsTree);
     }
 
-
     @FXML
     private Button orderUpButton;
     @FXML
@@ -1182,7 +1181,6 @@ public class MainController {
         orderTableResults.getItems().add(index + 1, orderTableResults.getItems().remove(index));
         orderTableResults.getSelectionModel().clearAndSelect(index + 1);
     }
-
 
     @FXML
     private TreeTableView<TableRow> orderFieldsTree;
@@ -1275,4 +1273,5 @@ public class MainController {
     private TableColumn<TableRow, String> unionTableNameColumn;
     @FXML
     private TableColumn<TableRow, Boolean> unionTableDistinctColumn;
+
 }

@@ -65,7 +65,7 @@
               AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="470.0">
             <children>
                 <Button minWidth="70.0" mnemonicParsing="false" onAction="#onOkClick" prefWidth="70.0" text="OK"/>
-                <Button fx:id="closeButton" minWidth="70.0" mnemonicParsing="false" prefWidth="70.0" text="Cancel">
+                <Button minWidth="70.0" mnemonicParsing="false" onAction="#onCloseClick" prefWidth="70.0" text="Cancel">
                     <HBox.margin>
                         <Insets left="5.0"/>
                     </HBox.margin>

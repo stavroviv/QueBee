@@ -14,12 +14,14 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.web.HTMLEditor;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import org.jsoup.Jsoup;
 
 import java.util.Map;
 
 import static com.querybuilder.home.lab.utils.Utils.setCellFactory;
 
-public class SelectedFieldController {
+public class SelectedFieldController implements Argumentative {
+    public static final String FIELD_FORM_CLOSED_EVENT = "ClosedFieldForm";
     @FXML
     private Button closeButton;
     @FXML
@@ -29,11 +31,29 @@ public class SelectedFieldController {
     @FXML
     private HTMLEditor fieldText;
 
-    public void onOkClick(ActionEvent actionEvent) {
+    @FXML
+    private void onOkClick(ActionEvent actionEvent) {
+        CustomEvent customEvent = new CustomEvent();
+        customEvent.setName(FIELD_FORM_CLOSED_EVENT);
+        customEvent.setData(Jsoup.parse(fieldText.getHtmlText()).text());
+        CustomEventBus.post(customEvent);
+        closeForm(actionEvent);
+    }
+
+    @FXML
+    public void onCloseClick(ActionEvent actionEvent) {
+        closeForm(actionEvent);
+    }
+
+    private void closeForm(ActionEvent actionEvent) {
         Window window = ((Node) (actionEvent.getSource())).getScene().getWindow();
         if (window instanceof Stage) {
             ((Stage) window).close();
         }
+    }
+
+    public void initData(Map<String, Object> userData) {
+        availableFieldsTree.setRoot((TreeItem<TableRow>) userData.get("selectedFieldsTree"));
     }
 
     public void initialize() {
@@ -64,7 +84,4 @@ public class SelectedFieldController {
         });
     }
 
-    public void initData(Map<String, Object> userData) {
-        availableFieldsTree.setRoot((TreeItem<TableRow>) userData.get("selectedFieldsTree"));
-    }
 }
