@@ -69,7 +69,13 @@ public class SelectedFieldsTree extends TreeItem<TableRow> {
 
     public void applyChangesString(ListChangeListener.Change<? extends String> change) {
         TreeItem<TableRow> root = this;
-        if (change.wasAdded()) {
+        if (change.wasReplaced()) {
+            // getRemoved - там значение до изменения
+            int from = change.getFrom();
+            change.getAddedSubList().forEach(x -> {
+                root.getChildren().get(from).getValue().setName(x);
+            });
+        } else if (change.wasAdded()) {
             change.getAddedSubList().forEach(x -> {
                 TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(new TableRow(x, false));
                 root.getChildren().add(0, tableRowTreeItem);

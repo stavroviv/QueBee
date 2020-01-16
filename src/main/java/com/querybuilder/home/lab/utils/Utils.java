@@ -8,6 +8,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -77,5 +78,9 @@ public class Utils {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static boolean doubleClick(MouseEvent e) {
+        return e.getClickCount() == 2 && e.isPrimaryButtonDown();
     }
 }

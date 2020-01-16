@@ -22,13 +22,13 @@ public class MainAction extends AnAction {
     private Project project;
     private AnActionEvent e;
 
-    {
+    static {
         new JFXPanel();
     }
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-        JdbcConsole maybeAttachedSession = JdbcConsole.ScriptingJdbcSessionHolder.INSTANCE.getMaybeAttachedSession(e);
+        JdbcConsole maybeAttachedSession = JdbcConsole.findConsole(e);
         LocalDataSource dataSource = maybeAttachedSession.getDataSource();
         QueryBuilder qb = new QueryBuilder(getSelectionText(e), true, dataSource);
         qb.setMainAction(this);

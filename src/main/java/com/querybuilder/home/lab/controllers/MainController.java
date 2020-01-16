@@ -1,6 +1,5 @@
 package com.querybuilder.home.lab.controllers;
 
-import com.google.common.eventbus.Subscribe;
 import com.querybuilder.home.lab.QueryBuilder;
 import com.querybuilder.home.lab.database.DBStructure;
 import com.querybuilder.home.lab.database.DBStructureImpl;
@@ -21,6 +20,7 @@ import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
+import net.engio.mbassy.listener.Handler;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
@@ -39,6 +39,7 @@ import java.util.Map;
 
 import static com.querybuilder.home.lab.controllers.SelectedFieldController.FIELD_FORM_CLOSED_EVENT;
 import static com.querybuilder.home.lab.utils.Constants.*;
+import static com.querybuilder.home.lab.utils.Utils.doubleClick;
 import static com.querybuilder.home.lab.utils.Utils.setCellFactory;
 
 public class MainController implements Argumentative {
@@ -231,7 +232,6 @@ public class MainController implements Argumentative {
         }
     }
 
-
     private void initTables() {
         DBStructure db = new DBStructureImpl();
         databaseTableView.setRoot(db.getDBStructure(this.queryBuilder.getDataSource()));
@@ -247,7 +247,7 @@ public class MainController implements Argumentative {
 
     private void initDatabaseTableView() {
         databaseTableView.setOnMousePressed(e -> {
-            if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
+            if (doubleClick(e)) {
                 TreeItem<TableRow> selectedItem = databaseTableView.getSelectionModel().getSelectedItem();
                 String parent = selectedItem.getParent().getValue().getName();
                 String field = selectedItem.getValue().getName();
@@ -590,10 +590,15 @@ public class MainController implements Argumentative {
         Utils.openForm("/forms/selected-field.fxml", "Custom expression", data);
     }
 
-    @Subscribe
-    public void someCustomEvent(CustomEvent event) {
-        if (FIELD_FORM_CLOSED_EVENT.equals(event.getName())) {
+    @Handler
+    public void selectedFieldFormClosedHandler(CustomEvent event) {
+        if (!FIELD_FORM_CLOSED_EVENT.equals(event.getName())) {
+            return;
+        }
+        if (event.getCurrentRow() == null) {
             addFieldRow(event.getData());
+        } else {
+            fieldTable.getItems().set(event.getCurrentRow(), event.getData());
         }
     }
 
@@ -740,7 +745,7 @@ public class MainController implements Argumentative {
 
     private void initTreeTablesView() {
         tablesView.setOnMousePressed(e -> {
-            if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
+            if (doubleClick(e)) {
                 TreeItem<TableRow> selectedItem = tablesView.getSelectionModel().getSelectedItem();
                 String parent = selectedItem.getParent().getValue().getName();
                 String field = selectedItem.getValue().getName();
@@ -998,7 +1003,7 @@ public class MainController implements Argumentative {
                                       TableView<TableRow> resultsTable,
                                       String defValue) {
         fieldsTree.setOnMousePressed(e -> {
-            if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
+            if (doubleClick(e)) {
                 makeSelect(fieldsTree, resultsTable, defValue);
             }
         });
@@ -1006,7 +1011,7 @@ public class MainController implements Argumentative {
 
     private void setResultsTableSelectHandler(TableView<TableRow> groupTableResults, TreeTableView<TableRow> groupFieldsTree) {
         groupTableResults.setOnMousePressed(e -> {
-            if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
+            if (doubleClick(e)) {
                 makeDeselect(groupTableResults, groupFieldsTree);
             }
         });
@@ -1054,11 +1059,37 @@ public class MainController implements Argumentative {
         setGroupingHandlers();
         setOrderHandlers();
         setConditionHandlers();
+        setSelectedFieldsHandlers();
+    }
+
+    @FXML
+    private void editFieldClick() {
+        editField();
+    }
+
+    private void setSelectedFieldsHandlers() {
+        fieldTable.setOnMousePressed(e -> {
+            if (doubleClick(e)) {
+                editField();
+            }
+        });
+    }
+
+    private void editField() {
+        String selectedItem = fieldTable.getSelectionModel().getSelectedItem();
+        if (selectedItem == null) {
+            return;
+        }
+        Map<String, Object> data = new HashMap<>();
+        data.put("selectedFieldsTree", selectedGroupFieldsTree);
+        data.put("selectedItem", selectedItem);
+        data.put("currentRow", fieldTable.getSelectionModel().getSelectedIndex());
+        Utils.openForm("/forms/selected-field.fxml", "Custom expression", data);
     }
 
     private void setConditionHandlers() {
         conditionsTreeTable.setOnMousePressed(e -> {
-            if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
+            if (doubleClick(e)) {
                 TreeItem<TableRow> selectedItem = conditionsTreeTable.getSelectionModel().getSelectedItem();
                 if (selectedItem == null) {
                     return;

@@ -1,21 +1,19 @@
 package com.querybuilder.home.lab.controllers;
 
-import com.google.common.eventbus.EventBus;
+import net.engio.mbassy.bus.MBassador;
 
 public class CustomEventBus {
-    private static CustomEventBus instance;
-    private static EventBus bus;
+    private static MBassador<CustomEvent> bus;
 
     static {
-        instance = new CustomEventBus();
-        bus = new EventBus();
+        bus = new MBassador<>();
     }
 
     public static void register(Argumentative subscriber) {
-        bus.register(subscriber);
+        bus.subscribe(subscriber);
     }
 
     public static void post(CustomEvent event) {
-        bus.post(event);
+        bus.publish(event);
     }
 }

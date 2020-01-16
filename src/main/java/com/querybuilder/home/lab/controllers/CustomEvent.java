@@ -6,4 +6,5 @@ import lombok.Data;
 public class CustomEvent {
     private String name;
     private String data;
+    private Integer currentRow;
 }
