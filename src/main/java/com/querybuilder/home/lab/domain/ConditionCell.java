@@ -107,8 +107,7 @@ public class ConditionCell extends TableCell<ConditionElement, ConditionElement>
         conditionsTreeTableContext.getColumns().add(conditionsTreeTableContextColumn);
         setCellFactory(conditionsTreeTableContextColumn);
 
-        selectedConditionsTreeTableContext = new SelectedFieldsTree(tablesView);
-        conditionsTreeTableContext.setRoot(selectedConditionsTreeTableContext);
+        selectedConditionsTreeTableContext = new SelectedFieldsTree(tablesView, conditionsTreeTableContext);
         setEmptyHeader(conditionsTreeTableContext);
         conditionsTreeTableContext.setOnMousePressed(e -> {
             if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {

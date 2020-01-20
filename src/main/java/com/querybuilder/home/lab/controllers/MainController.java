@@ -38,17 +38,19 @@ import java.util.List;
 import java.util.Map;
 
 import static com.querybuilder.home.lab.controllers.SelectedFieldController.FIELD_FORM_CLOSED_EVENT;
-import static com.querybuilder.home.lab.domain.SelectedFieldsTree.addElement;
 import static com.querybuilder.home.lab.utils.Constants.*;
-import static com.querybuilder.home.lab.utils.Utils.doubleClick;
-import static com.querybuilder.home.lab.utils.Utils.setCellFactory;
+import static com.querybuilder.home.lab.utils.Utils.*;
 
 public class MainController implements Argumentative {
 
     @FXML
     private Button cancelButton;
+
     @FXML
-    private TableView<String> fieldTable;
+    private TableView<TableRow> fieldTable;
+    @FXML
+    private TableColumn<TableRow, String> fieldColumn;
+
     private List<SelectItem> selectItems;
     private List<SelectItem> cteList;
 
@@ -56,9 +58,6 @@ public class MainController implements Argumentative {
     private TabPane qbTabPane_All;
     @FXML
     private TabPane mainTabPane;
-    @FXML
-    private TableColumn<String, String> fieldColumn;
-
     @FXML
     private TabPane cteTabPane;
     @FXML
@@ -101,16 +100,16 @@ public class MainController implements Argumentative {
         this.withItemMap = new HashMap<>();
         this.unionItemMap = new HashMap<>();
 
-        initTables();
-        initDatabaseTableView();
+        initDBTables();
         setCellFactories();
         reloadData();
         setPagesHandlers();
+
         CustomEventBus.register(this);
     }
 
     ////////////////////////////////////////////////////////////////////
-    // FILL SHOW QUERY
+    // FILL, SHOW QUERY
     ////////////////////////////////////////////////////////////////////
 
     private void setPagesHandlers() {
@@ -271,12 +270,13 @@ public class MainController implements Argumentative {
         }
     }
 
-    private void initTables() {
+    private void initDBTables() {
         DBStructure db = new DBStructureImpl();
         databaseTableView.setRoot(db.getDBStructure(this.queryBuilder.getDataSource()));
         dbElements = db.getDbElements();
         joinItems = FXCollections.observableArrayList();
         tablesView.setRoot(new TreeItem<>());
+        initDatabaseTableView();
     }
 
     @FXML
@@ -309,7 +309,7 @@ public class MainController implements Argumentative {
                 }
         );
         fieldTable.getItems().addListener(
-                (ListChangeListener<String>) c -> {
+                (ListChangeListener<TableRow>) c -> {
                     while (c.next()) {
                         selectedGroupFieldsTree.applyChangesString(c);
                         selectedOrderFieldsTree.applyChangesString(c);
@@ -332,19 +332,14 @@ public class MainController implements Argumentative {
     private SelectedFieldsTree selectedOrderFieldsTree;
 
     private void initSelectedTables() {
-        selectedGroupFieldsTree = new SelectedFieldsTree(tablesView, fieldTable);
-        groupFieldsTree.setRoot(selectedGroupFieldsTree);
-
-        selectedConditionsTreeTable = new SelectedFieldsTree(tablesView);
-        conditionsTreeTable.setRoot(selectedConditionsTreeTable);
-
-        selectedOrderFieldsTree = new SelectedFieldsTree(tablesView, fieldTable);
-        orderFieldsTree.setRoot(selectedOrderFieldsTree);
+        selectedGroupFieldsTree = new SelectedFieldsTree(tablesView, groupFieldsTree, fieldTable);
+        selectedConditionsTreeTable = new SelectedFieldsTree(tablesView, conditionsTreeTable);
+        selectedOrderFieldsTree = new SelectedFieldsTree(tablesView, orderFieldsTree, fieldTable);
     }
 
     private void setCellFactories() {
         // table columns
-        fieldColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
+        setStringColumnFactory(fieldColumn);
         queryCteColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
         // cell factory
         setCellFactory(groupFieldsTreeColumn);
@@ -389,6 +384,7 @@ public class MainController implements Argumentative {
     }
 
     private void reloadData() {
+        unionTabPane.getTabs().clear();
         cteTabPane.getTabs().clear();
         queryCteTable.getItems().clear();
         curMaxUnion = 0;
@@ -441,7 +437,7 @@ public class MainController implements Argumentative {
 
     private List<String> getSeletedItems() {
         List<String> items = new ArrayList<>();
-        fieldTable.getItems().forEach(x -> items.add(x));
+        fieldTable.getItems().forEach(x -> items.add(x.getName()));
         return items;
     }
 
@@ -470,11 +466,18 @@ public class MainController implements Argumentative {
         }
     }
 
+    private TableRow newTableRow(String name, int id) {
+        TableRow tableRow1 = new TableRow(name);
+        tableRow1.setId(id);
+        return tableRow1;
+    }
+
     private void loadSelectedFields(PlainSelect pSelect, boolean cteChange) {
+        int id = 0;
         for (Object select : pSelect.getSelectItems()) {
             if (select instanceof SelectExpressionItem) {
 
-                fieldTable.getItems().add(select.toString());
+                fieldTable.getItems().add(newTableRow(select.toString(), id));
 
                 // GROUPING
                 SelectExpressionItem select1 = (SelectExpressionItem) select;
@@ -491,10 +494,10 @@ public class MainController implements Argumentative {
                 }
 
             } else {
-                fieldTable.getItems().add(select.toString());
+                fieldTable.getItems().add(newTableRow(select.toString(), id));
 //                    aliasTable.getItems().add(newAliasItem(select));
             }
-
+            id++;
         }
     }
 
@@ -637,12 +640,14 @@ public class MainController implements Argumentative {
         if (event.getCurrentRow() == null) {
             addFieldRow(event.getData());
         } else {
-            fieldTable.getItems().set(event.getCurrentRow(), event.getData());
+            TableRow tableRow = fieldTable.getItems().get(event.getCurrentRow());
+            tableRow.setName(event.getData());
+            fieldTable.getItems().set(event.getCurrentRow(), tableRow);
         }
     }
 
     private void addFieldRow(String name) {
-        fieldTable.getItems().add(name);
+        fieldTable.getItems().add(new TableRow(name));
         SelectExpressionItem nSItem = new SelectExpressionItem();
 //        nSItem.setAlias(new Alias("test"));
         nSItem.setExpression(new Column(name));
@@ -728,7 +733,7 @@ public class MainController implements Argumentative {
         }
         fieldTable.getItems().forEach(x -> {
             SelectExpressionItem sItem = new SelectExpressionItem();
-            sItem.setExpression(new Column(x));
+            sItem.setExpression(new Column(x.getName()));
             selectBody.getSelectItems().add(sItem);
         });
     }
@@ -1118,7 +1123,7 @@ public class MainController implements Argumentative {
     }
 
     private void editField() {
-        String selectedItem = fieldTable.getSelectionModel().getSelectedItem();
+        TableRow selectedItem = fieldTable.getSelectionModel().getSelectedItem();
         if (selectedItem == null) {
             return;
         }

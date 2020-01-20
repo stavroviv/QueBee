@@ -75,12 +75,12 @@ public class SelectedFieldController implements Argumentative {
 
     public void initData(Map<String, Object> userData) {
         availableFieldsTree.setRoot((TreeItem<TableRow>) userData.get("selectedFieldsTree"));
-        String selectedItem = (String) userData.get("selectedItem");
+        TableRow selectedItem = (TableRow) userData.get("selectedItem");
         if (userData.get("currentRow") != null) {
             currentRow = (Integer) userData.get("currentRow");
         }
         if (selectedItem != null) {
-            fieldText.setHtmlText(selectedItem);
+            fieldText.setHtmlText(selectedItem.getName());
         }
     }
 

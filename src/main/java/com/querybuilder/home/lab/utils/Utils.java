@@ -3,6 +3,7 @@ package com.querybuilder.home.lab.utils;
 import com.querybuilder.home.lab.controllers.Argumentative;
 import com.querybuilder.home.lab.domain.TableRow;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -82,5 +83,9 @@ public class Utils {
 
     public static boolean doubleClick(MouseEvent e) {
         return e.getClickCount() == 2 && e.isPrimaryButtonDown();
+    }
+
+    public static <E> void addElement(ObservableList<E> list, E row) {
+        list.add(list.size() - 1, row);
     }
 }

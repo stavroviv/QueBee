@@ -5,27 +5,29 @@ import lombok.Data;
 
 @Data
 public class TableRow {
-    private boolean nested;
+    private int id;
     private String name;
     private String alias;
     private String query;
     private boolean distinct;
     private boolean root;
     private boolean notSelectable;
+    private boolean nested;
 
     private SimpleStringProperty comboBoxValue = new SimpleStringProperty();
 
     public TableRow(String name) {
-        this(name, false);
+        this(name, -1, false);
     }
 
     public TableRow(String name, String alias) {
-        this(name, false);
+        this(name, -1, false);
         this.alias = alias;
     }
 
-    public TableRow(String name, boolean root) {
+    public TableRow(String name, int id, boolean root) {
         this.name = name;
+        this.id = id;
         this.root = root;
     }
 

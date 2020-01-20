@@ -1,21 +1,26 @@
 package com.querybuilder.home.lab.domain;
 
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableView;
 
 import static com.querybuilder.home.lab.utils.Constants.ALL_FIELDS;
 import static com.querybuilder.home.lab.utils.Constants.DATABASE_ROOT;
+import static com.querybuilder.home.lab.utils.Utils.addElement;
 
 public class SelectedFieldsTree extends TreeItem<TableRow> {
     TreeItem<TableRow> allFieldsRoot;
+    TreeTableView<TableRow> tree;
 
-    public SelectedFieldsTree(TreeTableView<TableRow> tablesView, TableView<String> fieldTable) {
+    public SelectedFieldsTree(TreeTableView<TableRow> tablesView,
+                              TreeTableView<TableRow> tree,
+                              TableView<TableRow> fieldTable) {
         super(new TableRow(DATABASE_ROOT));
+        this.tree = tree;
+
         fieldTable.getItems().forEach(x -> {
-            TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(new TableRow(x));
+            TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(new TableRow(x.getName()));
             this.getChildren().add(tableRowTreeItem);
         });
         TableRow allFieldsRootRow = new TableRow(ALL_FIELDS);
@@ -26,15 +31,21 @@ public class SelectedFieldsTree extends TreeItem<TableRow> {
             allFieldsRoot.getChildren().add(tableRowTreeItem);
             x.getChildren().forEach(y -> tableRowTreeItem.getChildren().add((newTreeItem(y))));
         });
+
+        tree.setRoot(this);
     }
 
-    public SelectedFieldsTree(TreeTableView<TableRow> tablesView) {
+    public SelectedFieldsTree(TreeTableView<TableRow> tablesView, TreeTableView<TableRow> tree) {
         super(new TableRow(DATABASE_ROOT));
+        this.tree = tree;
+
         tablesView.getRoot().getChildren().forEach(x -> {
             TreeItem<TableRow> tableRowTreeItem = newTreeItem(x, true);
             this.getChildren().add(tableRowTreeItem);
             x.getChildren().forEach(y -> tableRowTreeItem.getChildren().add(newTreeItem(y)));
         });
+
+        tree.setRoot(this);
     }
 
     private TreeItem<TableRow> newTreeItem(TreeItem<TableRow> x) {
@@ -42,7 +53,7 @@ public class SelectedFieldsTree extends TreeItem<TableRow> {
     }
 
     private TreeItem<TableRow> newTreeItem(TreeItem<TableRow> x, boolean isRoot) {
-        TableRow tableRow = new TableRow(x.getValue().getName(), isRoot);
+        TableRow tableRow = new TableRow(x.getValue().getName(), -1, isRoot);
         return new TreeItem<>(tableRow);
     }
 
@@ -68,17 +79,24 @@ public class SelectedFieldsTree extends TreeItem<TableRow> {
         }
     }
 
-    public void applyChangesString(ListChangeListener.Change<? extends String> change) {
+    public void applyChangesString(ListChangeListener.Change<? extends TableRow> change) {
         TreeItem<TableRow> root = this;
         if (change.wasReplaced()) {
             // getRemoved - там значение до изменения
-            int from = change.getFrom();
+            TableRow tableRow = change.getRemoved().get(0);
+            int idChange = tableRow.getId();
             change.getAddedSubList().forEach(x -> {
-                root.getChildren().get(from).getValue().setName(x);
+                for (TreeItem<TableRow> item : root.getChildren()) {
+                    if (item.getValue().getId() == idChange) {
+                        item.getValue().setName(x.getName());
+                        break;
+                    }
+                }
             });
+            this.tree.refresh();
         } else if (change.wasAdded()) {
             change.getAddedSubList().forEach(x -> {
-                TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(new TableRow(x, false));
+                TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(new TableRow(x.getName(), x.getId(), false));
                 addElement(root.getChildren(), tableRowTreeItem);
             });
         } else if (change.wasRemoved()) {
@@ -95,7 +113,4 @@ public class SelectedFieldsTree extends TreeItem<TableRow> {
         }
     }
 
-    public static <E> void addElement(ObservableList<E> list, E row) {
-        list.add(list.size() - 1, row);
-    }
 }
