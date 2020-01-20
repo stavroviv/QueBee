@@ -61,8 +61,8 @@
                 </AnchorPane>
             </items>
         </SplitPane>
-        <HBox alignment="CENTER_RIGHT" layoutY="470.0" prefHeight="37.0" prefWidth="796.0" AnchorPane.bottomAnchor="0.0"
-              AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="470.0">
+        <HBox alignment="CENTER_RIGHT" layoutY="470.0" prefHeight="37.0" prefWidth="796.0"
+              AnchorPane.bottomAnchor="0.0">
             <children>
                 <Button minWidth="70.0" mnemonicParsing="false" onAction="#onOkClick" prefWidth="70.0" text="OK"/>
                 <Button minWidth="70.0" mnemonicParsing="false" onAction="#onCloseClick" prefWidth="70.0" text="Cancel">

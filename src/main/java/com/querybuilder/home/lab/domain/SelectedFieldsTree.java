@@ -1,6 +1,7 @@
 package com.querybuilder.home.lab.domain;
 
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableView;
@@ -78,7 +79,7 @@ public class SelectedFieldsTree extends TreeItem<TableRow> {
         } else if (change.wasAdded()) {
             change.getAddedSubList().forEach(x -> {
                 TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(new TableRow(x, false));
-                root.getChildren().add(0, tableRowTreeItem);
+                addElement(root.getChildren(), tableRowTreeItem);
             });
         } else if (change.wasRemoved()) {
             change.getRemoved().forEach(x -> {
@@ -94,4 +95,7 @@ public class SelectedFieldsTree extends TreeItem<TableRow> {
         }
     }
 
+    public static <E> void addElement(ObservableList<E> list, E row) {
+        list.add(list.size() - 1, row);
+    }
 }

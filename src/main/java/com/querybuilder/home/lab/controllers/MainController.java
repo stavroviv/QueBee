@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.querybuilder.home.lab.controllers.SelectedFieldController.FIELD_FORM_CLOSED_EVENT;
+import static com.querybuilder.home.lab.domain.SelectedFieldsTree.addElement;
 import static com.querybuilder.home.lab.utils.Constants.*;
 import static com.querybuilder.home.lab.utils.Utils.doubleClick;
 import static com.querybuilder.home.lab.utils.Utils.setCellFactory;
@@ -132,12 +133,50 @@ public class MainController implements Argumentative {
     private void fillCurrentQuery(Tab tab, Tab unionTab) {
         PlainSelect selectBody = getSelectBody(tab, unionTab);
         try {
+            fillFromTables(selectBody);
             fillSelectedFields(selectBody);
             fillOrder(selectBody);
             fillConditions(selectBody);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void fillFromTables(PlainSelect selectBody) {
+        if (linkTable.getItems().size() == 0) {
+            if (selectBody.getFromItem() != null) {
+                selectBody.setFromItem(null);
+            }
+            List<Join> jList = new ArrayList<>();
+            tablesView.getRoot().getChildren().forEach(x -> {
+                String tableName = x.getValue().getName();
+                if (getSelectBody().getFromItem() == null) {
+                    selectBody.setFromItem(new Table(tableName));
+                } else {
+//                List<Join> jList = (getSelectBody().getJoins() == null) ? new ArrayList<>() : getSelectBody().getJoins();
+                    Join join = new Join();
+                    join.setRightItem(new Table(tableName));
+                    join.setSimple(true);
+                    jList.add(join);
+                }
+            });
+            selectBody.setJoins(jList);
+            return;
+        }
+
+
+        tablesView.getRoot().getChildren().forEach(x -> {
+//            if (getSelectBody().getFromItem() == null) {
+//                getSelectBody().setFromItem(new Table(parent));
+//            } else {
+//                List<Join> jList = (getSelectBody().getJoins() == null) ? new ArrayList<>() : getSelectBody().getJoins();
+//                Join join = new Join();
+//                join.setRightItem(new Table(parent));
+//                join.setSimple(true);
+//                jList.add(join);
+//                getSelectBody().setJoins(jList);
+//            }
+        });
     }
 
     private void showCurrentQuery() {
@@ -409,7 +448,7 @@ public class MainController implements Argumentative {
 
     private void loadSelectData(PlainSelect pSelect, boolean cteChange) {
 //        unionTable.getItems().add(new TableRow("Query " + i));
-        fillFromTables(pSelect);
+        loadFromTables(pSelect);
         loadSelectedFields(pSelect, cteChange);
         loadGroupBy(pSelect);
         loadOrderBy(pSelect);
@@ -524,7 +563,7 @@ public class MainController implements Argumentative {
         }
     }
 
-    private void fillFromTables(PlainSelect pSelect) {
+    private void loadFromTables(PlainSelect pSelect) {
 //        linkTablesPane.setDisable(true);
         FromItem fromItem = pSelect.getFromItem();
         Table table = null;
@@ -615,8 +654,8 @@ public class MainController implements Argumentative {
 
     @FXML
     public void deleteFieldRow() {
-//        int selectedItem = fieldTable.getSelectionModel().getSelectedIndex();
-//        fieldTable.getItems().remove(selectedItem);
+        int selectedItem = fieldTable.getSelectionModel().getSelectedIndex();
+        fieldTable.getItems().remove(selectedItem);
 //        getSelectBody().getSelectItems().remove(selectedItem);
     }
 
@@ -643,7 +682,7 @@ public class MainController implements Argumentative {
         if (withItemMap.size() == 0) {
             selectBody = sQuery.getSelectBody();
             if (selectBody == null) {
-                initEmptyQuery();
+                selectBody = initEmptyQuery();
             }
         } else {
             if (tab == null) {
@@ -662,13 +701,14 @@ public class MainController implements Argumentative {
         return (PlainSelect) selectBody;
     }
 
-    private void initEmptyQuery() {
+    private PlainSelect initEmptyQuery() {
         PlainSelect plainSelect = new PlainSelect();
-//        List<SelectItem> selectItems = new ArrayList<>();
-//        plainSelect.setSelectItems(selectItems);
+        List<SelectItem> selectItems = new ArrayList<>();
+        plainSelect.setSelectItems(selectItems);
 //        FromItem fromItem = new Table();
 //        plainSelect.setFromItem(fromItem);
         sQuery.setSelectBody(plainSelect);
+        return plainSelect;
     }
 
     public void addCteTableToForm(Tab tap) {
@@ -683,7 +723,9 @@ public class MainController implements Argumentative {
     }
 
     private void fillSelectedFields(PlainSelect selectBody) {
-        selectBody.getSelectItems().clear();
+        if (selectBody.getSelectItems() != null) {
+            selectBody.getSelectItems().clear();
+        }
         fieldTable.getItems().forEach(x -> {
             SelectExpressionItem sItem = new SelectExpressionItem();
             sItem.setExpression(new Column(x));
@@ -1133,7 +1175,7 @@ public class MainController implements Argumentative {
             return;
         }
         TreeItem<TableRow> treeItem = new TreeItem<>(tableRow);
-        groupFieldsTree.getRoot().getChildren().add(0, treeItem);
+        addElement(groupFieldsTree.getRoot().getChildren(), treeItem);
         groupTableResults.getItems().remove(selectedItem);
     }
 

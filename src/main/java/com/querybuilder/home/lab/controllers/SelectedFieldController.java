@@ -53,7 +53,12 @@ public class SelectedFieldController implements Argumentative {
         }
         matcher.appendTail(text);
         result = text.toString().trim();
-        return result;
+
+        return result
+                .replaceAll("&gt;", ">")
+                .replaceAll("&lt;", "<")
+                .replaceAll("&nbsp", " ")
+                .replaceAll(";", System.lineSeparator());
     }
 
     @FXML
