@@ -1,6 +1,12 @@
 package com.querybuilder.home.lab;
 
 import com.intellij.database.dataSource.LocalDataSource;
+import com.intellij.ide.DataManager;
+import com.intellij.openapi.actionSystem.DataConstants;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.IdeFrame;
+import com.intellij.openapi.wm.WindowManager;
 import com.querybuilder.home.lab.controllers.MainController;
 import com.querybuilder.home.lab.domain.TableRow;
 import javafx.embed.swing.JFXPanel;
@@ -58,7 +64,12 @@ public class QueryBuilder {
         frame.setContentPane(fxPanel);
         frame.pack();
         frame.setSize(1200, 800);
-        frame.setLocationRelativeTo(null);
+
+        DataContext dataContext = DataManager.getInstance().getDataContext();
+        Project project = (Project) dataContext.getData(DataConstants.PROJECT);
+        IdeFrame ideFrame = WindowManager.getInstance().getIdeFrame(project);
+
+        frame.setLocationRelativeTo(ideFrame.getComponent());
         frame.setVisible(true);
     }
 

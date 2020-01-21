@@ -79,9 +79,8 @@ public class SelectedFieldController implements Argumentative {
         if (userData.get("currentRow") != null) {
             currentRow = (Integer) userData.get("currentRow");
         }
-        if (selectedItem != null) {
-            fieldText.setHtmlText(selectedItem.getName());
-        }
+        String text = selectedItem != null ? selectedItem.getName() : " ";
+        fieldText.setHtmlText("<html><body contentEditable=\"true\">" + text + "</body></html>");
     }
 
     public void initialize() {
