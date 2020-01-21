@@ -25,7 +25,8 @@ public class DBStructureImpl implements DBStructure {
         tablesRoot.setRoot(true);
         TreeItem<TableRow> root = new TreeItem<>(tablesRoot);
         root.setExpanded(true);
-
+        // посмотреть это для получени структуры БД
+        // DatabaseStructure.getModel(dataSource, PostgresModModel.class).getRoot().getChildren().get(0)
         JBIterable<? extends DasObject> modelRoots = dataSource.getModel().getModelRoots();
         String sqlDialect = dataSource.getDatabaseDriver().getSqlDialect();
         if (sqlDialect.equals("PostgreSQL")) {
