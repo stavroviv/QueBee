@@ -101,8 +101,9 @@ public class MainController implements Argumentative {
         this.unionItemMap = new HashMap<>();
 
         initDBTables();
-        setCellFactories();
         reloadData();
+
+        setCellFactories();
         setPagesHandlers();
 
         CustomEventBus.register(this);
@@ -117,6 +118,9 @@ public class MainController implements Argumentative {
 //            cteTabPane.setVisible(newTab.getId() == null || !newTab.getId().equals("queryTabPane"));
 //        });
         cteTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
+            if (oldTab == null || newTab == null) {
+                return;
+            }
             fillCurrentQuery(oldTab, null);
             showCurrentQuery(false);
         });
@@ -194,7 +198,7 @@ public class MainController implements Argumentative {
         int unionNumber;
         boolean cteChange = (cteNumberPrev != cteNumber);
 
-        clearTables(cteChange);
+        clearTables(cteChange, firstRun);
         SelectBody selectBody = getFullSelectBody();
 
         if (cteChange || firstRun) {
@@ -203,6 +207,7 @@ public class MainController implements Argumentative {
             curMaxUnion = 0;
             unionColumns = new HashMap<>();
             unionTabs = new HashMap<>();
+            // таблица Alias меняется только при переключении CTE
             loadAliasTable(selectBody);
         }
 
@@ -212,9 +217,9 @@ public class MainController implements Argumentative {
             if (cteNumberPrev != cteNumber || firstRun) {
                 unionItemMap.clear();
                 for (int i = 1; i <= setOperationList.getSelects().size(); i++) {
-                    addUnion("Query " + i, curMaxUnion);
-                    curMaxUnion++;
+                    addUnion("Query " + i, i - 1);
                 }
+                curMaxUnion = setOperationList.getSelects().size() - 1;
             }
             unionNumber = unionTabPane.getSelectionModel().getSelectedIndex();
             SelectBody body = setOperationList.getSelects().get(unionNumber == -1 ? 0 : unionNumber);
@@ -223,11 +228,13 @@ public class MainController implements Argumentative {
         // ONE QUERY
         else if (selectBody instanceof PlainSelect) {
             loadSelectData((PlainSelect) selectBody, false);
+        } else if (selectBody == null) {
+            initSelectedTables();
         }
         cteNumberPrev = cteNumber;
     }
 
-    private void loadAliasTable(Object selectBody) {
+    private void loadAliasTable(SelectBody selectBody) {
         aliasTable.getItems().clear();
         int size = aliasTable.getColumns().size();
         aliasTable.getColumns().remove(1, size);
@@ -242,7 +249,7 @@ public class MainController implements Argumentative {
                 } else {
                     int j = 0;
                     if (pSelect.getSelectItems().size() > aliasTable.getItems().size()) {
-                        throw new RuntimeException("Разное количество полей в объединяемых запросах");
+//                        throw new RuntimeException("Разное количество полей в объединяемых запросах");
                     }
                     for (Object x : pSelect.getSelectItems()) {
                         SelectExpressionItem select = (SelectExpressionItem) x;
@@ -257,10 +264,12 @@ public class MainController implements Argumentative {
             }
         }
         // ONE QUERY
-        else if (selectBody instanceof PlainSelect) {
+        else if (selectBody instanceof PlainSelect || selectBody == null) {
             addUnionColumn("Query 1", 0);
             PlainSelect pSelect = (PlainSelect) selectBody;
-            addAliasFirstColumn(pSelect);
+            if (selectBody != null) {
+                addAliasFirstColumn(pSelect);
+            }
         }
     }
 
@@ -338,8 +347,8 @@ public class MainController implements Argumentative {
 
     private void initSelectedTables() {
         selectedGroupFieldsTree = new SelectedFieldsTree(tablesView, groupFieldsTree, fieldTable);
-        selectedConditionsTreeTable = new SelectedFieldsTree(tablesView, conditionsTreeTable);
         selectedOrderFieldsTree = new SelectedFieldsTree(tablesView, orderFieldsTree, fieldTable);
+        selectedConditionsTreeTable = new SelectedFieldsTree(tablesView, conditionsTreeTable);
     }
 
     private void setCellFactories() {
@@ -448,13 +457,8 @@ public class MainController implements Argumentative {
 
 
     private void loadSelectData(PlainSelect pSelect, boolean cteChange) {
-//        unionTable.getItems().add(new TableRow("Query " + i));
-
-
         loadFromTables(pSelect);
-
         initSelectedTables();
-
         loadSelectedFields(pSelect, cteChange);
         loadGroupBy(pSelect);
         loadOrderBy(pSelect);
@@ -568,19 +572,22 @@ public class MainController implements Argumentative {
         }
     }
 
-    private void clearTables(boolean cteChange) {
+    private void clearTables(boolean cteChange, boolean firstRun) {
         fieldTable.getItems().clear();
         tablesView.getRoot().getChildren().clear();
         joinItems.clear();
 
-        clearIfNotNull(conditionsTreeTable);
-        conditionTableResults.getItems().clear();
+        if (!firstRun) {
+            clearIfNotNull(conditionsTreeTable);
+            clearIfNotNull(groupFieldsTree);
+            clearIfNotNull(orderFieldsTree);
+        }
 
-        clearIfNotNull(groupFieldsTree);
+        conditionTableResults.getItems().clear();
         groupTableResults.getItems().clear();
+
         groupTableAggregates.getItems().clear();
 
-        clearIfNotNull(orderFieldsTree);
         orderTableResults.getItems().clear();
 
         if (cteChange) {
@@ -599,7 +606,7 @@ public class MainController implements Argumentative {
 //            conditionsTreeTable.getRoot().getChildren().add(getTableItemWithFields(table.getName()));
         }
         List<Join> joins = pSelect.getJoins();
-        if (joins == null) {
+        if (joins == null || table == null) {
             return;
         }
 
@@ -671,9 +678,9 @@ public class MainController implements Argumentative {
 
     private void addFieldRow(String name) {
         fieldTable.getItems().add(new TableRow(name));
-        SelectExpressionItem nSItem = new SelectExpressionItem();
+//        SelectExpressionItem nSItem = new SelectExpressionItem();
 //        nSItem.setAlias(new Alias("test"));
-        nSItem.setExpression(new Column(name));
+//        nSItem.setExpression(new Column(name));
 
 //        List<SelectItem> selectItems = getSelectBody().getSelectItems() == null ? new ArrayList<>() : getSelectBody().getSelectItems();
 //        selectItems.add(nSItem);
@@ -1333,7 +1340,7 @@ public class MainController implements Argumentative {
         unionTableDistinctColumn.setCellValueFactory(data -> new SimpleBooleanProperty(data.getValue().isDistinct()));
     }
 
-    private int curMaxUnion;
+    private int curMaxUnion; // это индекс максимального объединения, нумерация начинается с 0
     private Map<String, TableColumn> unionColumns;
     private Map<String, Tab> unionTabs;
 
@@ -1341,6 +1348,8 @@ public class MainController implements Argumentative {
     protected void addUnionQuery(ActionEvent event) {
         curMaxUnion++;
         aliasTable.getItems().forEach(x -> x.getValues().add(""));
+
+        addNewUnion();
 
         if (curMaxUnion == 1) {
             addFirstUnion();
@@ -1353,18 +1362,34 @@ public class MainController implements Argumentative {
     }
 
     private void addFirstUnion() {
+        addUnion("Query 1", 0);
+        addUnion("Query 2", 1);
+        addUnionColumn("Query 2", curMaxUnion);
+    }
+
+    private void addNewUnion() {
         SetOperationList selectBody = new SetOperationList();
 
         List<SelectBody> selectBodies = new ArrayList<>();
-        selectBodies.add(getFullSelectBody());
+        SelectBody existingBody = getFullSelectBody();
+        if (existingBody instanceof SetOperationList) {
+            SetOperationList setOperationList = (SetOperationList) existingBody;
+            selectBodies.addAll(setOperationList.getSelects());
+        } else {
+            selectBodies.add(existingBody);
+        }
+//        selectBodies.add(getFullSelectBody());
         selectBodies.add(getEmptySelect());
 
         List<Boolean> brackets = new ArrayList<>();
-        brackets.add(false);
-        brackets.add(false);
-
         List<SetOperation> ops = new ArrayList<>();
-        ops.add(new UnionOp());
+        selectBodies.forEach(x -> {
+            brackets.add(false);
+            UnionOp unionOp = new UnionOp();
+            unionOp.setAll(true);
+            ops.add(unionOp);
+        });
+        ops.remove(ops.size() - 1);
 
         selectBody.setBracketsOpsAndSelects(brackets, selectBodies, ops);
 
@@ -1374,10 +1399,6 @@ public class MainController implements Argumentative {
         } else {
             sQuery.getWithItemsList().get(cteNumber).setSelectBody(selectBody);
         }
-
-        addUnion("Query 1", 0);
-        addUnion("Query 2", 1);
-        addUnionColumn("Query 2", curMaxUnion);
     }
 
     private void addUnion(String unionName, int curUnion) {

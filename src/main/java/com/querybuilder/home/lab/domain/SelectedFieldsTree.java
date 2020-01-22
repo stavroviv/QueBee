@@ -23,13 +23,17 @@ public class SelectedFieldsTree extends TreeItem<TableRow> {
             TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(new TableRow(x.getName()));
             this.getChildren().add(tableRowTreeItem);
         });
+
         TableRow allFieldsRootRow = new TableRow(ALL_FIELDS);
         allFieldsRoot = new TreeItem<>(allFieldsRootRow);
         this.getChildren().add(allFieldsRoot);
+
         tablesView.getRoot().getChildren().forEach(x -> {
             TreeItem<TableRow> tableRowTreeItem = newTreeItem(x, true);
             allFieldsRoot.getChildren().add(tableRowTreeItem);
-            x.getChildren().forEach(y -> tableRowTreeItem.getChildren().add((newTreeItem(y))));
+            x.getChildren().forEach(
+                    y -> tableRowTreeItem.getChildren().add(newTreeItem(y))
+            );
         });
 
         tree.setRoot(this);
@@ -42,14 +46,16 @@ public class SelectedFieldsTree extends TreeItem<TableRow> {
         tablesView.getRoot().getChildren().forEach(x -> {
             TreeItem<TableRow> tableRowTreeItem = newTreeItem(x, true);
             this.getChildren().add(tableRowTreeItem);
-            x.getChildren().forEach(y -> tableRowTreeItem.getChildren().add(newTreeItem(y)));
+            x.getChildren().forEach(
+                    y -> tableRowTreeItem.getChildren().add(newTreeItem(y))
+            );
         });
 
         tree.setRoot(this);
     }
 
-    private TreeItem<TableRow> newTreeItem(TreeItem<TableRow> x) {
-        return newTreeItem(x, false);
+    private TreeItem<TableRow> newTreeItem(TreeItem<TableRow> treeItem) {
+        return newTreeItem(treeItem, false);
     }
 
     private TreeItem<TableRow> newTreeItem(TreeItem<TableRow> x, boolean isRoot) {
@@ -103,7 +109,7 @@ public class SelectedFieldsTree extends TreeItem<TableRow> {
             change.getRemoved().forEach(x -> {
                 TreeItem<TableRow> deleted = null;
                 for (TreeItem<TableRow> item : root.getChildren()) {
-                    if (item.getValue().getName().equals(x)) {
+                    if (item.getValue().getId() == x.getId()) {
                         deleted = item;
                         break;
                     }

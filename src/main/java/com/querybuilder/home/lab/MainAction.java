@@ -14,6 +14,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import javafx.embed.swing.JFXPanel;
 
@@ -62,7 +63,7 @@ public class MainAction extends AnAction {
                         } else {
                             document.replaceString(0, document.getTextLength(), resultQuery);
                         }
-                        CodeStyleManager.getInstance(project).reformat(data);
+                        CodeStyleManager.getInstance(project).reformatText((PsiFile) data, 0, document.getTextLength());
                     }
             );
         });
