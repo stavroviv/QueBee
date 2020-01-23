@@ -1,7 +1,7 @@
-package com.querybuilder.home.lab.database;
+package com.querybuilder.database;
 
 import com.intellij.database.dataSource.LocalDataSource;
-import com.querybuilder.home.lab.domain.TableRow;
+import com.querybuilder.domain.TableRow;
 import javafx.scene.control.TreeItem;
 
 import java.util.List;

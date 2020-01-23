@@ -1,4 +1,4 @@
-package com.querybuilder.home.lab.database;
+package com.querybuilder.database;
 
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.arithmetic.*;

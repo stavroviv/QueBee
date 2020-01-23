@@ -15,11 +15,11 @@
     </extensions>
 
     <actions>
-        <action id="com.querybuilder.home.lab.SQLQueryBuilder" class="com.querybuilder.home.lab.MainAction"
+        <action id="com.querybuilder.home.lab.SQLQueryBuilder" class="com.querybuilder.MainAction"
                 text="SQL query builder" description="Open best in the world SQL query builder">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
-        <action id="com.querybuilder.home.lab.MainAction" class="com.querybuilder.home.lab.MainAction" text="QB"
+        <action id="com.querybuilder.MainAction" class="com.querybuilder.MainAction" text="QB"
                 description="Query builder">
             <add-to-group group-id="Console.Jdbc.Left" anchor="after" relative-to-action="Database.Settings"/>
         </action>

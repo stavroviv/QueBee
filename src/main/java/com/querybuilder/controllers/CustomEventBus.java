@@ -1,4 +1,4 @@
-package com.querybuilder.home.lab.controllers;
+package com.querybuilder.controllers;
 
 import net.engio.mbassy.bus.MBassador;
 

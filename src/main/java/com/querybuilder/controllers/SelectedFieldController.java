@@ -1,6 +1,6 @@
-package com.querybuilder.home.lab.controllers;
+package com.querybuilder.controllers;
 
-import com.querybuilder.home.lab.domain.TableRow;
+import com.querybuilder.domain.TableRow;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.querybuilder.home.lab.utils.Utils.setCellFactory;
+import static com.querybuilder.utils.Utils.setCellFactory;
 
 public class SelectedFieldController implements Argumentative {
     public static final String FIELD_FORM_CLOSED_EVENT = "ClosedFieldForm";

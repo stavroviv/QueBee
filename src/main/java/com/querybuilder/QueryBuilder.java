@@ -1,4 +1,4 @@
-package com.querybuilder.home.lab;
+package com.querybuilder;
 
 import com.intellij.database.dataSource.LocalDataSource;
 import com.intellij.ide.DataManager;
@@ -7,8 +7,8 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.openapi.wm.WindowManager;
-import com.querybuilder.home.lab.controllers.MainController;
-import com.querybuilder.home.lab.domain.TableRow;
+import com.querybuilder.controllers.MainController;
+import com.querybuilder.domain.TableRow;
 import javafx.embed.swing.JFXPanel;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
@@ -21,7 +21,7 @@ import javax.swing.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.querybuilder.home.lab.utils.Utils.getScene;
+import static com.querybuilder.utils.Utils.getScene;
 
 public class QueryBuilder {
     private JFrame frame;

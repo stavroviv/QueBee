@@ -1,7 +1,7 @@
-package com.querybuilder.home.lab.utils;
+package com.querybuilder.utils;
 
 
-import com.querybuilder.home.lab.domain.TableRow;
+import com.querybuilder.domain.TableRow;
 import javafx.scene.control.TreeTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;

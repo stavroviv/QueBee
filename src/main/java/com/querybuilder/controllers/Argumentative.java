@@ -1,4 +1,4 @@
-package com.querybuilder.home.lab.controllers;
+package com.querybuilder.controllers;
 
 import java.util.Map;
 

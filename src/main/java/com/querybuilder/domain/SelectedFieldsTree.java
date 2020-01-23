@@ -1,13 +1,13 @@
-package com.querybuilder.home.lab.domain;
+package com.querybuilder.domain;
 
 import javafx.collections.ListChangeListener;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableView;
 
-import static com.querybuilder.home.lab.utils.Constants.ALL_FIELDS;
-import static com.querybuilder.home.lab.utils.Constants.DATABASE_ROOT;
-import static com.querybuilder.home.lab.utils.Utils.addElement;
+import static com.querybuilder.utils.Constants.ALL_FIELDS;
+import static com.querybuilder.utils.Constants.DATABASE_ROOT;
+import static com.querybuilder.utils.Utils.addElement;
 
 public class SelectedFieldsTree extends TreeItem<TableRow> {
     TreeItem<TableRow> allFieldsRoot;

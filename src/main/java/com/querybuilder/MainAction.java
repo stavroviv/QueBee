@@ -1,4 +1,4 @@
-package com.querybuilder.home.lab;
+package com.querybuilder;
 
 import com.intellij.database.console.JdbcConsole;
 import com.intellij.database.dataSource.LocalDataSource;

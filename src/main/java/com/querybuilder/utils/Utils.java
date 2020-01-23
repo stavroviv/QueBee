@@ -1,7 +1,7 @@
-package com.querybuilder.home.lab.utils;
+package com.querybuilder.utils;
 
-import com.querybuilder.home.lab.controllers.Argumentative;
-import com.querybuilder.home.lab.domain.TableRow;
+import com.querybuilder.controllers.Argumentative;
+import com.querybuilder.domain.TableRow;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
@@ -51,7 +51,7 @@ public class Utils {
         });
     }
 
-    public static void setCellFactory(TreeTableColumn<TableRow, TableRow> tablesViewColumn) {
+    public static void setCellFactory(TreeTableColumn<com.querybuilder.domain.TableRow, TableRow> tablesViewColumn) {
         tablesViewColumn.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().getValue()));
         tablesViewColumn.setCellFactory(ttc -> new CustomCell());
     }

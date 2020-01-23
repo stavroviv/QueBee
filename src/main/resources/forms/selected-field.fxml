@@ -6,7 +6,7 @@
 <?import javafx.scene.web.HTMLEditor?>
 <AnchorPane prefHeight="507.0" prefWidth="796.0" xmlns="http://javafx.com/javafx/10.0.2-internal"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.querybuilder.home.lab.controllers.SelectedFieldController">
+            fx:controller="com.querybuilder.controllers.SelectedFieldController">
     <children>
         <SplitPane dividerPositions="0.5" layoutX="150.0" layoutY="93.0" orientation="VERTICAL" prefHeight="507.0"
                    prefWidth="779.0" AnchorPane.bottomAnchor="35.0" AnchorPane.leftAnchor="0.0"

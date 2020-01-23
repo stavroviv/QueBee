@@ -1,4 +1,4 @@
-package com.querybuilder.home.lab.domain;
+package com.querybuilder.domain;
 
 import com.sun.javafx.scene.control.skin.LabeledText;
 import javafx.collections.FXCollections;
@@ -10,8 +10,8 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 
-import static com.querybuilder.home.lab.utils.Constants.DATABASE_ROOT;
-import static com.querybuilder.home.lab.utils.Utils.*;
+import static com.querybuilder.utils.Constants.DATABASE_ROOT;
+import static com.querybuilder.utils.Utils.*;
 import static javafx.scene.control.TreeTableView.CONSTRAINED_RESIZE_POLICY;
 
 public class ConditionCell extends TableCell<ConditionElement, ConditionElement> {
@@ -20,10 +20,10 @@ public class ConditionCell extends TableCell<ConditionElement, ConditionElement>
             FXCollections.observableArrayList("=", "<>", "<", ">", "<=", ">=")
     );
 
-    TreeTableView<TableRow> tablesView;
+    TreeTableView<com.querybuilder.domain.TableRow> tablesView;
     TableView<ConditionElement> conditionTableResults;
 
-    public ConditionCell(TableView<ConditionElement> conditionTableResults, TreeTableView<TableRow> tablesView) {
+    public ConditionCell(TableView<ConditionElement> conditionTableResults, TreeTableView<com.querybuilder.domain.TableRow> tablesView) {
         this.tablesView = tablesView;
         this.conditionTableResults = conditionTableResults;
         initConditionTableForPopup();
@@ -94,8 +94,8 @@ public class ConditionCell extends TableCell<ConditionElement, ConditionElement>
     }
 
     private PopupControl conditionPopup;
-    private TreeTableView<TableRow> conditionsTreeTableContext;
-    private TreeTableColumn<TableRow, TableRow> conditionsTreeTableContextColumn;
+    private TreeTableView<com.querybuilder.domain.TableRow> conditionsTreeTableContext;
+    private TreeTableColumn<com.querybuilder.domain.TableRow, com.querybuilder.domain.TableRow> conditionsTreeTableContextColumn;
     private SelectedFieldsTree selectedConditionsTreeTableContext;
 
     private void initConditionTableForPopup() {

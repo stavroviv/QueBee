@@ -1,5 +1,6 @@
-package com.querybuilder.home.lab.domain;
+package com.querybuilder.domain;
 
+import com.querybuilder.utils.Utils;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
@@ -8,9 +9,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 
 import java.util.List;
-
-import static com.querybuilder.home.lab.utils.Utils.setDefaultSkin;
-import static com.querybuilder.home.lab.utils.Utils.setEmptyHeader;
 
 public class AliasCell extends TableCell<AliasRow, String> {
     private TableColumn<AliasRow, String> aliasRow;
@@ -74,7 +72,7 @@ public class AliasCell extends TableCell<AliasRow, String> {
         final Point2D nodeCoord = cell.localToScene(0.0, 0.0);
         final double clickX = Math.round(windowCoord.getX() + sceneCoord.getX() + nodeCoord.getX());
         final double clickY = Math.round(windowCoord.getY() + sceneCoord.getY() + nodeCoord.getY());
-        setDefaultSkin(aliasPopup, aliasTableContext, cell);
+        Utils.setDefaultSkin(aliasPopup, aliasTableContext, cell);
         aliasPopup.show(cell, clickX, clickY + cell.getHeight());
     }
 
@@ -123,7 +121,7 @@ public class AliasCell extends TableCell<AliasRow, String> {
         aliasTableContext.getItems().addAll(items);
         aliasTableContext.getSelectionModel().select(0);
 
-        setEmptyHeader(aliasTableContext);
+        Utils.setEmptyHeader(aliasTableContext);
 
         aliasTableContext.setOnMousePressed(e -> {
             if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
