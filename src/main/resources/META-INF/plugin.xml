@@ -17,7 +17,7 @@
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
         <action id="com.querybuilder.MainAction" class="com.querybuilder.MainAction" text="QB"
-                description="Query builder" icon="/images/dog.png">
+                description="Query builder" icon="/images/qbIcon.png">
             <add-to-group group-id="Console.Jdbc.Left" anchor="after" relative-to-action="Database.Settings"/>
         </action>
     </actions>

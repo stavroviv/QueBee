@@ -41,8 +41,8 @@ public class QueryBuilder {
             try {
                 stmt = CCJSqlParserUtil.parse(text);
             } catch (JSQLParserException exception) {
-                System.out.println(text);
-                exception.printStackTrace();
+                JOptionPane.showMessageDialog(null,
+                        "Cannot parse query\n" + exception.getCause().getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
         } else {

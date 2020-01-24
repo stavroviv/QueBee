@@ -66,15 +66,16 @@
                                                                 <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
                                                             </columnResizePolicy>
                                                         </TreeTableView>
-                                       </children>
+                                                    </children>
                                     </AnchorPane>
                                     <AnchorPane layoutX="10.0" layoutY="10.0" prefHeight="200.0" prefWidth="200.0">
                                        <children>
                                           <TreeTableView fx:id="tablesView" layoutY="30.0" prefHeight="641.0" prefWidth="174.0" showRoot="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
                                              <columns>
 
-                                                <TreeTableColumn fx:id="tablesViewColumn" prefWidth="239.0" text="Tables">
-                                                </TreeTableColumn>
+                                                 <TreeTableColumn fx:id="tablesViewColumn" prefWidth="239.0"
+                                                                  sortable="false" text="Tables">
+                                                 </TreeTableColumn>
 
                                              </columns>
                                              <columnResizePolicy>
@@ -117,7 +118,8 @@
                                                       AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="10.0"
                                                       AnchorPane.topAnchor="30.0">
                                                <columns>
-                                                   <TableColumn fx:id="fieldColumn" prefWidth="75.0" text="Fields">
+                                                   <TableColumn fx:id="fieldColumn" prefWidth="75.0" sortable="false"
+                                                                text="Fields">
                                                        <!--<cellValueFactory><PropertyValueFactory property="field" />-->
                                                        <!--</cellValueFactory>-->
                                                    </TableColumn>
@@ -199,22 +201,38 @@
                               </Button>
                               <TableView fx:id="linkTable" editable="true" layoutY="40.0" prefHeight="470.0" prefWidth="773.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="40.0">
                                  <columns>
-                                    <TableColumn fx:id="linkTableColumnTable1" maxWidth="200.0" minWidth="200.0" prefWidth="200.0" text="Table 1">
-                                       <cellValueFactory><PropertyValueFactory property="table1" /></cellValueFactory>
-                                    </TableColumn>
-                                    <TableColumn fx:id="linkTableAllTable1" maxWidth="30.0" minWidth="30.0" prefWidth="30.0" resizable="false" text="All">
-                                       <cellValueFactory><PropertyValueFactory property="allTable1" /></cellValueFactory>
-                                    </TableColumn>
-                                    <TableColumn fx:id="linkTableColumnTable2" maxWidth="200.0" minWidth="200.0" prefWidth="200.0" text="Table 2">
-                                       <cellValueFactory><PropertyValueFactory property="table2" /></cellValueFactory>
-                                    </TableColumn>
-                                    <TableColumn fx:id="linkTableAllTable2" maxWidth="30.0" minWidth="30.0" prefWidth="30.0" resizable="false" text="All">
-                                       <cellValueFactory><PropertyValueFactory property="allTable2" /></cellValueFactory>
-                                    </TableColumn>
-                                    <TableColumn fx:id="linkTableCustom" maxWidth="50.0" minWidth="50.0" prefWidth="50.0" resizable="false" text="Custom">
-                                       <cellValueFactory><PropertyValueFactory property="custom" /></cellValueFactory>
-                                    </TableColumn>
-                                    <TableColumn fx:id="linkTableJoinCondition" prefWidth="700.0" text="Join condition" />
+                                     <TableColumn fx:id="linkTableColumnTable1" maxWidth="200.0" minWidth="200.0"
+                                                  prefWidth="200.0" sortable="false" text="Table 1">
+                                         <cellValueFactory>
+                                             <PropertyValueFactory property="table1"/>
+                                         </cellValueFactory>
+                                     </TableColumn>
+                                     <TableColumn fx:id="linkTableAllTable1" maxWidth="30.0" minWidth="30.0"
+                                                  prefWidth="30.0" resizable="false" sortable="false" text="All">
+                                         <cellValueFactory>
+                                             <PropertyValueFactory property="allTable1"/>
+                                         </cellValueFactory>
+                                     </TableColumn>
+                                     <TableColumn fx:id="linkTableColumnTable2" maxWidth="200.0" minWidth="200.0"
+                                                  prefWidth="200.0" sortable="false" text="Table 2">
+                                         <cellValueFactory>
+                                             <PropertyValueFactory property="table2"/>
+                                         </cellValueFactory>
+                                     </TableColumn>
+                                     <TableColumn fx:id="linkTableAllTable2" maxWidth="30.0" minWidth="30.0"
+                                                  prefWidth="30.0" resizable="false" sortable="false" text="All">
+                                         <cellValueFactory>
+                                             <PropertyValueFactory property="allTable2"/>
+                                         </cellValueFactory>
+                                     </TableColumn>
+                                     <TableColumn fx:id="linkTableCustom" maxWidth="50.0" minWidth="50.0"
+                                                  prefWidth="50.0" resizable="false" sortable="false" text="Custom">
+                                         <cellValueFactory>
+                                             <PropertyValueFactory property="custom"/>
+                                         </cellValueFactory>
+                                     </TableColumn>
+                                     <TableColumn fx:id="linkTableJoinCondition" prefWidth="700.0" sortable="false"
+                                                  text="Join condition"/>
                                  </columns>
                                  <columnResizePolicy>
                                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -232,7 +250,8 @@
                                  <children>
                                     <TreeTableView fx:id="groupFieldsTree" prefHeight="626.0" prefWidth="233.0" showRoot="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="49.0" AnchorPane.topAnchor="10.0">
                                        <columns>
-                                          <TreeTableColumn fx:id="groupFieldsTreeColumn" prefWidth="75.0" text="Fields" />
+                                           <TreeTableColumn fx:id="groupFieldsTreeColumn" prefWidth="75.0"
+                                                            sortable="false" text="Fields"/>
                                        </columns>
                                        <columnResizePolicy>
                                           <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -308,7 +327,8 @@
                                                             AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
                                                      <columns>
                                                          <TableColumn fx:id="groupTableResultsFieldColumn"
-                                                                      prefWidth="75.0" text="Grouping field"/>
+                                                                      prefWidth="75.0" sortable="false"
+                                                                      text="Grouping field"/>
                                                      </columns>
                                                      <columnResizePolicy>
                                                          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
@@ -324,9 +344,11 @@
                                                             AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="0.0">
                                                      <columns>
                                                          <TableColumn fx:id="groupTableAggregatesFieldColumn"
-                                                                      prefWidth="75.0" text="Aggregate field"/>
+                                                                      prefWidth="75.0" sortable="false"
+                                                                      text="Aggregate field"/>
                                                          <TableColumn fx:id="groupTableAggregatesFunctionColumn"
-                                                                      prefWidth="75.0" text="Function"/>
+                                                                      prefWidth="75.0" sortable="false"
+                                                                      text="Function"/>
                                                      </columns>
                                                      <columnResizePolicy>
                                                          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
@@ -350,7 +372,8 @@
                                  <children>
                                     <TreeTableView fx:id="conditionsTreeTable" prefHeight="671.0" prefWidth="253.0" showRoot="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="10.0">
                                        <columns>
-                                          <TreeTableColumn fx:id="conditionsTreeTableColumn" prefWidth="75.0" text="Fileds" />
+                                           <TreeTableColumn fx:id="conditionsTreeTableColumn" prefWidth="75.0"
+                                                            sortable="false" text="Fileds"/>
                                        </columns>
                                        <columnResizePolicy>
                                           <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -403,9 +426,9 @@
                                          <columns>
                                              <TableColumn fx:id="conditionTableResultsCustom" maxWidth="70.0"
                                                           minWidth="70.0" prefWidth="70.0" resizable="false"
-                                                          text="Custom"/>
+                                                          sortable="false" text="Custom"/>
                                              <TableColumn fx:id="conditionTableResultsCondition" prefWidth="589.0"
-                                                          text="Condition"/>
+                                                          sortable="false" text="Condition"/>
                                          </columns>
                                          <columnResizePolicy>
                                              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
@@ -469,9 +492,10 @@
                                                 AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
                                          <columns>
                                              <TableColumn fx:id="unionTableNameColumn" editable="false" prefWidth="75.0"
-                                                          text="Name"/>
+                                                          sortable="false" text="Name"/>
                                              <TableColumn fx:id="unionTableDistinctColumn" maxWidth="60.0"
-                                                          minWidth="60.0" prefWidth="60.0" text="Distinct"/>
+                                                          minWidth="60.0" prefWidth="60.0" sortable="false"
+                                                          text="Distinct"/>
                                          </columns>
                                          <columnResizePolicy>
                                              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
@@ -519,7 +543,7 @@
                                                 AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="30.0">
                                          <columns>
                                              <TableColumn fx:id="aliasFieldColumn" maxWidth="304.0" minWidth="200.0"
-                                                          prefWidth="304.0" text="Field name">
+                                                          prefWidth="304.0" sortable="false" text="Field name">
                                                  <!--<cellValueFactory><PropertyValueFactory property="alias" /></cellValueFactory>-->
                                              </TableColumn>
 
@@ -551,7 +575,8 @@
                                  <children>
                                     <TreeTableView fx:id="orderFieldsTree" minWidth="100.0" prefHeight="631.0" prefWidth="251.0" showRoot="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="5.0">
                                        <columns>
-                                          <TreeTableColumn fx:id="orderFieldsTreeColumn" prefWidth="75.0" text="Fields" />
+                                           <TreeTableColumn fx:id="orderFieldsTreeColumn" prefWidth="75.0"
+                                                            sortable="false" text="Fields"/>
                                        </columns>
                                        <columnResizePolicy>
                                           <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -600,11 +625,11 @@
                                                 AnchorPane.topAnchor="30.0">
                                          <columns>
                                              <TableColumn fx:id="orderTableResultsFieldColumn" prefWidth="75.0"
-                                                          text="Field">
+                                                          sortable="false" text="Field">
                                                  <!--<cellValueFactory><PropertyValueFactory property="table1" /></cellValueFactory>-->
                                              </TableColumn>
                                              <TableColumn fx:id="orderTableResultsSortingColumn" prefWidth="75.0"
-                                                          text="Sorting">
+                                                          sortable="false" text="Sorting">
                                                  <cellValueFactory>
                                                      <PropertyValueFactory property="comboBoxValue"/>
                                                  </cellValueFactory>
