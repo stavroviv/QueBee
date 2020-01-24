@@ -3,10 +3,7 @@
     <name>QueBee</name>
     <vendor email="QueBee@gmail.com" url="http://www.homelab.com">QueBee</vendor>
 
-    <description><![CDATA[
-    Query builder<br>
-    <em>for Postgres, MySQL</em>
-    ]]></description>
+    <description><![CDATA[ Query builder for making selects queries<br> <em>in Postgres, MySQL</em>]]></description>
 
     <depends>com.intellij.modules.database</depends>
     <depends>com.intellij.modules.ultimate</depends>
@@ -20,7 +17,7 @@
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
         <action id="com.querybuilder.MainAction" class="com.querybuilder.MainAction" text="QB"
-                description="Query builder">
+                description="Query builder" icon="/images/dog.png">
             <add-to-group group-id="Console.Jdbc.Left" anchor="after" relative-to-action="Database.Settings"/>
         </action>
     </actions>

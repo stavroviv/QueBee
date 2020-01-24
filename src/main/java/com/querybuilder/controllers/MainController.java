@@ -30,6 +30,7 @@ import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import net.engio.mbassy.listener.Handler;
 import net.sf.jsqlparser.JSQLParserException;
@@ -144,6 +145,23 @@ public class MainController implements Argumentative {
             saveCurrentQuery(null, oldTab);
             loadCurrentQuery(false);
         });
+
+        setUnionTabPaneVisibility();
+        unionTabPane.getTabs().addListener((ListChangeListener.Change<? extends Tab> change) -> {
+            if (change.next()) {
+                setUnionTabPaneVisibility();
+            }
+        });
+    }
+
+    private void setUnionTabPaneVisibility() {
+        if (unionTabPane.getTabs().size() <= 1) {
+            AnchorPane.setRightAnchor(mainTabPane, 30.0);
+            unionTabPane.setVisible(false);
+        } else {
+            AnchorPane.setRightAnchor(mainTabPane, 58.0);
+            unionTabPane.setVisible(true);
+        }
     }
 
     private void saveCurrentQuery(Tab tab, Tab unionTab) {
@@ -257,7 +275,6 @@ public class MainController implements Argumentative {
             unionTable.getItems().clear();
             curMaxUnion = 0;
             unionColumns = new HashMap<>();
-//            unionTabs = new HashMap<>();
             // таблица Alias меняется только при переключении CTE
             loadAliasTable(selectBody);
         }
@@ -266,7 +283,6 @@ public class MainController implements Argumentative {
         if (selectBody instanceof SetOperationList) {
             SetOperationList setOperationList = (SetOperationList) selectBody;
             if (cteNumberPrev != cteNumber || firstRun) {
-//                unionItemMap.clear();
                 for (int i = 1; i <= setOperationList.getSelects().size(); i++) {
                     addUnion("Query " + i, i - 1);
                 }
@@ -988,7 +1004,7 @@ public class MainController implements Argumentative {
         linkTableJoinCondition.setCellFactory(column -> new TableCell<LinkElement, LinkElement>() {
             private final ObservableList<String> comparison = FXCollections.observableArrayList("=", "<>", "<", ">", "<=", ">=");
             private final ComboBox<String> comparisonComboBox = new ComboBox<>(comparison);
-            private final TextField customConditon = new TextField();
+            private final TextField customCondition = new TextField();
 
             @Override
             protected void updateItem(LinkElement item, boolean empty) {
@@ -996,8 +1012,8 @@ public class MainController implements Argumentative {
                 if (empty) {
                     setGraphic(null);
                 } else if (item != null && item.isCustom()) {
-                    customConditon.setText(item.getCondition());
-                    setGraphic(customConditon);
+                    customCondition.setText(item.getCondition());
+                    setGraphic(customCondition);
                 } else {
                     HBox pane = new HBox();
                     item.getConditionComboBox1().prefWidthProperty().bind(pane.widthProperty());
@@ -1440,7 +1456,6 @@ public class MainController implements Argumentative {
         } else {
             selectBodies.add(existingBody);
         }
-//        selectBodies.add(getFullSelectBody());
         selectBodies.add(getEmptySelect());
 
         List<Boolean> brackets = new ArrayList<>();
@@ -1467,8 +1482,6 @@ public class MainController implements Argumentative {
         Tab tab = new Tab(unionName);
         tab.setId(unionName);
         unionTabPane.getTabs().add(tab);
-//        unionTabs.put(unionName, tab);
-//        unionItemMap.put(unionName, curUnion);
     }
 
     @FXML
@@ -1491,10 +1504,6 @@ public class MainController implements Argumentative {
         unionTabPane.getTabs().remove(delIndex);
         if (selectedIndex == delIndex) {
             unionTabPane.getSelectionModel().select(delIndex - 1);
-//                    delIndex + 1 > unionTabPane.getTabs().size()
-//                            ? unionTabPane.getTabs().size() - 1
-//                            : delIndex
-//            );
             loadCurrentQuery(false);
         }
 
