@@ -90,8 +90,6 @@ public class MainController implements Argumentative {
     private TableView<String> queryCteTable;
     @FXML
     private TableColumn<String, String> queryCteColumn;
-    private Map<String, Integer> withItemMap;
-//    private Map<String, Integer> unionItemMap;
 
     protected QueryBuilder queryBuilder;
     private Map<String, List<String>> dbElements;
@@ -109,8 +107,6 @@ public class MainController implements Argumentative {
         }
 
         this.sQuery = sQuery;
-        this.withItemMap = new HashMap<>();
-//        this.unionItemMap = new HashMap<>();
 
         initDBTables();
         reloadData();
@@ -146,22 +142,34 @@ public class MainController implements Argumentative {
             loadCurrentQuery(false);
         });
 
-        setUnionTabPaneVisibility();
+        setUnionAndCTETabPaneVisibility();
         unionTabPane.getTabs().addListener((ListChangeListener.Change<? extends Tab> change) -> {
             if (change.next()) {
-                setUnionTabPaneVisibility();
+                setUnionAndCTETabPaneVisibility();
+            }
+        });
+        cteTabPane.getTabs().addListener((ListChangeListener.Change<? extends Tab> change) -> {
+            if (change.next()) {
+                setUnionAndCTETabPaneVisibility();
             }
         });
     }
 
-    private void setUnionTabPaneVisibility() {
+    private void setUnionAndCTETabPaneVisibility() {
+        double anchor = 0.0;
         if (unionTabPane.getTabs().size() <= 1) {
-            AnchorPane.setRightAnchor(mainTabPane, 30.0);
             unionTabPane.setVisible(false);
         } else {
-            AnchorPane.setRightAnchor(mainTabPane, 58.0);
+            anchor = 60;
             unionTabPane.setVisible(true);
         }
+        if (cteTabPane.getTabs().size() <= 1) {
+            cteTabPane.setVisible(false);
+        } else {
+            anchor = 60;
+            cteTabPane.setVisible(true);
+        }
+        AnchorPane.setRightAnchor(mainTabPane, anchor);
     }
 
     private void saveCurrentQuery(Tab tab, Tab unionTab) {
@@ -188,7 +196,18 @@ public class MainController implements Argumentative {
         return tIndex;
     }
 
-    private void saveSelectBody(Tab tab, Tab unionTab, PlainSelect selectBody) {
+    private int getCteTabId(String tabId) {
+        int tIndex = 0;
+        for (Tab tPane : cteTabPane.getTabs()) {
+            if (tPane.getId().equals(tabId)) {
+                break;
+            }
+            tIndex++;
+        }
+        return tIndex;
+    }
+
+    private void saveSelectBody(Tab cteTab, Tab unionTab, PlainSelect selectBody) {
         int unionNumber;
         if (unionTab == null) {
             int selectedIndex = unionTabPane.getSelectionModel().getSelectedIndex();
@@ -197,23 +216,21 @@ public class MainController implements Argumentative {
             unionNumber = getTabIndex(unionTab.getId());
         }
 
-        SelectBody currentSelectBody = sQuery.getSelectBody();
-        if (withItemMap.size() == 0) {
-            if (currentSelectBody instanceof SetOperationList) {
-                ((SetOperationList) currentSelectBody).getSelects().set(unionNumber, selectBody);
-            } else {
+        if (cteTab != null) {
+            int cteTabId = getCteTabId(cteTab.getId());
+            if (cteTabId == sQuery.getWithItemsList().size()) {
                 sQuery.setSelectBody(selectBody);
+            } else {
+                sQuery.getWithItemsList().get(cteTabId).setSelectBody(selectBody);
             }
+            return;
+        }
+
+        SelectBody currentSelectBody = sQuery.getSelectBody();
+        if (currentSelectBody instanceof SetOperationList) {
+            ((SetOperationList) currentSelectBody).getSelects().set(unionNumber, selectBody);
         } else {
-//            if (tab == null) {
-//                tab = cteTabPane.getSelectionModel().selectedItemProperty().get();
-//            }
-//            Integer cteNumber = withItemMap.get(tab.getId());
-//            if (cteNumber.equals(sQuery.getWithItemsList().size())) {
-//                selectBody = sQuery.getSelectBody();
-//            } else {
-//                selectBody = sQuery.getWithItemsList().get(cteNumber).getSelectBody();
-//            }
+            sQuery.setSelectBody(selectBody);
         }
     }
 
@@ -277,6 +294,7 @@ public class MainController implements Argumentative {
             unionColumns = new HashMap<>();
             // таблица Alias меняется только при переключении CTE
             loadAliasTable(selectBody);
+            loadCteTables();
         }
 
         // UNION
@@ -299,6 +317,11 @@ public class MainController implements Argumentative {
             initSelectedTables();
         }
         cteNumberPrev = cteNumber;
+    }
+
+    private void loadCteTables() {
+        // загрузить в дерево таблиц предыдущие CTE
+
     }
 
     private void loadAliasTable(SelectBody selectBody) {
@@ -484,10 +507,13 @@ public class MainController implements Argumentative {
         cteTabPane.getTabs().clear();
         queryCteTable.getItems().clear();
         curMaxUnion = 0;
+        curMaxCTE = 1;
 
+        // one query
         List<WithItem> withItemsList = sQuery.getWithItemsList();
         if (withItemsList == null) {
             loadCurrentQuery(true);
+            queryCteTable.getItems().add("Query 1");
             return;
         }
 
@@ -498,17 +524,16 @@ public class MainController implements Argumentative {
             Tab tab = new Tab(cteName);
             tab.setId(cteName);
             cteTabPane.getTabs().add(tab);
-            withItemMap.put(cteName, i);
+            queryCteTable.getItems().add(cteName);
             i++;
         }
 
-        String cteName = "Query of CTE " + (withItemsList.size() + 1);
-        Tab tab = new Tab(cteName);
-        tab.setId(cteName);
-        cteTabPane.getTabs().add(tab);
+        curMaxCTE = withItemsList.size();
+        String cteName = "Query_" + (withItemsList.size() + 1);
+        addCteTabPane(withItemsList.size() + 1);
+        queryCteTable.getItems().add(cteName);
+
         cteTabPane.getSelectionModel().select(0);
-        withItemMap.put(cteName, i);
-        queryCteTable.getItems().addAll(withItemMap.keySet());
         loadCurrentQuery(true);
     }
 
@@ -782,55 +807,16 @@ public class MainController implements Argumentative {
         tablesView.getRoot().getChildren().remove(selectedItem);
     }
 
-//    private PlainSelect getSelectBody() {
-//        return getSelectBody(null, null);
-//    }
-
-    private PlainSelect getSelectBody(Tab tab, Tab unionTab) {
-        SelectBody selectBody;
-        int unionNumber = 0;
-        if (unionTab == null) {
-            int selectedIndex = unionTabPane.getSelectionModel().getSelectedIndex();
-            unionNumber = (selectedIndex == -1 ? 0 : selectedIndex);
-        } else {
-            unionNumber = getTabIndex(unionTab.getId());
-        }
-
-        if (withItemMap.size() == 0) {
-            selectBody = sQuery.getSelectBody();
-//            if (selectBody == null) {
-//                selectBody = getEmptySelect();
-//                sQuery.setSelectBody(selectBody);
-//            }
-        } else {
-            if (tab == null) {
-                tab = cteTabPane.getSelectionModel().selectedItemProperty().get();
-            }
-            Integer cteNumber = withItemMap.get(tab.getId());
-            if (cteNumber.equals(sQuery.getWithItemsList().size())) {
-                selectBody = sQuery.getSelectBody();
-            } else {
-                selectBody = sQuery.getWithItemsList().get(cteNumber).getSelectBody();
-            }
-        }
-        if (selectBody instanceof SetOperationList) {
-            selectBody = ((SetOperationList) selectBody).getSelects().get(unionNumber);
-        }
-        return (PlainSelect) selectBody;
-    }
-
     private PlainSelect getEmptySelect() {
         return new PlainSelect();
     }
 
-    public void addCteTableToForm(Tab tap) {
-        qbTabPane_All.getTabs().add(tap);
-        queryBatchTable.getItems().add("newwww");
-    }
-
     @FXML
     public void okClick() {
-        saveCurrentQuery(null, null);
+        saveCurrentQuery(
+                cteTabPane.getSelectionModel().getSelectedItem(),
+                unionTabPane.getSelectionModel().getSelectedItem()
+        );
         queryBuilder.closeForm(sQuery.toString());
     }
 
@@ -1517,4 +1503,46 @@ public class MainController implements Argumentative {
     @FXML
     private TableColumn<TableRow, Boolean> unionTableDistinctColumn;
 
+    public void removeCTEClick(ActionEvent actionEvent) {
+    }
+
+    private int curMaxCTE; // это индекс максимального объединения, нумерация начинается с 0
+
+    public void addCTEClick(ActionEvent actionEvent) {
+        if (curMaxCTE == 1) {
+            addCteTabPane(1);
+        }
+        curMaxCTE++;
+        addCteTabPane(curMaxCTE);
+        queryCteTable.getItems().add("Query_" + curMaxCTE);
+
+        // добавить новый Select, все что есть превратить в блок CTE
+        List<WithItem> withItemsList = sQuery.getWithItemsList();
+        List<WithItem> newItemsList = new ArrayList<>();
+        if (withItemsList != null) {
+            for (WithItem wIt : sQuery.getWithItemsList()) {
+                WithItem wItem = new WithItem();
+                wItem.setName(wIt.getName());
+                wItem.setSelectBody(wIt.getSelectBody());
+                newItemsList.add(wItem);
+            }
+        }
+        addCte(newItemsList);
+        sQuery.setWithItemsList(newItemsList);
+        sQuery.setSelectBody(getEmptySelect());
+    }
+
+    private void addCte(List<WithItem> newItemsList) {
+        WithItem wItem = new WithItem();
+        wItem.setName("Query_" + curMaxCTE);
+        wItem.setSelectBody(sQuery.getSelectBody());
+        newItemsList.add(wItem);
+    }
+
+    private void addCteTabPane(int curMaxCTE) {
+        String cteName = "Query_" + curMaxCTE;
+        Tab tab = new Tab(cteName);
+        tab.setId(cteName);
+        cteTabPane.getTabs().add(tab);
+    }
 }

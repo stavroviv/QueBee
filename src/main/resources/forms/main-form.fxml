@@ -677,24 +677,30 @@
                      <content>
                         <AnchorPane prefHeight="200.0" prefWidth="200.0">
                            <children>
-                              <Button contentDisplay="GRAPHIC_ONLY" layoutX="11.0" layoutY="8.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="Button">
-                                 <graphic>
-                                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                           <Image url="@../images/add.png"/>
-                                       </image>
-                                    </ImageView>
-                                 </graphic>
-                              </Button>
-                              <Button contentDisplay="GRAPHIC_ONLY" layoutX="69.0" layoutY="8.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="Button">
-                                 <graphic>
-                                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                           <Image url="@../images/delete.png"/>
-                                       </image>
-                                    </ImageView>
-                                 </graphic>
-                              </Button>
+                               <Button contentDisplay="GRAPHIC_ONLY" layoutX="11.0" layoutY="8.0" minHeight="25.0"
+                                       minWidth="25.0" mnemonicParsing="false" onAction="#addCTEClick" prefHeight="25.0"
+                                       prefWidth="25.0" text="Button">
+                                   <graphic>
+                                       <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true"
+                                                  preserveRatio="true">
+                                           <image>
+                                               <Image url="@../images/add.png"/>
+                                           </image>
+                                       </ImageView>
+                                   </graphic>
+                               </Button>
+                               <Button contentDisplay="GRAPHIC_ONLY" layoutX="69.0" layoutY="8.0" minHeight="25.0"
+                                       minWidth="25.0" mnemonicParsing="false" onAction="#removeCTEClick"
+                                       prefHeight="25.0" prefWidth="25.0" text="Button">
+                                   <graphic>
+                                       <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true"
+                                                  preserveRatio="true">
+                                           <image>
+                                               <Image url="@../images/delete.png"/>
+                                           </image>
+                                       </ImageView>
+                                   </graphic>
+                               </Button>
                               <Button contentDisplay="GRAPHIC_ONLY" layoutX="40.0" layoutY="8.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="Button">
                                  <graphic>
                                     <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
@@ -724,10 +730,11 @@
       </AnchorPane>
       <HBox alignment="BOTTOM_LEFT" layoutY="665.0" prefHeight="35.0" prefWidth="1031.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="665.0">
          <children>
-            <Pane prefHeight="0.0" prefWidth="0.0" HBox.hgrow="ALWAYS">
-               <HBox.margin>
-                  <Insets />
-               </HBox.margin></Pane>
+             <Pane prefHeight="0.0" prefWidth="695.0" HBox.hgrow="ALWAYS">
+                 <HBox.margin>
+                     <Insets/>
+                 </HBox.margin>
+             </Pane>
              <Button alignment="CENTER" defaultButton="true" minHeight="25.0" minWidth="80.0" mnemonicParsing="false"
                      onAction="#okClick" prefHeight="25.0" prefWidth="80.0" text="OK" HBox.hgrow="NEVER">
                  <padding>

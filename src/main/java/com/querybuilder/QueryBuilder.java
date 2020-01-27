@@ -63,7 +63,7 @@ public class QueryBuilder {
         frame = new JFrame("Query builder");
         frame.setContentPane(fxPanel);
         frame.pack();
-        frame.setSize(1200, 800);
+        frame.setSize(900, 650);
 
         DataContext dataContext = DataManager.getInstance().getDataContext();
         Project project = (Project) dataContext.getData(DataConstants.PROJECT);
