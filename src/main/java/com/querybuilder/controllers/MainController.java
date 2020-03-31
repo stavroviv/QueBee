@@ -63,8 +63,8 @@ public class MainController implements Argumentative {
     @FXML
     private TableColumn<TableRow, String> fieldColumn;
 
-    private List<SelectItem> selectItems;
-    private List<SelectItem> cteList;
+//    private List<SelectItem> selectItems;
+//    private List<SelectItem> cteList;
 
     @FXML
     private TabPane qbTabPane_All;
@@ -117,9 +117,7 @@ public class MainController implements Argumentative {
         CustomEventBus.register(this);
     }
 
-    ////////////////////////////////////////////////////////////////////
-    // FILL, SHOW QUERY
-    ////////////////////////////////////////////////////////////////////
+    //<editor-fold defaultstate="collapsed" desc="FILL SHOW AUERY">
 
     private boolean notChangeUnion;
 
@@ -157,19 +155,20 @@ public class MainController implements Argumentative {
 
     private void setUnionAndCTETabPaneVisibility() {
         double anchor = 0.0;
-        if (unionTabPane.getTabs().size() <= 1) {
-            unionTabPane.setVisible(false);
-        } else {
-            anchor = 60;
-            unionTabPane.setVisible(true);
-        }
-        if (cteTabPane.getTabs().size() <= 1) {
-            cteTabPane.setVisible(false);
-        } else {
-            anchor = 60;
-            cteTabPane.setVisible(true);
-        }
+        anchor = setPaneVisibleAnchor(anchor, cteTabPane);
+        anchor = setPaneVisibleAnchor(anchor, unionTabPane);
         AnchorPane.setRightAnchor(mainTabPane, anchor);
+    }
+
+    private double setPaneVisibleAnchor(double anchor, TabPane pane) {
+        if (pane.getTabs().size() <= 1) {
+            pane.setVisible(false);
+        } else {
+            AnchorPane.setRightAnchor(pane, anchor);
+            anchor += 29;
+            pane.setVisible(true);
+        }
+        return anchor;
     }
 
     private void saveCurrentQuery(Tab tab, Tab unionTab) {
@@ -397,6 +396,8 @@ public class MainController implements Argumentative {
         tablesView.setRoot(new TreeItem<>());
         initDatabaseTableView();
     }
+
+    //</editor-fold>
 
     @FXML
     private TreeTableView<TableRow> databaseTableView;
@@ -873,9 +874,7 @@ public class MainController implements Argumentative {
         queryBuilder.closeForm();
     }
 
-    /**********************************************
-     TREE SELECTED TABLES VIEW
-     **********************************************/
+    //<editor-fold defaultstate="collapsed" desc="TREE SELECTED TABLES VIEW">
 
     @FXML
     private TreeTableView<TableRow> tablesView;
@@ -939,9 +938,9 @@ public class MainController implements Argumentative {
         return menu;
     }
 
-    /**********************************************
-     LINK TABLE
-     **********************************************/
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="LINK TABLE">
 
     @FXML
     private TableView<LinkElement> linkTable;
@@ -1089,9 +1088,10 @@ public class MainController implements Argumentative {
         conditionTableResults.getItems().add(conditionElement);
     }
 
-    /*
-    INNER QUERY
-     */
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="INNER QUERY">
+
     @FXML
     private Button addInnerQuery;
 
@@ -1123,6 +1123,7 @@ public class MainController implements Argumentative {
 //        System.out.println(selectBody);
     }
 
+    //</editor-fold>
 
     private void setStringColumnFactory(TableColumn<TableRow, String> resultsColumn) {
         setStringColumnFactory(resultsColumn, false);

@@ -16,22 +16,30 @@
                     xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
             <children>
                 <TabPane id="cteTabPane" fx:id="cteTabPane" layoutX="870.0" layoutY="29.0" maxWidth="40.0"
-                         minWidth="30.0" prefHeight="583.0" prefWidth="30.0" side="RIGHT" tabClosingPolicy="UNAVAILABLE"
+                         minWidth="30.0" prefHeight="583.0" prefWidth="30.0" side="RIGHT"
+                         style="-fx-background-color: #dddddd;" tabClosingPolicy="UNAVAILABLE"
                          AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                         AnchorPane.topAnchor="28.0">
+                         AnchorPane.topAnchor="0.0">
                     <tabs>
                         <Tab text="Untitled Tab"/>
                         <Tab text="Untitled Tab"/>
                     </tabs>
+                    <padding>
+                        <Insets top="28.0"/>
+                    </padding>
                 </TabPane>
                 <TabPane id="cteTabPane" fx:id="unionTabPane" layoutX="837.0" layoutY="39.0" maxWidth="33.0"
-                         minWidth="33.0" prefHeight="583.0" prefWidth="33.0" side="RIGHT" tabClosingPolicy="UNAVAILABLE"
+                         minWidth="33.0" prefHeight="583.0" prefWidth="33.0" side="RIGHT"
+                         style="-fx-background-color: #dddddd;" tabClosingPolicy="UNAVAILABLE"
                          AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="29.0"
-                         AnchorPane.topAnchor="28.0">
+                         AnchorPane.topAnchor="0.0">
                     <tabs>
                         <Tab text="Untitled Tab"/>
                         <Tab text="Untitled Tab"/>
                     </tabs>
+                    <padding>
+                        <Insets top="28.0"/>
+                    </padding>
                 </TabPane>
 
                 <TabPane fx:id="mainTabPane" prefHeight="700.0" prefWidth="930.0" tabClosingPolicy="UNAVAILABLE"
