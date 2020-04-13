@@ -45,8 +45,6 @@
                 <TabPane fx:id="mainTabPane" prefHeight="700.0" prefWidth="930.0" tabClosingPolicy="UNAVAILABLE"
                          AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="58.0"
                          AnchorPane.topAnchor="0.0">
-                    <!--AnchorPane.bottomAnchor="0.0"-->
-                    <!--AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">-->
                     <tabs>
                         <Tab text="Tables and fields">
                             <content>

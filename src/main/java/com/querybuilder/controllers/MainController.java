@@ -171,17 +171,57 @@ public class MainController implements Argumentative {
         return anchor;
     }
 
-    private void saveCurrentQuery(Tab tab, Tab unionTab) {
-        PlainSelect selectBody = getEmptySelect();
+    private void saveCurrentQuery(Tab cteTab, Tab unionTab) {
+        PlainSelect newSelectBody = getEmptySelect();
         try {
-            saveFromTables(selectBody);
-            saveSelectedFields(selectBody);
-            saveOrder(selectBody);
-            saveConditions(selectBody);
+            saveFromTables(newSelectBody);
+            saveSelectedFields(newSelectBody);
+            saveOrder(newSelectBody);
+            saveConditions(newSelectBody);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        saveSelectBody(tab, unionTab, selectBody);
+
+        int unionNumber;
+        if (unionTab == null) {
+            int selectedIndex = unionTabPane.getSelectionModel().getSelectedIndex();
+            unionNumber = (selectedIndex == -1 ? 0 : selectedIndex);
+        } else {
+            unionNumber = getTabIndex(unionTab.getId());
+        }
+
+        int cteNumber;
+        if (cteTab == null) {
+            int selectedIndex = cteTabPane.getSelectionModel().getSelectedIndex();
+            cteNumber = (selectedIndex == -1 ? 0 : selectedIndex);
+        } else {
+            cteNumber = getCteTabId(cteTab.getId());
+        }
+
+        if (sQuery.getWithItemsList() != null && sQuery.getWithItemsList().size() > 0) {
+            SelectBody selectBody;
+            if (sQuery.getWithItemsList().size() == cteNumber) {
+                selectBody = sQuery.getSelectBody();
+            } else {
+                selectBody = sQuery.getWithItemsList().get(cteNumber).getSelectBody();
+            }
+            if (selectBody instanceof SetOperationList) {
+                ((SetOperationList) selectBody).getSelects().set(unionNumber, newSelectBody);
+            } else {
+                if (sQuery.getWithItemsList().size() == cteNumber) {
+                    sQuery.setSelectBody(newSelectBody);
+                } else {
+                    sQuery.getWithItemsList().get(cteNumber).setSelectBody(newSelectBody);
+                }
+            }
+        } else {
+            SelectBody selectBody = sQuery.getSelectBody();
+            if (selectBody instanceof SetOperationList) {
+                ((SetOperationList) selectBody).getSelects().set(unionNumber, newSelectBody);
+            } else {
+                sQuery.setSelectBody(newSelectBody);
+            }
+        }
     }
 
     private int getTabIndex(String unionTabId) {
@@ -204,33 +244,6 @@ public class MainController implements Argumentative {
             tIndex++;
         }
         return tIndex;
-    }
-
-    private void saveSelectBody(Tab cteTab, Tab unionTab, PlainSelect selectBody) {
-        int unionNumber;
-        if (unionTab == null) {
-            int selectedIndex = unionTabPane.getSelectionModel().getSelectedIndex();
-            unionNumber = (selectedIndex == -1 ? 0 : selectedIndex);
-        } else {
-            unionNumber = getTabIndex(unionTab.getId());
-        }
-
-        if (cteTab != null) {
-            int cteTabId = getCteTabId(cteTab.getId());
-            if (cteTabId == sQuery.getWithItemsList().size()) {
-                sQuery.setSelectBody(selectBody);
-            } else {
-                sQuery.getWithItemsList().get(cteTabId).setSelectBody(selectBody);
-            }
-            return;
-        }
-
-        SelectBody currentSelectBody = sQuery.getSelectBody();
-        if (currentSelectBody instanceof SetOperationList) {
-            ((SetOperationList) currentSelectBody).getSelects().set(unionNumber, selectBody);
-        } else {
-            sQuery.setSelectBody(selectBody);
-        }
     }
 
     private void saveFromTables(PlainSelect selectBody) {
@@ -1507,7 +1520,7 @@ public class MainController implements Argumentative {
     public void removeCTEClick(ActionEvent actionEvent) {
     }
 
-    private int curMaxCTE; // это индекс максимального объединения, нумерация начинается с 0
+    private int curMaxCTE; // индекс максимального СTE, нумерация начинается с 0
 
     public void addCTEClick(ActionEvent actionEvent) {
         if (curMaxCTE == 1) {
