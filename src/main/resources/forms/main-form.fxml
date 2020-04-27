@@ -46,7 +46,7 @@
                          AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="58.0"
                          AnchorPane.topAnchor="0.0">
                     <tabs>
-                        <Tab text="Tables and fields">
+                        <Tab fx:id="tableAndFieldsTab" text="Tables and fields">
                             <content>
                                 <AnchorPane>
                                     <children>
@@ -451,34 +451,25 @@
                            <AnchorPane prefHeight="200.0" prefWidth="200.0">
                                <children>
                                    <TitledPane animated="false" collapsible="false" layoutX="12.0" layoutY="10.0"
-                                               maxWidth="240.0" prefHeight="200.0" prefWidth="238.0"
-                                               text="Record selection">
+                                               maxWidth="822.0" prefHeight="563.0" prefWidth="822.0"
+                                               text="Record selection" AnchorPane.bottomAnchor="10.0"
+                                               AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0"
+                                               AnchorPane.topAnchor="5.0">
                                        <content>
-                                           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0"
-                                                       prefWidth="227.0">
+                                           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="174.0"
+                                                       prefWidth="446.0">
                                                <children>
                                                    <CheckBox layoutX="12.0" layoutY="16.0" mnemonicParsing="false"
                                                              text="Top"/>
                                                    <CheckBox layoutX="12.0" layoutY="45.0" mnemonicParsing="false"
                                                              prefHeight="17.0" prefWidth="72.0" text="Distinct"/>
-                                               </children>
-                                           </AnchorPane>
-                                       </content>
-                                   </TitledPane>
-                                   <TitledPane animated="false" collapsible="false" layoutX="263.0" layoutY="10.0"
-                                               prefHeight="200.0" prefWidth="400.0" text="Query type">
-                                       <content>
-                                           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="195.0"
-                                                       prefWidth="400.0">
-                                               <children>
-                                                   <RadioButton layoutX="14.0" layoutY="14.0" mnemonicParsing="false"
-                                                                selected="true" text="Select data"/>
-                                                   <RadioButton layoutX="14.0" layoutY="41.0" mnemonicParsing="false"
-                                                                prefHeight="17.0" prefWidth="90.0" text="Create CTE"/>
-                                                   <TextField layoutX="118.0" layoutY="37.0" prefHeight="25.0"
-                                                              prefWidth="269.0"/>
-                                                   <Label layoutX="118.0" layoutY="14.0" prefHeight="17.0"
-                                                          prefWidth="145.0" text="CTE name:"/>
+                                                   <Spinner fx:id="topSpinner" editable="true" layoutX="90.0"
+                                                            layoutY="12.0">
+                                                       <valueFactory>
+                                                           <SpinnerValueFactory.IntegerSpinnerValueFactory
+                                                                   amountToStepBy="1" initialValue="0" min="0"/>
+                                                       </valueFactory>
+                                                   </Spinner>
                                                </children>
                                            </AnchorPane>
                                        </content>

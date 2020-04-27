@@ -77,6 +77,9 @@ public class MainController implements Argumentative {
 
     private Select sQuery;
 
+    @FXML
+    private Spinner<Integer> topSpinner;
+
     public Select getsQuery() {
         return sQuery;
     }
@@ -527,7 +530,7 @@ public class MainController implements Argumentative {
         List<WithItem> withItemsList = sQuery.getWithItemsList();
         if (withItemsList == null) {
             loadCurrentQuery(true);
-            queryCteTable.getItems().add("Query 1");
+            queryCteTable.getItems().add("Query_1");
             return;
         }
 
@@ -542,7 +545,7 @@ public class MainController implements Argumentative {
             i++;
         }
 
-        curMaxCTE = withItemsList.size();
+        curMaxCTE = withItemsList.size() + 1;
         String cteName = "Query_" + (withItemsList.size() + 1);
         addCteTabPane(withItemsList.size() + 1);
         queryCteTable.getItems().add(cteName);
@@ -1522,15 +1525,21 @@ public class MainController implements Argumentative {
 
     private int curMaxCTE; // индекс максимального СTE, нумерация начинается с 0
 
+    @FXML
+    private Tab tableAndFieldsTab;
+
     public void addCTEClick(ActionEvent actionEvent) {
-        if (curMaxCTE == 1) {
+        if (cteTabPane.getTabs().size() == 0) {
             addCteTabPane(1);
         }
+
         curMaxCTE++;
-        addCteTabPane(curMaxCTE);
+        String lastQuery = queryCteTable.getItems().get(queryCteTable.getItems().size() - 1);
+
+        Tab newTab = addCteTabPane(curMaxCTE);
         queryCteTable.getItems().add("Query_" + curMaxCTE);
 
-        // добавить новый Select, все что есть превратить в блок CTE
+        // добавить новый Select, все что есть превратить в блоки CTE
         List<WithItem> withItemsList = sQuery.getWithItemsList();
         List<WithItem> newItemsList = new ArrayList<>();
         if (withItemsList != null) {
@@ -1541,22 +1550,34 @@ public class MainController implements Argumentative {
                 newItemsList.add(wItem);
             }
         }
-        addCte(newItemsList);
+
+        addCte(newItemsList, lastQuery);
+
         sQuery.setWithItemsList(newItemsList);
         sQuery.setSelectBody(getEmptySelect());
+
+        activateNewTab(newTab);
     }
 
-    private void addCte(List<WithItem> newItemsList) {
+    private void addCte(List<WithItem> newItemsList, String lastQuery) {
         WithItem wItem = new WithItem();
-        wItem.setName("Query_" + curMaxCTE);
+        wItem.setName(lastQuery);
         wItem.setSelectBody(sQuery.getSelectBody());
         newItemsList.add(wItem);
     }
 
-    private void addCteTabPane(int curMaxCTE) {
+    private void activateNewTab(Tab newTab) {
+        SingleSelectionModel<Tab> selectionModel = cteTabPane.getSelectionModel();
+        selectionModel.select(newTab);
+        SingleSelectionModel<Tab> selModel = mainTabPane.getSelectionModel();
+        selModel.select(tableAndFieldsTab);
+    }
+
+    private Tab addCteTabPane(int curMaxCTE) {
         String cteName = "Query_" + curMaxCTE;
         Tab tab = new Tab(cteName);
         tab.setId(cteName);
         cteTabPane.getTabs().add(tab);
+        return tab;
     }
 }
