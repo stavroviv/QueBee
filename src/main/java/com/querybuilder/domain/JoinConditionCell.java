@@ -45,6 +45,7 @@ public class JoinConditionCell extends TableCell<LinkElement, LinkElement> {
             comparisonComboBox.setValue(condition.replace(array[0], "").replace(array[1], ""));
             item.getConditionComboBox2().setValue(array[1]);
         }
+
         pane.getChildren().add(item.getConditionComboBox1());
         pane.getChildren().add(comparisonComboBox);
         pane.getChildren().add(item.getConditionComboBox2());

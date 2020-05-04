@@ -37,6 +37,7 @@ import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -185,7 +186,7 @@ public class MainController implements Argumentative {
     private void saveCurrentQuery(Tab cteTab, Tab unionTab) {
         PlainSelect newSelectBody = getEmptySelect();
         try {
-            saveFromTables(newSelectBody);
+            saveFromAndLinkTables(newSelectBody);
             saveSelectedFields(newSelectBody);
             saveOrder(newSelectBody);
             saveConditions(newSelectBody);
@@ -257,7 +258,7 @@ public class MainController implements Argumentative {
         return tIndex;
     }
 
-    private void saveFromTables(PlainSelect selectBody) {
+    private void saveFromAndLinkTables(PlainSelect selectBody) {
         if (linkTable.getItems().size() == 0) {
             List<Join> jList = new ArrayList<>();
             tablesView.getRoot().getChildren().forEach(x -> {
@@ -276,7 +277,8 @@ public class MainController implements Argumentative {
             return;
         }
 
-
+        // 1. если JOIN есть - то надо указать связи всех таблиц
+        // 2. RIGHT JOIN изменить на LEFT и упорядочить все строки кроме первой
         tablesView.getRoot().getChildren().forEach(x -> {
 //            if (getSelectBody().getFromItem() == null) {
 //                getSelectBody().setFromItem(new Table(parent));
@@ -462,8 +464,6 @@ public class MainController implements Argumentative {
                 }
         );
 
-        setLInkTable();
-
         setResultsTablesHandlers();
 //        setCellFactory(databaseTableColumn);
 //        initSelectedTables();
@@ -501,18 +501,6 @@ public class MainController implements Argumentative {
         ObservableList<TreeItem<TableRow>> children = tablesView.getRoot().getChildren();
         if (children.stream().noneMatch(x -> x.getValue().getName().equals(parent))) {
             tablesView.getRoot().getChildren().add(getTableItemWithFields(parent));
-
-//            joinItems.add(parent);
-//            if (getSelectBody().getFromItem() == null) {
-//                getSelectBody().setFromItem(new Table(parent));
-//            } else {
-//                List<Join> jList = (getSelectBody().getJoins() == null) ? new ArrayList<>() : getSelectBody().getJoins();
-//                Join join = new Join();
-//                join.setRightItem(new Table(parent));
-//                join.setSimple(true);
-//                jList.add(join);
-//                getSelectBody().setJoins(jList);
-//            }
         }
         refreshLinkTable();
     }
@@ -602,6 +590,7 @@ public class MainController implements Argumentative {
         loadFromTables(pSelect);
         initSelectedTables();
         loadSelectedFields(pSelect, cteChange);
+        loadLinks(pSelect);
         loadGroupBy(pSelect);
         loadOrderBy(pSelect);
         loadConditions(pSelect);
@@ -739,7 +728,6 @@ public class MainController implements Argumentative {
     }
 
     private void loadFromTables(PlainSelect pSelect) {
-//        linkTablesPane.setDisable(true);
         FromItem fromItem = pSelect.getFromItem();
         Table table = null;
         if (fromItem instanceof Table) {
@@ -752,13 +740,13 @@ public class MainController implements Argumentative {
             return;
         }
 
-//        linkTablesPane.setDisable(false);
-        linkTable.getItems().clear();
-        joinItems.add(table.getName());
         for (Join join : joins) {
             FromItem rightItem = join.getRightItem();
             String rightItemName = "";
-            if (rightItem instanceof SubSelect) {
+            if (rightItem instanceof Table) {
+                rightItemName = rightItem.toString();
+                tablesView.getRoot().getChildren().add(getTableItemWithFields(rightItemName));
+            } else if (rightItem instanceof SubSelect) {
                 SubSelect sSelect = (SubSelect) rightItem;
                 rightItemName = sSelect.getAlias().getName();
                 TableRow tableRow = new TableRow(rightItemName);
@@ -776,49 +764,112 @@ public class MainController implements Argumentative {
                     TreeItem<TableRow> nestedRow = new TreeItem<>(nestedItem);
                     tableRowTreeItem.getChildren().add(nestedRow);
                 });
-
-            } else if (rightItem instanceof Table) {
-                rightItemName = rightItem.toString();
-                tablesView.getRoot().getChildren().add(getTableItemWithFields(rightItemName));
-//                conditionsTreeTable.getRoot().getChildren().add(getTableItemWithFields(rightItem.toString()));
-                addLinkElement(table, join);
             }
-            joinItems.add(rightItemName);
         }
     }
 
+    private void loadLinks(PlainSelect pSelect) {
+        linkTable.getItems().clear();
+        List<Join> joins = pSelect.getJoins();
+        if (joins == null) {
+            return;
+        }
 
-    private void setLInkTable() {
+        Table fromItem = (Table) pSelect.getFromItem();
 
-//        ObservableList<LinkElement> selectedItems = linkTable.getSelectionModel().getSelectedItems();
-//        selectedItems.addListener((ListChangeListener<LinkElement>) change -> {
-//            System.out.println("Selection changed: " + change.getList());
-//            List<String> columns = Arrays.asList("s1", "s2", "s3");;
-//            ObservableList<String> conditions1 = FXCollections.observableArrayList();
-//            conditions1.addAll(columns);
-////            getConditionComboBox1().setItems(conditions1);
+        for (Join join : joins) {
+            FromItem rightItem = join.getRightItem();
+            if (rightItem instanceof Table) {
+                addLinkRow(fromItem, join);
+            } else if (rightItem instanceof SubSelect) {
+//                SubSelect sSelect = (SubSelect) rightItem;
+//                rightItemName = sSelect.getAlias().getName();
+//                TableRow tableRow = new TableRow(rightItemName);
+//                tableRow.setNested(true);
+//                tableRow.setRoot(true);
+//                String queryText = sSelect.toString().replace(sSelect.getAlias().toString(), "");
+//                queryText = queryText.substring(1, queryText.length() - 1);
+//                tableRow.setQuery(queryText);
+//                TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(tableRow);
+//                tablesView.getRoot().getChildren().add(tableRowTreeItem);
 //
-//            change.getList().get(0).getConditionComboBox1().setItems(conditions1);
-//        });
-//        ObservableList<TablePosition> selectedCells = linkTable.getSelectionModel().getSelectedCells() ;
-//        selectedCells.addListener((ListChangeListener.Change<? extends TablePosition> change) -> {
-//            if (selectedCells.size() > 0) {
-//                TablePosition selectedCell = selectedCells.get(0);
-//                TableColumn column = selectedCell.getTableColumn();
-//                int rowIndex = selectedCell.getRow();
-//                Object data = column.getCellObservableValue(rowIndex).getValue();
-//            }
-//        });
+//                PlainSelect plainSelect = (PlainSelect) sSelect.getSelectBody();
+//                plainSelect.getSelectItems().forEach((sItem) -> {
+//                    TableRow nestedItem = new TableRow(sItem.toString());
+//                    TreeItem<TableRow> nestedRow = new TreeItem<>(nestedItem);
+//                    tableRowTreeItem.getChildren().add(nestedRow);
+//                });
+
+            }
+        }
     }
 
-    private void addLinkElement(Table table, Join join) {
+    private void addLinkRow(Table table, Join join) {
         if (join.getOnExpression() == null) {
             return;
         }
-//        LinkElement linkElement = new LinkElement(table.getName(), join.getRightItem().toString(), true, false, true, dbElements, this);
-//        linkElement.setCondition(join.getOnExpression().toString());
-//        linkTable.getItems().add(linkElement);
-//        joinItems.add(join.getRightItem().toString());
+
+        Expression onExpression = join.getOnExpression();
+        if (onExpression instanceof AndExpression) {
+            AndExpression expression = (AndExpression) onExpression;
+            while (true) {
+                Expression rightExpression = expression.getRightExpression();
+                LinkElement linkElement = new LinkElement(
+                        this, table.getName(), join.getRightItem().toString(), isLeft(join), isRight(join), isCustom(rightExpression)
+                );
+
+                linkElement.setCondition(getSimpleCondition(rightExpression));
+                linkTable.getItems().add(linkElement);
+                if (!(expression.getLeftExpression() instanceof AndExpression)) {
+                    Expression lExpression = expression.getLeftExpression();
+                    LinkElement linkElement2 = new LinkElement(
+                            this, table.getName(), join.getRightItem().toString(), isLeft(join), isRight(join), isCustom(lExpression)
+                    );
+                    linkElement2.setCondition(getSimpleCondition(lExpression));
+                    linkTable.getItems().add(linkElement2);
+                    break;
+                }
+                expression = (AndExpression) expression.getLeftExpression();
+            }
+        } else {
+            Expression expression = join.getOnExpression();
+            LinkElement linkElement = new LinkElement(
+                    this, table.getName(), join.getRightItem().toString(), isLeft(join), isRight(join), isCustom(expression)
+            );
+            linkElement.setCondition(getSimpleCondition(expression));
+            linkTable.getItems().add(linkElement);
+        }
+    }
+
+    private String getSimpleCondition(Expression expression) {
+        if (expression instanceof ComparisonOperator) {
+            ComparisonOperator expr = (ComparisonOperator) expression;
+            Column leftColumn = (Column) expr.getLeftExpression();
+            Column rightColumn = (Column) expr.getRightExpression();
+            return leftColumn.getColumnName() + expr.getStringExpression() + rightColumn.getColumnName();
+        }
+        System.out.println(expression);
+        return expression.toString();
+    }
+
+    private boolean isLeft(Join join) {
+        if (join.isInner()) {
+            return false;
+        } else {
+            return join.isFull() || join.isLeft();
+        }
+    }
+
+    private boolean isRight(Join join) {
+        if (join.isInner()) {
+            return false;
+        } else {
+            return join.isFull() || join.isRight();
+        }
+    }
+
+    private boolean isCustom(Expression expression) {
+        return !(expression instanceof ComparisonOperator);
     }
 
     @FXML
@@ -1028,7 +1079,7 @@ public class MainController implements Argumentative {
 
     private void initLinkTableView() {
         linkTable.setEditable(true);
-        linkTable.getSelectionModel().cellSelectionEnabledProperty().set(true);
+//        linkTable.getSelectionModel().cellSelectionEnabledProperty().set(true);
 
         linkTableAllTable1.setCellFactory(tc -> new CheckBoxTableCell<>());
         linkTableAllTable2.setCellFactory(tc -> new CheckBoxTableCell<>());
