@@ -34,7 +34,10 @@ public class ConditionCell extends TableCell<ConditionElement, ConditionElement>
         super.updateItem(item, empty);
         if (empty || item == null) {
             setGraphic(null);
-        } else if (item.isCustom()) {
+            return;
+        }
+
+        if (item.isCustom()) {
             if (item.getCondition().isEmpty()) {
                 String cond = item.getLeftExpression() + item.getExpression() + item.getRightExpression();
                 item.setCondition(cond);
@@ -48,49 +51,50 @@ public class ConditionCell extends TableCell<ConditionElement, ConditionElement>
                         item.setCondition(newValue);
                     });
             setGraphic(customCondition);
-        } else {
-            HBox pane = new HBox();
-            String condition1 = item.getCondition();
-            if (!condition1.isEmpty()) {
-                String[] array = condition1.split("[>=<=<>]+");
-                String leftExpresion = condition1;
-                String expression = "=";
-                String rightExpression = "?";
-                if (array.length == 2) {
-                    leftExpresion = array[0];
-                    expression = condition1.replace(array[0], "").replace(array[1], "");
-                    comparisonComboBox.setValue(expression);
-                    rightExpression = array[1];
-                }
-                item.setLeftExpression(leftExpresion);
-                item.setExpression(expression);
-                item.setRightExpression(rightExpression);
-                item.setCondition("");
-            }
-
-            Button leftPart = new Button(item.getLeftExpression());
-            leftPart.setMnemonicParsing(false);
-            leftPart.setAlignment(Pos.CENTER_LEFT);
-            leftPart.prefWidthProperty().bind(pane.widthProperty());
-            leftPart.setOnMouseClicked(event -> showPopup(event, this, item));
-            pane.getChildren().add(leftPart);
-
-            comparisonComboBox.setMinWidth(70);
-            comparisonComboBox.setValue(item.getExpression());
-            comparisonComboBox.valueProperty().addListener(
-                    (observable, oldValue, newValue) -> item.setExpression(newValue)
-            );
-            pane.getChildren().add(comparisonComboBox);
-
-            TextField rightPart = new TextField(item.getRightExpression());
-            rightPart.textProperty().addListener(
-                    (observable, oldValue, newValue) -> item.setRightExpression(newValue)
-            );
-            rightPart.prefWidthProperty().bind(pane.widthProperty());
-            pane.getChildren().add(rightPart);
-
-            setGraphic(pane);
+            return;
         }
+
+        String condition1 = item.getCondition();
+        if (!condition1.isEmpty()) {
+            String[] array = condition1.split("[>=<=<>]+");
+            String leftExpresion = condition1;
+            String expression = "=";
+            String rightExpression = "?";
+            if (array.length == 2) {
+                leftExpresion = array[0];
+                expression = condition1.replace(array[0], "").replace(array[1], "");
+                comparisonComboBox.setValue(expression);
+                rightExpression = array[1];
+            }
+            item.setLeftExpression(leftExpresion);
+            item.setExpression(expression);
+            item.setRightExpression(rightExpression);
+            item.setCondition("");
+        }
+
+        HBox pane = new HBox();
+        Button leftPart = new Button(item.getLeftExpression());
+        leftPart.setMnemonicParsing(false);
+        leftPart.setAlignment(Pos.CENTER_LEFT);
+        leftPart.prefWidthProperty().bind(pane.widthProperty());
+        leftPart.setOnMouseClicked(event -> showPopup(event, this, item));
+        pane.getChildren().add(leftPart);
+
+        comparisonComboBox.setMinWidth(70);
+        comparisonComboBox.setValue(item.getExpression());
+        comparisonComboBox.valueProperty().addListener(
+                (observable, oldValue, newValue) -> item.setExpression(newValue)
+        );
+        pane.getChildren().add(comparisonComboBox);
+
+        TextField rightPart = new TextField(item.getRightExpression());
+        rightPart.textProperty().addListener(
+                (observable, oldValue, newValue) -> item.setRightExpression(newValue)
+        );
+        rightPart.prefWidthProperty().bind(pane.widthProperty());
+        pane.getChildren().add(rightPart);
+
+        setGraphic(pane);
     }
 
     private PopupControl conditionPopup;
@@ -124,29 +128,6 @@ public class ConditionCell extends TableCell<ConditionElement, ConditionElement>
             }
         });
     }
-
-//    void setCellFactory(TreeTableColumn<TableRow, TableRow> tablesViewColumn) {
-//        tablesViewColumn.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().getValue()));
-//        tablesViewColumn.setCellFactory(ttc -> new TreeTableCell<TableRow, TableRow>() {
-//            private final ImageView element = new ImageView(new Image(getClass().getResourceAsStream("/myToolWindow/element.png")));
-//            private final ImageView table = new ImageView(new Image(getClass().getResourceAsStream("/myToolWindow/table.png")));
-//            private final ImageView nestedQuery = new ImageView(new Image(getClass().getResourceAsStream("/myToolWindow/nestedQuery.png")));
-//
-//            @Override
-//            protected void updateItem(TableRow item, boolean empty) {
-//                super.updateItem(item, empty);
-//                setText(empty ? null : item.getName());
-//                // icons
-//                if (empty) {
-//                    setGraphic(null);
-//                } else if (item.isNested()) {
-//                    setGraphic(nestedQuery);
-//                } else {
-//                    setGraphic(item.isRoot() ? table : element);
-//                }
-//            }
-//        });
-//    }
 
     private void showPopup(MouseEvent event, TableCell<ConditionElement, ConditionElement> cell, ConditionElement item) {
         conditionPopup = new PopupControl();

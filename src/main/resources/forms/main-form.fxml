@@ -2,7 +2,7 @@
 
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.control.cell.*?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0"
@@ -206,39 +206,39 @@
                                  </graphic>
                               </Button>
                               <TableView fx:id="linkTable" editable="true" layoutY="40.0" prefHeight="470.0" prefWidth="773.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="40.0">
-                                 <columns>
-                                     <TableColumn fx:id="linkTableColumnTable1" maxWidth="200.0" minWidth="200.0"
-                                                  prefWidth="200.0" sortable="false" text="Table 1">
-                                         <cellValueFactory>
-                                             <PropertyValueFactory property="table1"/>
-                                         </cellValueFactory>
-                                     </TableColumn>
-                                     <TableColumn fx:id="linkTableAllTable1" maxWidth="30.0" minWidth="30.0"
-                                                  prefWidth="30.0" resizable="false" sortable="false" text="All">
-                                         <cellValueFactory>
-                                             <PropertyValueFactory property="allTable1"/>
-                                         </cellValueFactory>
-                                     </TableColumn>
-                                     <TableColumn fx:id="linkTableColumnTable2" maxWidth="200.0" minWidth="200.0"
-                                                  prefWidth="200.0" sortable="false" text="Table 2">
-                                         <cellValueFactory>
-                                             <PropertyValueFactory property="table2"/>
-                                         </cellValueFactory>
-                                     </TableColumn>
-                                     <TableColumn fx:id="linkTableAllTable2" maxWidth="30.0" minWidth="30.0"
-                                                  prefWidth="30.0" resizable="false" sortable="false" text="All">
-                                         <cellValueFactory>
-                                             <PropertyValueFactory property="allTable2"/>
-                                         </cellValueFactory>
-                                     </TableColumn>
-                                     <TableColumn fx:id="linkTableCustom" maxWidth="50.0" minWidth="50.0"
-                                                  prefWidth="50.0" resizable="false" sortable="false" text="Custom">
-                                         <cellValueFactory>
-                                             <PropertyValueFactory property="custom"/>
-                                         </cellValueFactory>
-                                     </TableColumn>
-                                     <TableColumn fx:id="linkTableJoinCondition" prefWidth="700.0" sortable="false"
-                                                  text="Join condition"/>
+                                  <columns>
+                                      <TableColumn fx:id="linkTableColumnTable1" maxWidth="200.0" minWidth="200.0"
+                                                   prefWidth="200.0" sortable="false" text="Table 1">
+                                          <!--                                         <cellValueFactory>-->
+                                          <!--                                             <PropertyValueFactory property="table1"/>-->
+                                          <!--                                         </cellValueFactory>-->
+                                      </TableColumn>
+                                      <TableColumn fx:id="linkTableAllTable1" maxWidth="30.0" minWidth="30.0"
+                                                   prefWidth="30.0" resizable="false" sortable="false" text="All">
+                                          <cellValueFactory>
+                                              <PropertyValueFactory property="allTable1"/>
+                                          </cellValueFactory>
+                                      </TableColumn>
+                                      <TableColumn fx:id="linkTableColumnTable2" maxWidth="200.0" minWidth="200.0"
+                                                   prefWidth="200.0" sortable="false" text="Table 2">
+                                          <!--                                         <cellValueFactory>-->
+                                          <!--                                             <PropertyValueFactory property="table2"/>-->
+                                          <!--                                         </cellValueFactory>-->
+                                      </TableColumn>
+                                      <TableColumn fx:id="linkTableAllTable2" maxWidth="30.0" minWidth="30.0"
+                                                   prefWidth="30.0" resizable="false" sortable="false" text="All">
+                                          <cellValueFactory>
+                                              <PropertyValueFactory property="allTable2"/>
+                                          </cellValueFactory>
+                                      </TableColumn>
+                                      <TableColumn fx:id="linkTableCustom" maxWidth="50.0" minWidth="50.0"
+                                                   prefWidth="50.0" resizable="false" sortable="false" text="Custom">
+                                          <cellValueFactory>
+                                              <PropertyValueFactory property="custom"/>
+                                          </cellValueFactory>
+                                      </TableColumn>
+                                      <TableColumn fx:id="linkTableJoinCondition" prefWidth="700.0" sortable="false"
+                                                   text="Join condition"/>
                                  </columns>
                                  <columnResizePolicy>
                                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -470,6 +470,8 @@
                                                                    amountToStepBy="1" initialValue="0" min="0"/>
                                                        </valueFactory>
                                                    </Spinner>
+                                                   <!--                                          <ChoiceBox fx:id="dfgdfgdfg" layoutY="117.0" prefHeight="25.0" prefWidth="753.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" -->
+                                                   <!--                                                     AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />-->
                                                </children>
                                            </AnchorPane>
                                        </content>

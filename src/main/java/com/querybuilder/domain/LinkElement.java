@@ -1,5 +1,6 @@
 package com.querybuilder.domain;
 
+import com.querybuilder.controllers.MainController;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -8,10 +9,9 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
 
 import java.util.List;
-import java.util.Map;
 
 public class LinkElement {
-    private Map<String, List<String>> dbElements;
+    private MainController mainController;
 
     private SimpleStringProperty table1 = new SimpleStringProperty();
     private SimpleStringProperty table2 = new SimpleStringProperty();
@@ -22,7 +22,7 @@ public class LinkElement {
     private ComboBox<String> conditionComboBox1;
     private ComboBox<String> conditionComboBox2;
 
-    public LinkElement(String table1, String table2, boolean allTable1, boolean allTable2, boolean custom, Map<String, List<String>> dbElements) {
+    public LinkElement(String table1, String table2, boolean allTable1, boolean allTable2, boolean custom, MainController mainController) {
         setTable1(table1);
         setTable2(table2);
         setAllTable1(allTable1);
@@ -30,7 +30,18 @@ public class LinkElement {
         setCustom(custom);
         setConditionComboBox1(new ComboBox<>());
         setConditionComboBox2(new ComboBox<>());
-        this.dbElements = dbElements;
+
+    }
+
+    public LinkElement(MainController mainController) {
+        setTable1("");
+        setTable2("");
+        setAllTable1(false);
+        setAllTable2(false);
+        setCustom(false);
+        setConditionComboBox1(new ComboBox<>());
+        setConditionComboBox2(new ComboBox<>());
+        this.mainController = mainController;
     }
 
     public ComboBox<String> getConditionComboBox1() {
@@ -99,13 +110,12 @@ public class LinkElement {
 
     public void setTable1(String table1) {
         this.table1.set(table1);
-        this.table1.addListener(
-                (observable, oldValue, newValue) -> {
-                    List<String> columns = dbElements.get(newValue);
-                    ObservableList<String> conditions1 = FXCollections.observableArrayList();
-                    conditions1.addAll(columns);
-                    getConditionComboBox1().setItems(conditions1);
-                });
+        this.table1.addListener((observable, oldValue, newValue) -> {
+            List<String> columns = mainController.getDbElements().get(newValue);
+            ObservableList<String> conditions1 = FXCollections.observableArrayList();
+            conditions1.addAll(columns);
+            getConditionComboBox1().setItems(conditions1);
+        });
     }
 
     public SimpleStringProperty table1Property() {
@@ -118,13 +128,12 @@ public class LinkElement {
 
     public void setTable2(String table2) {
         this.table2.set(table2);
-        this.table2.addListener(
-                (observable, oldValue, newValue) -> {
-                    List<String> columns = dbElements.get(newValue);
-                    ObservableList<String> conditions1 = FXCollections.observableArrayList();
-                    conditions1.addAll(columns);
-                    getConditionComboBox2().setItems(conditions1);
-                });
+//        this.table2.addListener((observable, oldValue, newValue) -> {
+//            List<String> columns = dbElements.get(newValue);
+//            ObservableList<String> conditions1 = FXCollections.observableArrayList();
+//            conditions1.addAll(columns);
+//            getConditionComboBox2().setItems(conditions1);
+//        });
     }
 
     public SimpleStringProperty table2Property() {
@@ -132,6 +141,6 @@ public class LinkElement {
     }
 
     public LinkElement clone() {
-        return new LinkElement(getTable1(), getTable2(), isAllTable1(), isAllTable2(), isCustom(), dbElements);
+        return new LinkElement(getTable1(), getTable2(), isAllTable1(), isAllTable2(), isCustom(), mainController);
     }
 }

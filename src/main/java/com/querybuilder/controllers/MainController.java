@@ -31,7 +31,6 @@ import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
 import net.engio.mbassy.listener.Handler;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
@@ -95,9 +94,18 @@ public class MainController implements Argumentative {
     private TableColumn<String, String> queryCteColumn;
 
     protected QueryBuilder queryBuilder;
+
     private Map<String, List<String>> dbElements;
 
     private ObservableList<String> joinItems;
+
+    public Map<String, List<String>> getDbElements() {
+        return dbElements;
+    }
+
+    public void setDbElements(Map<String, List<String>> dbElements) {
+        this.dbElements = dbElements;
+    }
 
     @Override
     public void initData(Map<String, Object> userData) {
@@ -417,6 +425,7 @@ public class MainController implements Argumentative {
 
     @FXML
     private TreeTableView<TableRow> databaseTableView;
+
     @FXML
     private TreeTableColumn<TableRow, TableRow> databaseTableColumn;
 
@@ -452,6 +461,9 @@ public class MainController implements Argumentative {
                     }
                 }
         );
+
+        setLInkTable();
+
         setResultsTablesHandlers();
 //        setCellFactory(databaseTableColumn);
 //        initSelectedTables();
@@ -489,6 +501,7 @@ public class MainController implements Argumentative {
         ObservableList<TreeItem<TableRow>> children = tablesView.getRoot().getChildren();
         if (children.stream().noneMatch(x -> x.getValue().getName().equals(parent))) {
             tablesView.getRoot().getChildren().add(getTableItemWithFields(parent));
+
 //            joinItems.add(parent);
 //            if (getSelectBody().getFromItem() == null) {
 //                getSelectBody().setFromItem(new Table(parent));
@@ -501,6 +514,11 @@ public class MainController implements Argumentative {
 //                getSelectBody().setJoins(jList);
 //            }
         }
+        refreshLinkTable();
+    }
+
+    private void refreshLinkTable() {
+        linkTable.refresh();
     }
 
     private TreeItem<TableRow> getTableItemWithFields(String tableName) {
@@ -769,14 +787,38 @@ public class MainController implements Argumentative {
         }
     }
 
+
+    private void setLInkTable() {
+
+//        ObservableList<LinkElement> selectedItems = linkTable.getSelectionModel().getSelectedItems();
+//        selectedItems.addListener((ListChangeListener<LinkElement>) change -> {
+//            System.out.println("Selection changed: " + change.getList());
+//            List<String> columns = Arrays.asList("s1", "s2", "s3");;
+//            ObservableList<String> conditions1 = FXCollections.observableArrayList();
+//            conditions1.addAll(columns);
+////            getConditionComboBox1().setItems(conditions1);
+//
+//            change.getList().get(0).getConditionComboBox1().setItems(conditions1);
+//        });
+//        ObservableList<TablePosition> selectedCells = linkTable.getSelectionModel().getSelectedCells() ;
+//        selectedCells.addListener((ListChangeListener.Change<? extends TablePosition> change) -> {
+//            if (selectedCells.size() > 0) {
+//                TablePosition selectedCell = selectedCells.get(0);
+//                TableColumn column = selectedCell.getTableColumn();
+//                int rowIndex = selectedCell.getRow();
+//                Object data = column.getCellObservableValue(rowIndex).getValue();
+//            }
+//        });
+    }
+
     private void addLinkElement(Table table, Join join) {
         if (join.getOnExpression() == null) {
             return;
         }
-        LinkElement linkElement = new LinkElement(table.getName(), join.getRightItem().toString(), true, false, true, dbElements);
-        linkElement.setCondition(join.getOnExpression().toString());
-        linkTable.getItems().add(linkElement);
-        joinItems.add(join.getRightItem().toString());
+//        LinkElement linkElement = new LinkElement(table.getName(), join.getRightItem().toString(), true, false, true, dbElements, this);
+//        linkElement.setCondition(join.getOnExpression().toString());
+//        linkTable.getItems().add(linkElement);
+//        joinItems.add(join.getRightItem().toString());
     }
 
     @FXML
@@ -822,6 +864,7 @@ public class MainController implements Argumentative {
     public void deleteTableFromSelected() {
         int selectedItem = tablesView.getSelectionModel().getSelectedIndex();
         tablesView.getRoot().getChildren().remove(selectedItem);
+        refreshLinkTable();
     }
 
     private PlainSelect getEmptySelect() {
@@ -897,6 +940,14 @@ public class MainController implements Argumentative {
     @FXML
     private TreeTableColumn<TableRow, TableRow> tablesViewColumn;
 
+    public TreeTableView<TableRow> getTablesView() {
+        return tablesView;
+    }
+
+    public void setTablesView(TreeTableView<TableRow> tablesView) {
+        this.tablesView = tablesView;
+    }
+
     private void initTreeTablesView() {
         tablesView.setOnMousePressed(e -> {
             if (doubleClick(e)) {
@@ -961,9 +1012,9 @@ public class MainController implements Argumentative {
     @FXML
     private TableView<LinkElement> linkTable;
     @FXML
-    private TableColumn<LinkElement, String> linkTableColumnTable1;
+    private TableColumn<LinkElement, LinkElement> linkTableColumnTable1;
     @FXML
-    private TableColumn<LinkElement, String> linkTableColumnTable2;
+    private TableColumn<LinkElement, LinkElement> linkTableColumnTable2;
     @FXML
     private TableColumn<LinkElement, Boolean> linkTableAllTable1;
     @FXML
@@ -988,59 +1039,25 @@ public class MainController implements Argumentative {
             BooleanProperty property = cellValue.customProperty();
             property.addListener((observable, oldValue, newValue) -> {
                 cellValue.setCustom(newValue);
-                linkTable.refresh();
+                refreshLinkTable();
             });
             return property;
         });
 
-        ObservableList<String> joinItems1 = FXCollections.observableArrayList();
-        joinItems1.addAll(joinItems);
-        linkTableColumnTable1.setCellFactory(ComboBoxTableCell.forTableColumn(joinItems1));
+        linkTableColumnTable1.setCellValueFactory(column -> new ReadOnlyObjectWrapper<>(column.getValue()));
+        linkTableColumnTable1.setCellFactory(param -> new LinkTableCell(this, "table1"));
 
-        ObservableList<String> joinItems2 = FXCollections.observableArrayList();
-        joinItems2.addAll(joinItems);
-        linkTableColumnTable2.setCellFactory(ComboBoxTableCell.forTableColumn(joinItems2));
+        linkTableColumnTable2.setCellValueFactory(column -> new ReadOnlyObjectWrapper<>(column.getValue()));
+        linkTableColumnTable2.setCellFactory(param -> new LinkTableCell(this, "table2"));
 
         linkTableJoinCondition.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue()));
-        linkTableJoinCondition.setCellFactory(column -> new TableCell<LinkElement, LinkElement>() {
-            private final ObservableList<String> comparison = FXCollections.observableArrayList("=", "<>", "<", ">", "<=", ">=");
-            private final ComboBox<String> comparisonComboBox = new ComboBox<>(comparison);
-            private final TextField customCondition = new TextField();
-
-            @Override
-            protected void updateItem(LinkElement item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else if (item != null && item.isCustom()) {
-                    customCondition.setText(item.getCondition());
-                    setGraphic(customCondition);
-                } else {
-                    HBox pane = new HBox();
-                    item.getConditionComboBox1().prefWidthProperty().bind(pane.widthProperty());
-                    comparisonComboBox.setMinWidth(70);
-                    item.getConditionComboBox2().prefWidthProperty().bind(pane.widthProperty());
-
-                    String condition = item.getCondition();
-                    if (condition != null) {
-                        String[] array = condition.split("[>=<=<>]");
-                        item.getConditionComboBox1().setValue(array[0]);
-                        comparisonComboBox.setValue(condition.replace(array[0], "").replace(array[1], ""));
-                        item.getConditionComboBox2().setValue(array[1]);
-                    }
-                    pane.getChildren().add(item.getConditionComboBox1());
-                    pane.getChildren().add(comparisonComboBox);
-                    pane.getChildren().add(item.getConditionComboBox2());
-                    setGraphic(pane);
-                }
-
-            }
-        });
+        linkTableJoinCondition.setCellFactory(column -> new JoinConditionCell(this));
     }
 
     @FXML
     protected void addLinkElement(ActionEvent event) {
-        linkTable.getItems().add(new LinkElement("", "", false, false, false, dbElements));
+        LinkElement newRow = new LinkElement(this);
+        linkTable.getItems().add(newRow);
     }
 
     @FXML
