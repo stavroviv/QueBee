@@ -258,39 +258,73 @@ public class MainController implements Argumentative {
         return tIndex;
     }
 
-    private void saveFromAndLinkTables(PlainSelect selectBody) {
+    private void saveFromAndLinkTables(PlainSelect selectBody) throws Exception {
         if (linkTable.getItems().size() == 0) {
-            List<Join> jList = new ArrayList<>();
+            List<Join> joins = new ArrayList<>();
             tablesView.getRoot().getChildren().forEach(x -> {
                 String tableName = x.getValue().getName();
                 if (selectBody.getFromItem() == null) {
                     selectBody.setFromItem(new Table(tableName));
                 } else {
-//                List<Join> jList = (getSelectBody().getJoins() == null) ? new ArrayList<>() : getSelectBody().getJoins();
                     Join join = new Join();
                     join.setRightItem(new Table(tableName));
                     join.setSimple(true);
-                    jList.add(join);
+                    joins.add(join);
                 }
             });
-            selectBody.setJoins(jList);
+            selectBody.setJoins(joins);
             return;
         }
 
         // 1. если JOIN есть - то надо указать связи всех таблиц
         // 2. RIGHT JOIN изменить на LEFT и упорядочить все строки кроме первой
-        tablesView.getRoot().getChildren().forEach(x -> {
-//            if (getSelectBody().getFromItem() == null) {
-//                getSelectBody().setFromItem(new Table(parent));
-//            } else {
-//                List<Join> jList = (getSelectBody().getJoins() == null) ? new ArrayList<>() : getSelectBody().getJoins();
-//                Join join = new Join();
-//                join.setRightItem(new Table(parent));
-//                join.setSimple(true);
-//                jList.add(join);
-//                getSelectBody().setJoins(jList);
-//            }
-        });
+
+        String tableFrom = linkTable.getItems().get(0).getTable1();
+        selectBody.setFromItem(new Table(tableFrom));
+        List<Join> joins = new ArrayList<>();
+        for (LinkElement item : linkTable.getItems()) {
+            Join join = new Join();
+            join.setRightItem(new Table(item.getTable2()));
+            setJoinType(item, join);
+            setCondition(item, join);
+            joins.add(join);
+        }
+
+        selectBody.setJoins(joins);
+    }
+
+    private void setCondition(LinkElement item, Join join) throws Exception {
+        String strExpression = item.getCondition();
+        if (!item.isCustom()) {
+            String[] arr = strExpression.split(EXPRESSIONS);
+            String expr = strExpression.replace(arr[0], "").replace(arr[1], "");
+            strExpression = arr[0] + "." + item.getTable1() + expr + item.getTable2() + "." + arr[1];
+        }
+        try {
+            join.setOnExpression(getExpression(strExpression));
+        } catch (JSQLParserException e) {
+            throw new Exception(e);
+        }
+    }
+
+    private void setJoinType(LinkElement item, Join join) {
+        if (item.isAllTable1() && item.isAllTable2()) {
+            join.setFull(true);
+        } else if (item.isAllTable1()) {
+            join.setLeft(true);
+        } else if (item.isAllTable2()) {
+            join.setRight(true);
+        } else {
+            join.setInner(true);
+        }
+    }
+
+    private Expression getExpression(String where) throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse(
+                "SELECT * FROM TABLES WHERE " + where
+        );
+        Select select = (Select) stmt;
+        return ((PlainSelect) select.getSelectBody()).getWhere();
     }
 
     private SelectBody getFullSelectBody() {

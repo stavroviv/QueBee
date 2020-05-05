@@ -8,6 +8,8 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 
+import static com.querybuilder.utils.Constants.EXPRESSIONS;
+
 public class JoinConditionCell extends TableCell<LinkElement, LinkElement> {
     private MainController controller;
     private final static ObservableList<String> comparison = FXCollections.observableArrayList("=", "<>", "<", ">", "<=", ">=");
@@ -40,7 +42,7 @@ public class JoinConditionCell extends TableCell<LinkElement, LinkElement> {
 
         String condition = item.getCondition();
         if (condition != null) {
-            String[] array = condition.split("[>=<=<>]");
+            String[] array = condition.split(EXPRESSIONS);
             item.getConditionComboBox1().setValue(array[0]);
             comparisonComboBox.setValue(condition.replace(array[0], "").replace(array[1], ""));
             item.getConditionComboBox2().setValue(array[1]);

@@ -11,6 +11,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 
 import static com.querybuilder.utils.Constants.DATABASE_ROOT;
+import static com.querybuilder.utils.Constants.EXPRESSIONS;
 import static com.querybuilder.utils.Utils.*;
 import static javafx.scene.control.TreeTableView.CONSTRAINED_RESIZE_POLICY;
 
@@ -56,7 +57,7 @@ public class ConditionCell extends TableCell<ConditionElement, ConditionElement>
 
         String condition1 = item.getCondition();
         if (!condition1.isEmpty()) {
-            String[] array = condition1.split("[>=<=<>]+");
+            String[] array = condition1.split(EXPRESSIONS);
             String leftExpresion = condition1;
             String expression = "=";
             String rightExpression = "?";
