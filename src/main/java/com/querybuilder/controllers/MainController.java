@@ -432,7 +432,6 @@ public class MainController implements Subscriber {
         initAliasTable();
     }
 
-
     private SelectedFieldsTree selectedGroupFieldsTree;
     private SelectedFieldsTree selectedConditionsTreeTable;
     private SelectedFieldsTree selectedOrderFieldsTree;
@@ -771,7 +770,7 @@ public class MainController implements Subscriber {
         linkTableColumnTable2.setCellFactory(param -> new LinkTableCell(this, "table2"));
 
         linkTableJoinCondition.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue()));
-        linkTableJoinCondition.setCellFactory(column -> new JoinConditionCell(this));
+        linkTableJoinCondition.setCellFactory(column -> new JoinConditionCell());
     }
 
     @FXML
@@ -1191,9 +1190,8 @@ public class MainController implements Subscriber {
         unionTableDistinctColumn.setCellValueFactory(data -> new SimpleBooleanProperty(data.getValue().isDistinct()));
     }
 
-    private int curMaxUnion; // это индекс максимального объединения, нумерация начинается с 0
+    private int curMaxUnion; // индекс максимального объединения, нумерация начинается с 0
     private Map<String, TableColumn> unionColumns;
-//    private Map<String, Tab> unionTabs;
 
     @FXML
     protected void addUnionQuery(ActionEvent event) {

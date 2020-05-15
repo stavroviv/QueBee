@@ -18,13 +18,11 @@ public class AliasCell extends TableCell<AliasRow, String> {
         this.aliasRow = aliasRow;
         this.items = items;
         initConditionTableForPopup();
-        aliasRow.setOnEditCommit(
-                t -> {
-                    int row = t.getTablePosition().getRow();
-                    AliasRow currentRow = t.getTableView().getItems().get(row);
-                    currentRow.getValues().set(column, t.getNewValue());
-                }
-        );
+        aliasRow.setOnEditCommit(t -> {
+            int row = t.getTablePosition().getRow();
+            AliasRow currentRow = t.getTableView().getItems().get(row);
+            currentRow.getValues().set(column, t.getNewValue());
+        });
     }
 
     @Override
@@ -51,7 +49,6 @@ public class AliasCell extends TableCell<AliasRow, String> {
 
         Button clearButton = new Button("x");
         clearButton.setAlignment(Pos.CENTER_RIGHT);
-//        clearButton.setOnMouseClicked(event -> showPopup(event, this));
         pane.getChildren().add(clearButton);
 
         setGraphic(pane);
@@ -89,13 +86,12 @@ public class AliasCell extends TableCell<AliasRow, String> {
         if (empty) {
             setText(null);
             setGraphic(null);
-        } else {
-            pppp(item, empty, this);
-
+            return;
         }
+        setAliasGraphic(item, empty, this);
     }
 
-    private void pppp(String item, boolean empty, TableCell<AliasRow, String> aliasRowStringTableCell) {
+    private void setAliasGraphic(String item, boolean empty, TableCell<AliasRow, String> aliasRowStringTableCell) {
         if (aliasRowStringTableCell.isEditing()) {
             TextField textField = new TextField(empty ? null : item);
             aliasRowStringTableCell.setGraphic(textField);

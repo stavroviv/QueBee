@@ -1,6 +1,5 @@
 package com.querybuilder.domain;
 
-import com.querybuilder.controllers.MainController;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
@@ -11,12 +10,7 @@ import javafx.scene.layout.HBox;
 import static com.querybuilder.utils.Constants.EXPRESSIONS;
 
 public class JoinConditionCell extends TableCell<LinkElement, LinkElement> {
-    private MainController controller;
     private final static ObservableList<String> comparison = FXCollections.observableArrayList("=", "<>", "<", ">", "<=", ">=");
-
-    public JoinConditionCell(MainController controller) {
-        this.controller = controller;
-    }
 
     @Override
     protected void updateItem(LinkElement item, boolean empty) {
@@ -58,6 +52,10 @@ public class JoinConditionCell extends TableCell<LinkElement, LinkElement> {
             item.getConditionComboBox1().setValue(array[0]);
             comparisonComboBox.setValue(condition.replace(array[0], "").replace(array[1], ""));
             item.getConditionComboBox2().setValue(array[1]);
+        } else {
+            if (!item.getExpression().isEmpty()) {
+                comparisonComboBox.setValue(item.getExpression());
+            }
         }
 
         pane.getChildren().add(item.getConditionComboBox1());

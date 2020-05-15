@@ -38,7 +38,6 @@ public class SelectedFields implements QueryPart {
 
             } else {
                 controller.getFieldTable().getItems().add(newTableRow(select.toString(), id));
-//                    aliasTable.getItems().add(newAliasItem(select));
             }
             id++;
         }

@@ -58,6 +58,7 @@ public class LinkElement {
         setAllTable1(false);
         setAllTable2(false);
         setCustom(false);
+        setExpression("=");
     }
 
     private ComboBox<String> table1ComboBox = new ComboBox<>();
