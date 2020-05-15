@@ -15,8 +15,6 @@ import net.sf.jsqlparser.statement.select.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.querybuilder.utils.Constants.EXPRESSIONS;
-
 public class Links implements QueryPart {
 
     @Override
@@ -81,9 +79,9 @@ public class Links implements QueryPart {
     private static void setCondition(LinkElement item, Join join) throws Exception {
         String strExpression = item.getCondition();
         if (!item.isCustom()) {
-            String[] arr = strExpression.split(EXPRESSIONS);
-            String expr = strExpression.replace(arr[0], "").replace(arr[1], "");
-            strExpression = arr[0] + "." + item.getTable1() + expr + item.getTable2() + "." + arr[1];
+            strExpression = item.getTable1() + "." + item.getField1()
+                    + item.getExpression()
+                    + item.getTable2() + "." + item.getField2();
         }
         try {
             join.setOnExpression(getExpression(strExpression));

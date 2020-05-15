@@ -47,10 +47,9 @@ public class ConditionCell extends TableCell<ConditionElement, ConditionElement>
                 item.setRightExpression("");
             }
             customCondition.setText(item.getCondition());
-            customCondition.textProperty().addListener(
-                    (observable, oldValue, newValue) -> {
-                        item.setCondition(newValue);
-                    });
+            customCondition.textProperty().addListener((observable, oldValue, newValue) -> {
+                item.setCondition(newValue);
+            });
             setGraphic(customCondition);
             return;
         }

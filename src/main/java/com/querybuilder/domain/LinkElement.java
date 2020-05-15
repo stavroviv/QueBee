@@ -7,10 +7,12 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
+import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
 public class LinkElement {
     private MainController mainController;
 
@@ -22,6 +24,10 @@ public class LinkElement {
     private String condition;
     private ComboBox<String> conditionComboBox1 = new ComboBox<>();
     private ComboBox<String> conditionComboBox2 = new ComboBox<>();
+
+    private String field1;
+    private String expression;
+    private String field2;
 
     public LinkElement(MainController mainController, String table1, String table2, boolean allTable1, boolean allTable2, boolean custom) {
         this.mainController = mainController;

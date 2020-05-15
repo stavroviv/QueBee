@@ -29,11 +29,23 @@ public class JoinConditionCell extends TableCell<LinkElement, LinkElement> {
         if (item.isCustom()) {
             TextField customCondition = new TextField();
             customCondition.setText(item.getCondition());
+            customCondition.textProperty().addListener((observable, oldValue, newValue) -> {
+                item.setCondition(newValue);
+            });
             setGraphic(customCondition);
             return;
         }
 
         ComboBox<String> comparisonComboBox = new ComboBox<>(comparison);
+        comparisonComboBox.valueProperty().addListener(
+                (observable, oldValue, newValue) -> item.setExpression(newValue)
+        );
+        item.getConditionComboBox1().valueProperty().addListener(
+                (observable, oldValue, newValue) -> item.setField1(newValue)
+        );
+        item.getConditionComboBox2().valueProperty().addListener(
+                (observable, oldValue, newValue) -> item.setField2(newValue)
+        );
 
         HBox pane = new HBox();
         item.getConditionComboBox1().prefWidthProperty().bind(pane.widthProperty());
