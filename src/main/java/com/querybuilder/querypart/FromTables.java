@@ -10,11 +10,13 @@ import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class FromTables {
+public class FromTables implements QueryPart {
 
-    public static void load(MainController controller, PlainSelect pSelect) {
+    @Override
+    public void load(MainController controller, PlainSelect pSelect) {
         TreeTableView<TableRow> tablesView = controller.getTablesView();
         FromItem fromItem = pSelect.getFromItem();
         Table table = null;
@@ -53,6 +55,26 @@ public class FromTables {
                 });
             }
         }
+    }
+
+    @Override
+    public void save(MainController controller, PlainSelect selectBody) throws Exception {
+        if (!controller.getLinkTable().getItems().isEmpty()) {
+            return;
+        }
+        List<Join> joins = new ArrayList<>();
+        controller.getTablesView().getRoot().getChildren().forEach(x -> {
+            String tableName = x.getValue().getName();
+            if (selectBody.getFromItem() == null) {
+                selectBody.setFromItem(new Table(tableName));
+            } else {
+                Join join = new Join();
+                join.setRightItem(new Table(tableName));
+                join.setSimple(true);
+                joins.add(join);
+            }
+        });
+        selectBody.setJoins(joins);
     }
 
 }

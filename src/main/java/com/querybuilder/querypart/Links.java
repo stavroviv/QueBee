@@ -2,21 +2,25 @@ package com.querybuilder.querypart;
 
 import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.LinkElement;
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.FromItem;
-import net.sf.jsqlparser.statement.select.Join;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.select.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class Links {
+import static com.querybuilder.utils.Constants.EXPRESSIONS;
 
-    public static void load(MainController controller, PlainSelect pSelect) {
+public class Links implements QueryPart {
+
+    @Override
+    public void load(MainController controller, PlainSelect pSelect) {
         controller.getLinkTable().getItems().clear();
         List<Join> joins = pSelect.getJoins();
         if (joins == null) {
@@ -50,6 +54,62 @@ public class Links {
 
             }
         }
+    }
+
+    @Override
+    public void save(MainController controller, PlainSelect selectBody) throws Exception {
+        if (controller.getLinkTable().getItems().isEmpty()) {
+            return;
+        }
+        // 1. если JOIN есть - то надо указать связи всех таблиц
+        // 2. RIGHT JOIN изменить на LEFT и упорядочить все строки кроме первой
+
+        String tableFrom = controller.getLinkTable().getItems().get(0).getTable1();
+        selectBody.setFromItem(new Table(tableFrom));
+        List<Join> joins = new ArrayList<>();
+        for (LinkElement item : controller.getLinkTable().getItems()) {
+            Join join = new Join();
+            join.setRightItem(new Table(item.getTable2()));
+            setJoinType(item, join);
+            setCondition(item, join);
+            joins.add(join);
+        }
+
+        selectBody.setJoins(joins);
+    }
+
+    private static void setCondition(LinkElement item, Join join) throws Exception {
+        String strExpression = item.getCondition();
+        if (!item.isCustom()) {
+            String[] arr = strExpression.split(EXPRESSIONS);
+            String expr = strExpression.replace(arr[0], "").replace(arr[1], "");
+            strExpression = arr[0] + "." + item.getTable1() + expr + item.getTable2() + "." + arr[1];
+        }
+        try {
+            join.setOnExpression(getExpression(strExpression));
+        } catch (JSQLParserException e) {
+            throw new Exception(e);
+        }
+    }
+
+    private static void setJoinType(LinkElement item, Join join) {
+        if (item.isAllTable1() && item.isAllTable2()) {
+            join.setFull(true);
+        } else if (item.isAllTable1()) {
+            join.setLeft(true);
+        } else if (item.isAllTable2()) {
+            join.setRight(true);
+        } else {
+            join.setInner(true);
+        }
+    }
+
+    private static Expression getExpression(String where) throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse(
+                "SELECT * FROM TABLES WHERE " + where
+        );
+        Select select = (Select) stmt;
+        return ((PlainSelect) select.getSelectBody()).getWhere();
     }
 
     private static void addLinkRow(MainController controller, Table table, Join join) {

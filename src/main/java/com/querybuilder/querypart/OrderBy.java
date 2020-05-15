@@ -5,14 +5,17 @@ import com.querybuilder.domain.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableView;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class OrderBy {
+public class OrderBy implements QueryPart {
 
-    public static void load(MainController controller, PlainSelect pSelect) {
+    @Override
+    public void load(MainController controller, PlainSelect pSelect) {
         TableView<TableRow> orderTableResults = controller.getOrderTableResults();
         TreeTableView<TableRow> orderFieldsTree = controller.getOrderFieldsTree();
         List<OrderByElement> orderByElements = pSelect.getOrderByElements();
@@ -34,5 +37,18 @@ public class OrderBy {
                 orderTableResults.getItems().add(tableRow);
             }
         });
+    }
+
+    @Override
+    public void save(MainController controller, PlainSelect selectBody) {
+        List<OrderByElement> orderElements = new ArrayList<>();
+        controller.getOrderTableResults().getItems().forEach(x -> {
+            OrderByElement orderByElement = new OrderByElement();
+            Column column = new Column(x.getName());
+            orderByElement.setExpression(column);
+            orderByElement.setAsc(x.getComboBoxValue().equals("Ascending"));
+            orderElements.add(orderByElement);
+        });
+        selectBody.setOrderByElements(orderElements);
     }
 }

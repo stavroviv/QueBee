@@ -4,12 +4,18 @@ import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.TableRow;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
 
-public class SelectedFields {
+import java.util.ArrayList;
+import java.util.List;
 
-    public static void load(MainController controller, PlainSelect pSelect) {
+public class SelectedFields implements QueryPart {
+
+    @Override
+    public void load(MainController controller, PlainSelect pSelect) {
         int id = 0;
         for (Object select : pSelect.getSelectItems()) {
             if (select instanceof SelectExpressionItem) {
@@ -43,4 +49,16 @@ public class SelectedFields {
         tableRow1.setId(id);
         return tableRow1;
     }
+
+    @Override
+    public void save(MainController controller, PlainSelect selectBody) {
+        List<SelectItem> items = new ArrayList<>();
+        controller.getFieldTable().getItems().forEach(x -> {
+            SelectExpressionItem sItem = new SelectExpressionItem();
+            sItem.setExpression(new Column(x.getName()));
+            items.add(sItem);
+        });
+        selectBody.setSelectItems(items);
+    }
+
 }

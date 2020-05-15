@@ -33,13 +33,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.AnchorPane;
 import net.engio.mbassy.listener.Handler;
-import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 
 import java.util.ArrayList;
@@ -178,15 +172,20 @@ public class MainController implements Subscriber {
     private void saveCurrentQuery(Tab cteTab, Tab unionTab) {
         PlainSelect newSelectBody = getEmptySelect();
         try {
-            saveFromAndLinkTables(newSelectBody);
-            saveSelectedFields(newSelectBody);
-            saveGrouping(newSelectBody);
-            saveOrder(newSelectBody);
-            saveConditions(newSelectBody);
+            new FromTables().save(this, newSelectBody);
+            new SelectedFields().save(this, newSelectBody);
+            new Links().save(this, newSelectBody);
+            new GroupBy().save(this, newSelectBody);
+            new OrderBy().save(this, newSelectBody);
+            new Conditions().save(this, newSelectBody);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+        processUnionsAndCTE(cteTab, unionTab, newSelectBody);
+    }
+
+    private void processUnionsAndCTE(Tab cteTab, Tab unionTab, PlainSelect newSelectBody) {
         int unionNumber;
         if (unionTab == null) {
             int selectedIndex = unionTabPane.getSelectionModel().getSelectedIndex();
@@ -229,9 +228,6 @@ public class MainController implements Subscriber {
         }
     }
 
-    private void saveGrouping(PlainSelect newSelectBody) {
-
-    }
 
     private int getTabIndex(String unionTabId) {
         int tIndex = 0;
@@ -253,75 +249,6 @@ public class MainController implements Subscriber {
             tIndex++;
         }
         return tIndex;
-    }
-
-    private void saveFromAndLinkTables(PlainSelect selectBody) throws Exception {
-        if (linkTable.getItems().size() == 0) {
-            List<Join> joins = new ArrayList<>();
-            tablesView.getRoot().getChildren().forEach(x -> {
-                String tableName = x.getValue().getName();
-                if (selectBody.getFromItem() == null) {
-                    selectBody.setFromItem(new Table(tableName));
-                } else {
-                    Join join = new Join();
-                    join.setRightItem(new Table(tableName));
-                    join.setSimple(true);
-                    joins.add(join);
-                }
-            });
-            selectBody.setJoins(joins);
-            return;
-        }
-
-        // 1. если JOIN есть - то надо указать связи всех таблиц
-        // 2. RIGHT JOIN изменить на LEFT и упорядочить все строки кроме первой
-
-        String tableFrom = linkTable.getItems().get(0).getTable1();
-        selectBody.setFromItem(new Table(tableFrom));
-        List<Join> joins = new ArrayList<>();
-        for (LinkElement item : linkTable.getItems()) {
-            Join join = new Join();
-            join.setRightItem(new Table(item.getTable2()));
-            setJoinType(item, join);
-            setCondition(item, join);
-            joins.add(join);
-        }
-
-        selectBody.setJoins(joins);
-    }
-
-    private void setCondition(LinkElement item, Join join) throws Exception {
-        String strExpression = item.getCondition();
-        if (!item.isCustom()) {
-            String[] arr = strExpression.split(EXPRESSIONS);
-            String expr = strExpression.replace(arr[0], "").replace(arr[1], "");
-            strExpression = arr[0] + "." + item.getTable1() + expr + item.getTable2() + "." + arr[1];
-        }
-        try {
-            join.setOnExpression(getExpression(strExpression));
-        } catch (JSQLParserException e) {
-            throw new Exception(e);
-        }
-    }
-
-    private void setJoinType(LinkElement item, Join join) {
-        if (item.isAllTable1() && item.isAllTable2()) {
-            join.setFull(true);
-        } else if (item.isAllTable1()) {
-            join.setLeft(true);
-        } else if (item.isAllTable2()) {
-            join.setRight(true);
-        } else {
-            join.setInner(true);
-        }
-    }
-
-    private Expression getExpression(String where) throws JSQLParserException {
-        Statement stmt = CCJSqlParserUtil.parse(
-                "SELECT * FROM TABLES WHERE " + where
-        );
-        Select select = (Select) stmt;
-        return ((PlainSelect) select.getSelectBody()).getWhere();
     }
 
     private SelectBody getFullSelectBody() {
@@ -617,13 +544,13 @@ public class MainController implements Subscriber {
     }
 
     private void loadSelectData(PlainSelect pSelect, boolean cteChange) {
-        FromTables.load(this, pSelect);
+        new FromTables().load(this, pSelect);
         initSelectedTables();
-        SelectedFields.load(this, pSelect);
-        Links.load(this, pSelect);
-        GroupBy.load(this, pSelect);
-        OrderBy.load(this, pSelect);
-        Conditions.load(this, pSelect);
+        new SelectedFields().load(this, pSelect);
+        new Links().load(this, pSelect);
+        new GroupBy().load(this, pSelect);
+        new OrderBy().load(this, pSelect);
+        new Conditions().load(this, pSelect);
     }
 
     private void clearIfNotNull(TreeTableView<TableRow> treeTable) {
@@ -715,49 +642,6 @@ public class MainController implements Subscriber {
         queryBuilder.closeForm(sQuery.toString());
     }
 
-    private void saveSelectedFields(PlainSelect selectBody) {
-        List<SelectItem> items = new ArrayList<>();
-        fieldTable.getItems().forEach(x -> {
-            SelectExpressionItem sItem = new SelectExpressionItem();
-            sItem.setExpression(new Column(x.getName()));
-            items.add(sItem);
-        });
-        selectBody.setSelectItems(items);
-    }
-
-    private void saveOrder(PlainSelect selectBody) {
-        List<OrderByElement> orderElements = new ArrayList<>();
-        orderTableResults.getItems().forEach(x -> {
-            OrderByElement orderByElement = new OrderByElement();
-            Column column = new Column(x.getName());
-            orderByElement.setExpression(column);
-            orderByElement.setAsc(x.getComboBoxValue().equals("Ascending"));
-            orderElements.add(orderByElement);
-        });
-        selectBody.setOrderByElements(orderElements);
-    }
-
-    private void saveConditions(PlainSelect selectBody) throws JSQLParserException {
-        if (conditionTableResults.getItems().size() == 0) {
-            selectBody.setWhere(null);
-            return;
-        }
-        StringBuilder where = new StringBuilder();
-        for (ConditionElement item : conditionTableResults.getItems()) {
-            String whereExpr = item.getCondition();
-            if (whereExpr.isEmpty()) {
-                whereExpr = item.getLeftExpression() + item.getExpression() + item.getRightExpression();
-            }
-            where.append(whereExpr).append(" AND ");
-        }
-        Statement stmt = CCJSqlParserUtil.parse(
-                "SELECT * FROM TABLES WHERE " + where.substring(0, where.length() - 4)
-        );
-        Select select = (Select) stmt;
-        Expression whereExpression = ((PlainSelect) select.getSelectBody()).getWhere();
-        selectBody.setWhere(whereExpression);
-    }
-
     @FXML
     public void onDBTableChange() {
 //        System.out.println("234");
@@ -777,10 +661,6 @@ public class MainController implements Subscriber {
 
     public TreeTableView<TableRow> getTablesView() {
         return tablesView;
-    }
-
-    public void setTablesView(TreeTableView<TableRow> tablesView) {
-        this.tablesView = tablesView;
     }
 
     private void initTreeTablesView() {
