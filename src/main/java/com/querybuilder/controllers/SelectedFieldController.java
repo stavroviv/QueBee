@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 
 import static com.querybuilder.utils.Utils.setCellFactory;
 
-public class SelectedFieldController implements Argumentative {
+public class SelectedFieldController implements Subscriber {
     public static final String FIELD_FORM_CLOSED_EVENT = "ClosedFieldForm";
     private Integer currentRow;
     @FXML

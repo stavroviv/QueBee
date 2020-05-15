@@ -1,6 +1,6 @@
 package com.querybuilder.utils;
 
-import com.querybuilder.controllers.Argumentative;
+import com.querybuilder.controllers.Subscriber;
 import com.querybuilder.domain.TableRow;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.ObservableList;
@@ -72,7 +72,7 @@ public class Utils {
             FXMLLoader fxmlLoader = new FXMLLoader(Utils.class.getResource(formName));
             FXMLLoader.setDefaultClassLoader(Utils.class.getClassLoader());
             Parent root = fxmlLoader.load();
-            Argumentative controller = fxmlLoader.getController();
+            Subscriber controller = fxmlLoader.getController();
             controller.initData(userData);
             return new Scene(root);
         } catch (Exception e) {

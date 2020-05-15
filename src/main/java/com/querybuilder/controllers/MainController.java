@@ -16,6 +16,7 @@ import com.querybuilder.database.DBStructure;
 import com.querybuilder.database.DBStructureImpl;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.domain.*;
+import com.querybuilder.querypart.*;
 import com.querybuilder.utils.CustomCell;
 import com.querybuilder.utils.Utils;
 import javafx.beans.binding.Bindings;
@@ -35,9 +36,6 @@ import net.engio.mbassy.listener.Handler;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.Function;
-import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
-import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -53,18 +51,20 @@ import static com.querybuilder.controllers.SelectedFieldController.FIELD_FORM_CL
 import static com.querybuilder.utils.Constants.*;
 import static com.querybuilder.utils.Utils.*;
 
-public class MainController implements Argumentative {
+public class MainController implements Subscriber {
 
     @FXML
     private Button cancelButton;
 
     @FXML
     private TableView<TableRow> fieldTable;
+
+    public TableView<TableRow> getFieldTable() {
+        return fieldTable;
+    }
+
     @FXML
     private TableColumn<TableRow, String> fieldColumn;
-
-//    private List<SelectItem> selectItems;
-//    private List<SelectItem> cteList;
 
     @FXML
     private TabPane qbTabPane_All;
@@ -88,7 +88,6 @@ public class MainController implements Argumentative {
         this.sQuery = sQuery;
     }
 
-    public TableView<String> queryBatchTable;
     @FXML
     private TableView<String> queryCteTable;
     @FXML
@@ -102,10 +101,6 @@ public class MainController implements Argumentative {
 
     public Map<String, List<String>> getDbElements() {
         return dbElements;
-    }
-
-    public void setDbElements(Map<String, List<String>> dbElements) {
-        this.dbElements = dbElements;
     }
 
     @Override
@@ -134,9 +129,6 @@ public class MainController implements Argumentative {
     private boolean notChangeUnion;
 
     private void setPagesHandlers() {
-//        mainTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
-//            cteTabPane.setVisible(newTab.getId() == null || !newTab.getId().equals("queryTabPane"));
-//        });
         cteTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
             if (oldTab == null || newTab == null) {
                 return;
@@ -188,6 +180,7 @@ public class MainController implements Argumentative {
         try {
             saveFromAndLinkTables(newSelectBody);
             saveSelectedFields(newSelectBody);
+            saveGrouping(newSelectBody);
             saveOrder(newSelectBody);
             saveConditions(newSelectBody);
         } catch (Exception e) {
@@ -234,6 +227,10 @@ public class MainController implements Argumentative {
                 sQuery.setSelectBody(newSelectBody);
             }
         }
+    }
+
+    private void saveGrouping(PlainSelect newSelectBody) {
+
     }
 
     private int getTabIndex(String unionTabId) {
@@ -543,7 +540,7 @@ public class MainController implements Argumentative {
         linkTable.refresh();
     }
 
-    private TreeItem<TableRow> getTableItemWithFields(String tableName) {
+    public TreeItem<TableRow> getTableItemWithFields(String tableName) {
         TableRow tableRow1 = new TableRow(tableName);
         tableRow1.setRoot(true);
         TreeItem<TableRow> treeItem = new TreeItem<>(tableRow1);
@@ -619,116 +616,14 @@ public class MainController implements Argumentative {
         return items;
     }
 
-
     private void loadSelectData(PlainSelect pSelect, boolean cteChange) {
-        loadFromTables(pSelect);
+        FromTables.load(this, pSelect);
         initSelectedTables();
-        loadSelectedFields(pSelect, cteChange);
-        loadLinks(pSelect);
-        loadGroupBy(pSelect);
-        loadOrderBy(pSelect);
-        loadConditions(pSelect);
-    }
-
-    private void loadGroupBy(PlainSelect pSelect) {
-        GroupByElement groupBy = pSelect.getGroupBy();
-        if (groupBy != null) {
-            groupBy.getGroupByExpressions().forEach(x -> {
-//                    for (TreeItem<TableRow> ddd: groupFieldsTree.getRoot().getChildren()) {
-//                        if (ddd.getValue().getName().equals(x.toString())){
-//                            makeSelect(ddd, groupFieldsTree, groupTableResults, null);
-//                        }
-//                    };
-                TableRow tableRow = new TableRow(x.toString());
-                groupTableResults.getItems().add(0, tableRow);
-            });
-        }
-    }
-
-    private TableRow newTableRow(String name, int id) {
-        TableRow tableRow1 = new TableRow(name);
-        tableRow1.setId(id);
-        return tableRow1;
-    }
-
-    private void loadSelectedFields(PlainSelect pSelect, boolean cteChange) {
-        int id = 0;
-        for (Object select : pSelect.getSelectItems()) {
-            if (select instanceof SelectExpressionItem) {
-
-                fieldTable.getItems().add(newTableRow(select.toString(), id));
-
-                // GROUPING
-                SelectExpressionItem select1 = (SelectExpressionItem) select;
-                Expression expression1 = select1.getExpression();
-                TableRow tableRow;
-                if (expression1 instanceof Function) {
-                    Function expression = (Function) select1.getExpression();
-                    if (expression.getParameters().getExpressions().size() == 1) {
-                        String columnName = expression.getParameters().getExpressions().get(0).toString();
-                        tableRow = new TableRow(columnName);
-                        tableRow.setComboBoxValue(expression.getName());
-                        groupTableAggregates.getItems().add(tableRow);
-                    }
-                }
-
-            } else {
-                fieldTable.getItems().add(newTableRow(select.toString(), id));
-//                    aliasTable.getItems().add(newAliasItem(select));
-            }
-            id++;
-        }
-    }
-
-    private void loadConditions(PlainSelect pSelect) {
-        Expression where = pSelect.getWhere();
-        if (where == null) {
-            return;
-        }
-        if (where instanceof AndExpression) {
-            parseAndExpression((AndExpression) where);
-        } else {
-            ConditionElement conditionElement = new ConditionElement(where.toString());
-            conditionElement.setCustom(true);
-            conditionTableResults.getItems().add(conditionElement);
-        }
-    }
-
-    private void parseAndExpression(AndExpression where) {
-        ConditionElement conditionElement = new ConditionElement(where.getRightExpression().toString());
-        conditionTableResults.getItems().add(0, conditionElement);
-
-        Expression leftExpression = where.getLeftExpression();
-        while (leftExpression instanceof AndExpression) {
-            AndExpression left = (AndExpression) leftExpression;
-            ConditionElement condition = new ConditionElement(left.getRightExpression().toString());
-            conditionTableResults.getItems().add(0, condition);
-            leftExpression = left.getLeftExpression();
-        }
-        ConditionElement condition = new ConditionElement(leftExpression.toString());
-        conditionTableResults.getItems().add(0, condition);
-    }
-
-    private void loadOrderBy(PlainSelect pSelect) {
-        List<OrderByElement> orderByElements = pSelect.getOrderByElements();
-        if (orderByElements == null) {
-            return;
-        }
-        orderByElements.forEach(x -> {
-            boolean selected = false;
-            for (TreeItem<TableRow> ddd : orderFieldsTree.getRoot().getChildren()) {
-                if (ddd.getValue().getName().equals(x.getExpression().toString())) {
-                    makeSelect(ddd, orderFieldsTree, orderTableResults, x.isAsc() ? "Ascending" : "Descending");
-                    selected = true;
-                    break;
-                }
-            }
-            if (!selected) {
-                TableRow tableRow = new TableRow(x.getExpression().toString());
-                tableRow.setComboBoxValue(x.isAsc() ? "Ascending" : "Descending");
-                orderTableResults.getItems().add(tableRow);
-            }
-        });
+        SelectedFields.load(this, pSelect);
+        Links.load(this, pSelect);
+        GroupBy.load(this, pSelect);
+        OrderBy.load(this, pSelect);
+        Conditions.load(this, pSelect);
     }
 
     private void clearIfNotNull(TreeTableView<TableRow> treeTable) {
@@ -759,151 +654,6 @@ public class MainController implements Argumentative {
             unionTable.getItems().clear();
 //            aliasTable.getItems().clear();
         }
-    }
-
-    private void loadFromTables(PlainSelect pSelect) {
-        FromItem fromItem = pSelect.getFromItem();
-        Table table = null;
-        if (fromItem instanceof Table) {
-            table = (Table) fromItem;
-            tablesView.getRoot().getChildren().add(getTableItemWithFields(table.getName()));
-//            conditionsTreeTable.getRoot().getChildren().add(getTableItemWithFields(table.getName()));
-        }
-        List<Join> joins = pSelect.getJoins();
-        if (joins == null || table == null) {
-            return;
-        }
-
-        for (Join join : joins) {
-            FromItem rightItem = join.getRightItem();
-            String rightItemName = "";
-            if (rightItem instanceof Table) {
-                rightItemName = rightItem.toString();
-                tablesView.getRoot().getChildren().add(getTableItemWithFields(rightItemName));
-            } else if (rightItem instanceof SubSelect) {
-                SubSelect sSelect = (SubSelect) rightItem;
-                rightItemName = sSelect.getAlias().getName();
-                TableRow tableRow = new TableRow(rightItemName);
-                tableRow.setNested(true);
-                tableRow.setRoot(true);
-                String queryText = sSelect.toString().replace(sSelect.getAlias().toString(), "");
-                queryText = queryText.substring(1, queryText.length() - 1);
-                tableRow.setQuery(queryText);
-                TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(tableRow);
-                tablesView.getRoot().getChildren().add(tableRowTreeItem);
-
-                PlainSelect plainSelect = (PlainSelect) sSelect.getSelectBody();
-                plainSelect.getSelectItems().forEach((sItem) -> {
-                    TableRow nestedItem = new TableRow(sItem.toString());
-                    TreeItem<TableRow> nestedRow = new TreeItem<>(nestedItem);
-                    tableRowTreeItem.getChildren().add(nestedRow);
-                });
-            }
-        }
-    }
-
-    private void loadLinks(PlainSelect pSelect) {
-        linkTable.getItems().clear();
-        List<Join> joins = pSelect.getJoins();
-        if (joins == null) {
-            return;
-        }
-
-        Table fromItem = (Table) pSelect.getFromItem();
-
-        for (Join join : joins) {
-            FromItem rightItem = join.getRightItem();
-            if (rightItem instanceof Table) {
-                addLinkRow(fromItem, join);
-            } else if (rightItem instanceof SubSelect) {
-//                SubSelect sSelect = (SubSelect) rightItem;
-//                rightItemName = sSelect.getAlias().getName();
-//                TableRow tableRow = new TableRow(rightItemName);
-//                tableRow.setNested(true);
-//                tableRow.setRoot(true);
-//                String queryText = sSelect.toString().replace(sSelect.getAlias().toString(), "");
-//                queryText = queryText.substring(1, queryText.length() - 1);
-//                tableRow.setQuery(queryText);
-//                TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(tableRow);
-//                tablesView.getRoot().getChildren().add(tableRowTreeItem);
-//
-//                PlainSelect plainSelect = (PlainSelect) sSelect.getSelectBody();
-//                plainSelect.getSelectItems().forEach((sItem) -> {
-//                    TableRow nestedItem = new TableRow(sItem.toString());
-//                    TreeItem<TableRow> nestedRow = new TreeItem<>(nestedItem);
-//                    tableRowTreeItem.getChildren().add(nestedRow);
-//                });
-
-            }
-        }
-    }
-
-    private void addLinkRow(Table table, Join join) {
-        if (join.getOnExpression() == null) {
-            return;
-        }
-
-        Expression onExpression = join.getOnExpression();
-        if (onExpression instanceof AndExpression) {
-            AndExpression expression = (AndExpression) onExpression;
-            while (true) {
-                Expression rightExpression = expression.getRightExpression();
-                LinkElement linkElement = new LinkElement(
-                        this, table.getName(), join.getRightItem().toString(), isLeft(join), isRight(join), isCustom(rightExpression)
-                );
-
-                linkElement.setCondition(getSimpleCondition(rightExpression));
-                linkTable.getItems().add(linkElement);
-                if (!(expression.getLeftExpression() instanceof AndExpression)) {
-                    Expression lExpression = expression.getLeftExpression();
-                    LinkElement linkElement2 = new LinkElement(
-                            this, table.getName(), join.getRightItem().toString(), isLeft(join), isRight(join), isCustom(lExpression)
-                    );
-                    linkElement2.setCondition(getSimpleCondition(lExpression));
-                    linkTable.getItems().add(linkElement2);
-                    break;
-                }
-                expression = (AndExpression) expression.getLeftExpression();
-            }
-        } else {
-            Expression expression = join.getOnExpression();
-            LinkElement linkElement = new LinkElement(
-                    this, table.getName(), join.getRightItem().toString(), isLeft(join), isRight(join), isCustom(expression)
-            );
-            linkElement.setCondition(getSimpleCondition(expression));
-            linkTable.getItems().add(linkElement);
-        }
-    }
-
-    private String getSimpleCondition(Expression expression) {
-        if (expression instanceof ComparisonOperator) {
-            ComparisonOperator expr = (ComparisonOperator) expression;
-            Column leftColumn = (Column) expr.getLeftExpression();
-            Column rightColumn = (Column) expr.getRightExpression();
-            return leftColumn.getColumnName() + expr.getStringExpression() + rightColumn.getColumnName();
-        }
-        System.out.println(expression);
-        return expression.toString();
-    }
-
-    private boolean isLeft(Join join) {
-        if (join.isInner()) {
-            return false;
-        } else {
-            return join.isFull() || join.isLeft();
-        }
-    }
-
-    private boolean isRight(Join join) {
-        if (join.isInner()) {
-            return false;
-        } else {
-            return join.isFull() || join.isRight();
-        }
-    }
-
-    private boolean isCustom(Expression expression) {
-        return !(expression instanceof ComparisonOperator);
     }
 
     @FXML
@@ -1096,6 +846,11 @@ public class MainController implements Argumentative {
 
     @FXML
     private TableView<LinkElement> linkTable;
+
+    public TableView<LinkElement> getLinkTable() {
+        return linkTable;
+    }
+
     @FXML
     private TableColumn<LinkElement, LinkElement> linkTableColumnTable1;
     @FXML
@@ -1161,8 +916,14 @@ public class MainController implements Argumentative {
     private TreeTableView<TableRow> conditionsTreeTable;
     @FXML
     private TreeTableColumn<TableRow, TableRow> conditionsTreeTableColumn;
+
     @FXML
     private TableView<ConditionElement> conditionTableResults;
+
+    public TableView<ConditionElement> getConditionTableResults() {
+        return conditionTableResults;
+    }
+
     @FXML
     private TableColumn<ConditionElement, Boolean> conditionTableResultsCustom;
     @FXML
@@ -1284,8 +1045,8 @@ public class MainController implements Argumentative {
         makeSelect(null, fieldsTree, resultsTable, defaultValue);
     }
 
-    private void makeSelect(TreeItem<TableRow> selectedItem, TreeTableView<TableRow> fieldsTree,
-                            TableView<TableRow> resultsTable, String defaultValue) {
+    public void makeSelect(TreeItem<TableRow> selectedItem, TreeTableView<TableRow> fieldsTree,
+                           TableView<TableRow> resultsTable, String defaultValue) {
         if (selectedItem == null) {
             selectedItem = fieldsTree.getSelectionModel().getSelectedItem();
         }
@@ -1403,18 +1164,35 @@ public class MainController implements Argumentative {
         column.setCellValueFactory(cellData -> cellData.getValue().comboBoxValueProperty());
     }
 
+
     @FXML
     private TreeTableView<TableRow> groupFieldsTree;
+
+    public TreeTableView<TableRow> getGroupFieldsTree() {
+        return groupFieldsTree;
+    }
+
     @FXML
     private TreeTableColumn<TableRow, TableRow> groupFieldsTreeColumn;
 
     @FXML
     private TableView<TableRow> groupTableResults;
+
+    public TableView<TableRow> getGroupTableResults() {
+        return groupTableResults;
+    }
+
     @FXML
     private TableColumn<TableRow, String> groupTableResultsFieldColumn;
 
     @FXML
     private TableView<TableRow> groupTableAggregates;
+
+    public TableView<TableRow> getGroupTableAggregates() {
+        return groupTableAggregates;
+    }
+
+
     @FXML
     private TableColumn<TableRow, String> groupTableAggregatesFieldColumn;
     @FXML
@@ -1473,11 +1251,21 @@ public class MainController implements Argumentative {
 
     @FXML
     private TreeTableView<TableRow> orderFieldsTree;
+
+    public TreeTableView<TableRow> getOrderFieldsTree() {
+        return orderFieldsTree;
+    }
+
     @FXML
     private TreeTableColumn<TableRow, TableRow> orderFieldsTreeColumn;
 
     @FXML
     private TableView<TableRow> orderTableResults;
+
+    public TableView<TableRow> getOrderTableResults() {
+        return orderTableResults;
+    }
+
     @FXML
     private TableColumn<TableRow, String> orderTableResultsFieldColumn;
     @FXML

@@ -9,7 +9,7 @@ public class CustomEventBus {
         bus = new MBassador<>();
     }
 
-    public static void register(Argumentative subscriber) {
+    public static void register(Subscriber subscriber) {
         bus.subscribe(subscriber);
     }
 

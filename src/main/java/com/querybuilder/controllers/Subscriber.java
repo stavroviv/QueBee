@@ -2,6 +2,6 @@ package com.querybuilder.controllers;
 
 import java.util.Map;
 
-public interface Argumentative {
+public interface Subscriber {
     void initData(Map<String, Object> userData);
 }
