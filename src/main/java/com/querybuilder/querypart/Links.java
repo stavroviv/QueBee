@@ -1,7 +1,12 @@
 package com.querybuilder.querypart;
 
 import com.querybuilder.controllers.MainController;
+import com.querybuilder.domain.JoinConditionCell;
 import com.querybuilder.domain.LinkElement;
+import com.querybuilder.domain.LinkTableCell;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.scene.control.cell.CheckBoxTableCell;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
@@ -16,6 +21,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Links implements QueryPart {
+
+    public static void init(MainController controller) {
+        controller.getLinkTable().setEditable(true);
+
+        controller.getLinkTableAllTable1().setCellFactory(tc -> new CheckBoxTableCell<>());
+        controller.getLinkTableAllTable2().setCellFactory(tc -> new CheckBoxTableCell<>());
+
+        controller.getLinkTableCustom().setCellFactory(column -> new CheckBoxTableCell<>());
+        controller.getLinkTableCustom().setCellValueFactory(cellData -> {
+            LinkElement cellValue = cellData.getValue();
+            BooleanProperty property = cellValue.customProperty();
+            property.addListener((observable, oldValue, newValue) -> {
+                cellValue.setCustom(newValue);
+                controller.refreshLinkTable();
+            });
+            return property;
+        });
+
+        controller.getLinkTableColumnTable1().setCellValueFactory(column -> new ReadOnlyObjectWrapper<>(column.getValue()));
+        controller.getLinkTableColumnTable1().setCellFactory(param -> new LinkTableCell(controller, "table1"));
+
+        controller.getLinkTableColumnTable2().setCellValueFactory(column -> new ReadOnlyObjectWrapper<>(column.getValue()));
+        controller.getLinkTableColumnTable2().setCellFactory(param -> new LinkTableCell(controller, "table2"));
+
+        controller.getLinkTableJoinCondition().setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue()));
+        controller.getLinkTableJoinCondition().setCellFactory(column -> new JoinConditionCell());
+    }
 
     @Override
     public void load(MainController controller, PlainSelect pSelect) {

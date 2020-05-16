@@ -91,8 +91,6 @@ public class MainController implements Subscriber {
 
     private Map<String, List<String>> dbElements;
 
-    private ObservableList<String> joinItems;
-
     public Map<String, List<String>> getDbElements() {
         return dbElements;
     }
@@ -376,7 +374,6 @@ public class MainController implements Subscriber {
         DBStructure db = new DBStructureImpl();
         databaseTableView.setRoot(db.getDBStructure(this.queryBuilder.getDataSource()));
         dbElements = db.getDbElements();
-        joinItems = FXCollections.observableArrayList();
         tablesView.setRoot(new TreeItem<>());
         initDatabaseTableView();
     }
@@ -427,7 +424,7 @@ public class MainController implements Subscriber {
 //        initSelectedTables();
 
         initTreeTablesView();
-        initLinkTableView();
+        Links.init(this);
         initConditionTableView();
         initAliasTable();
     }
@@ -462,7 +459,7 @@ public class MainController implements Subscriber {
         refreshLinkTable();
     }
 
-    private void refreshLinkTable() {
+    public void refreshLinkTable() {
         linkTable.refresh();
     }
 
@@ -561,7 +558,6 @@ public class MainController implements Subscriber {
     private void clearTables(boolean cteChange, boolean firstRun) {
         fieldTable.getItems().clear();
         tablesView.getRoot().getChildren().clear();
-        joinItems.clear();
 
         if (!firstRun) {
             clearIfNotNull(conditionsTreeTable);
@@ -732,46 +728,48 @@ public class MainController implements Subscriber {
 
     @FXML
     private TableColumn<LinkElement, LinkElement> linkTableColumnTable1;
+
+    public TableColumn<LinkElement, LinkElement> getLinkTableColumnTable1() {
+        return linkTableColumnTable1;
+    }
+
     @FXML
     private TableColumn<LinkElement, LinkElement> linkTableColumnTable2;
+
+    public TableColumn<LinkElement, LinkElement> getLinkTableColumnTable2() {
+        return linkTableColumnTable2;
+    }
+
     @FXML
     private TableColumn<LinkElement, Boolean> linkTableAllTable1;
+
+    public TableColumn<LinkElement, Boolean> getLinkTableAllTable1() {
+        return linkTableAllTable1;
+    }
+
     @FXML
     private TableColumn<LinkElement, Boolean> linkTableAllTable2;
+
+    public TableColumn<LinkElement, Boolean> getLinkTableAllTable2() {
+        return linkTableAllTable2;
+    }
+
     @FXML
     private TableColumn<LinkElement, Boolean> linkTableCustom;
+
+    public TableColumn<LinkElement, Boolean> getLinkTableCustom() {
+        return linkTableCustom;
+    }
+
     @FXML
     private TableColumn<LinkElement, LinkElement> linkTableJoinCondition;
+
+    public TableColumn<LinkElement, LinkElement> getLinkTableJoinCondition() {
+        return linkTableJoinCondition;
+    }
+
     @FXML
     private Tab linkTablesPane;
-
-    private void initLinkTableView() {
-        linkTable.setEditable(true);
-//        linkTable.getSelectionModel().cellSelectionEnabledProperty().set(true);
-
-        linkTableAllTable1.setCellFactory(tc -> new CheckBoxTableCell<>());
-        linkTableAllTable2.setCellFactory(tc -> new CheckBoxTableCell<>());
-
-        linkTableCustom.setCellFactory(column -> new CheckBoxTableCell<>());
-        linkTableCustom.setCellValueFactory(cellData -> {
-            LinkElement cellValue = cellData.getValue();
-            BooleanProperty property = cellValue.customProperty();
-            property.addListener((observable, oldValue, newValue) -> {
-                cellValue.setCustom(newValue);
-                refreshLinkTable();
-            });
-            return property;
-        });
-
-        linkTableColumnTable1.setCellValueFactory(column -> new ReadOnlyObjectWrapper<>(column.getValue()));
-        linkTableColumnTable1.setCellFactory(param -> new LinkTableCell(this, "table1"));
-
-        linkTableColumnTable2.setCellValueFactory(column -> new ReadOnlyObjectWrapper<>(column.getValue()));
-        linkTableColumnTable2.setCellFactory(param -> new LinkTableCell(this, "table2"));
-
-        linkTableJoinCondition.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue()));
-        linkTableJoinCondition.setCellFactory(column -> new JoinConditionCell());
-    }
 
     @FXML
     protected void addLinkElement(ActionEvent event) {
