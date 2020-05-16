@@ -1,7 +1,13 @@
 package com.querybuilder.querypart;
 
 import com.querybuilder.controllers.MainController;
+import com.querybuilder.domain.ConditionCell;
 import com.querybuilder.domain.ConditionElement;
+import com.querybuilder.domain.TableRow;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.cell.CheckBoxTableCell;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -9,7 +15,54 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
+import static com.querybuilder.utils.Constants.DATABASE_ROOT;
+import static com.querybuilder.utils.Utils.doubleClick;
+
 public class Conditions implements QueryPart {
+
+    public static void init(MainController controller) {
+        controller.getConditionTableResults().setEditable(true);
+        controller.getConditionTableResults().getSelectionModel().cellSelectionEnabledProperty().set(true);
+
+        controller.getConditionTableResultsCustom().setCellFactory(column -> new CheckBoxTableCell<>());
+        controller.getConditionTableResultsCustom().setCellValueFactory(cellData -> {
+            ConditionElement cellValue = cellData.getValue();
+            BooleanProperty property = cellValue.customProperty();
+            property.addListener((observable, oldValue, newValue) -> {
+                cellValue.setCustom(newValue);
+                controller.getConditionTableResults().refresh();
+            });
+            return property;
+        });
+
+        controller.getConditionTableResultsCondition().setCellValueFactory(
+                column -> new ReadOnlyObjectWrapper<>(column.getValue())
+        );
+        controller.getConditionTableResultsCondition().setCellFactory(
+                column -> new ConditionCell(controller.getConditionTableResults(), controller.getTablesView())
+        );
+
+        controller.getConditionsTreeTable().setOnMousePressed(e -> {
+            if (!doubleClick(e)) {
+                return;
+            }
+            TreeItem<TableRow> selectedItem = controller.getConditionsTreeTable().getSelectionModel().getSelectedItem();
+            if (selectedItem == null || selectedItem.getChildren().size() > 0) {
+                return;
+            }
+            String name = selectedItem.getValue().getName();
+            TreeItem<TableRow> parent = selectedItem.getParent();
+            if (parent != null) {
+                String parentName = parent.getValue().getName();
+                if (!parentName.equals(DATABASE_ROOT)) {
+                    name = parentName + "." + name;
+                }
+            }
+            ConditionElement tableRow = new ConditionElement(name);
+            controller.getConditionTableResults().getItems().add(tableRow);
+            controller.getConditionsTreeTable().getRoot().getChildren().remove(selectedItem);
+        });
+    }
 
     @Override
     public void load(MainController controller, PlainSelect pSelect) {

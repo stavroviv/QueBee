@@ -20,7 +20,9 @@ import com.querybuilder.querypart.*;
 import com.querybuilder.utils.CustomCell;
 import com.querybuilder.utils.Utils;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.*;
+import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -425,7 +427,7 @@ public class MainController implements Subscriber {
 
         initTreeTablesView();
         Links.init(this);
-        initConditionTableView();
+        Conditions.init(this);
         initAliasTable();
     }
 
@@ -653,7 +655,6 @@ public class MainController implements Subscriber {
     private TreeTableView<TableRow> tablesView;
     @FXML
     private TreeTableColumn<TableRow, TableRow> tablesViewColumn;
-
     public TreeTableView<TableRow> getTablesView() {
         return tablesView;
     }
@@ -791,6 +792,12 @@ public class MainController implements Subscriber {
 
     @FXML
     private TreeTableView<TableRow> conditionsTreeTable;
+
+    public TreeTableView<TableRow> getConditionsTreeTable() {
+        return conditionsTreeTable;
+    }
+
+
     @FXML
     private TreeTableColumn<TableRow, TableRow> conditionsTreeTableColumn;
 
@@ -803,26 +810,16 @@ public class MainController implements Subscriber {
 
     @FXML
     private TableColumn<ConditionElement, Boolean> conditionTableResultsCustom;
+
+    public TableColumn<ConditionElement, Boolean> getConditionTableResultsCustom() {
+        return conditionTableResultsCustom;
+    }
+
     @FXML
     private TableColumn<ConditionElement, ConditionElement> conditionTableResultsCondition;
 
-    private void initConditionTableView() {
-        conditionTableResults.setEditable(true);
-        conditionTableResults.getSelectionModel().cellSelectionEnabledProperty().set(true);
-
-        conditionTableResultsCustom.setCellFactory(column -> new CheckBoxTableCell<>());
-        conditionTableResultsCustom.setCellValueFactory(cellData -> {
-            ConditionElement cellValue = cellData.getValue();
-            BooleanProperty property = cellValue.customProperty();
-            property.addListener((observable, oldValue, newValue) -> {
-                cellValue.setCustom(newValue);
-                conditionTableResults.refresh();
-            });
-            return property;
-        });
-
-        conditionTableResultsCondition.setCellValueFactory(column -> new ReadOnlyObjectWrapper<>(column.getValue()));
-        conditionTableResultsCondition.setCellFactory(column -> new ConditionCell(conditionTableResults, tablesView));
+    public TableColumn<ConditionElement, ConditionElement> getConditionTableResultsCondition() {
+        return conditionTableResultsCondition;
     }
 
     @FXML
@@ -954,7 +951,7 @@ public class MainController implements Subscriber {
     private void setResultsTablesHandlers() {
         setGroupingHandlers();
         setOrderHandlers();
-        setConditionHandlers();
+//        setConditionHandlers();
         setSelectedFieldsHandlers();
     }
 
@@ -981,31 +978,6 @@ public class MainController implements Subscriber {
         data.put("selectedItem", selectedItem);
         data.put("currentRow", fieldTable.getSelectionModel().getSelectedIndex());
         Utils.openForm("/forms/selected-field.fxml", "Custom expression", data);
-    }
-
-    private void setConditionHandlers() {
-        conditionsTreeTable.setOnMousePressed(e -> {
-            if (doubleClick(e)) {
-                TreeItem<TableRow> selectedItem = conditionsTreeTable.getSelectionModel().getSelectedItem();
-                if (selectedItem == null) {
-                    return;
-                }
-                if (selectedItem.getChildren().size() > 0) {
-                    return;
-                }
-                String name = selectedItem.getValue().getName();
-                TreeItem<TableRow> parent = selectedItem.getParent();
-                if (parent != null) {
-                    String parentName = parent.getValue().getName();
-                    if (!parentName.equals(DATABASE_ROOT)) {
-                        name = parentName + "." + name;
-                    }
-                }
-                ConditionElement tableRow = new ConditionElement(name);
-                conditionTableResults.getItems().add(tableRow);
-                conditionsTreeTable.getRoot().getChildren().remove(selectedItem);
-            }
-        });
     }
 
     @FXML
