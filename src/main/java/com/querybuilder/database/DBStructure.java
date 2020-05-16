@@ -9,6 +9,6 @@ import java.util.Map;
 
 public interface DBStructure {
     TreeItem<TableRow> getDBStructure(LocalDataSource dataSource);
+
     Map<String, List<String>> getDbElements();
-//    void setDataSource(LocalDataSource dataSource);
 }
