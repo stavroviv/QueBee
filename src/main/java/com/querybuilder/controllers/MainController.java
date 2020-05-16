@@ -655,6 +655,7 @@ public class MainController implements Subscriber {
     private TreeTableView<TableRow> tablesView;
     @FXML
     private TreeTableColumn<TableRow, TableRow> tablesViewColumn;
+
     public TreeTableView<TableRow> getTablesView() {
         return tablesView;
     }
@@ -1041,7 +1042,6 @@ public class MainController implements Subscriber {
         return groupTableAggregates;
     }
 
-
     @FXML
     private TableColumn<TableRow, String> groupTableAggregatesFieldColumn;
     @FXML
@@ -1121,7 +1121,6 @@ public class MainController implements Subscriber {
     private TableColumn<TableRow, String> orderTableResultsSortingColumn;
 
     private void setOrderHandlers() {
-//        setCellSelectionEnabled(orderTableResults);
         setTreeSelectHandler(orderFieldsTree, orderTableResults, ORDER_DEFAULT_VALUE);
         setStringColumnFactory(orderTableResultsFieldColumn);
 
@@ -1132,9 +1131,11 @@ public class MainController implements Subscriber {
         ReadOnlyIntegerProperty selectedIndex = orderTableResults.getSelectionModel().selectedIndexProperty();
         orderUpButton.disableProperty().bind(selectedIndex.lessThanOrEqualTo(0));
         orderDownButton.disableProperty().bind(Bindings.createBooleanBinding(() -> {
-            int index = selectedIndex.get();
-            return index < 0 || index + 1 >= orderTableResults.getItems().size();
-        }, selectedIndex, orderTableResults.getItems()));
+                    int index = selectedIndex.get();
+                    return index < 0 || index + 1 >= orderTableResults.getItems().size();
+                },
+                selectedIndex, orderTableResults.getItems())
+        );
     }
 
     @FXML
