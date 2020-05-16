@@ -422,8 +422,6 @@ public class MainController implements Subscriber {
         );
 
         setResultsTablesHandlers();
-//        setCellFactory(databaseTableColumn);
-//        initSelectedTables();
 
         initTreeTablesView();
         Links.init(this);
