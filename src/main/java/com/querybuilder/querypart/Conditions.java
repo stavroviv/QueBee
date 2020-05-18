@@ -18,7 +18,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import static com.querybuilder.utils.Constants.DATABASE_ROOT;
 import static com.querybuilder.utils.Utils.doubleClick;
 
-public class Conditions implements QueryPart {
+public class Conditions {
 
     public static void init(MainController controller) {
         controller.getConditionTableResults().setEditable(true);
@@ -64,8 +64,7 @@ public class Conditions implements QueryPart {
         });
     }
 
-    @Override
-    public void load(MainController controller, PlainSelect pSelect) {
+    public static void load(MainController controller, PlainSelect pSelect) {
         Expression where = pSelect.getWhere();
         if (where == null) {
             return;
@@ -94,8 +93,7 @@ public class Conditions implements QueryPart {
         controller.getConditionTableResults().getItems().add(0, condition);
     }
 
-    @Override
-    public void save(MainController controller, PlainSelect selectBody) throws Exception {
+    public static void save(MainController controller, PlainSelect selectBody) throws Exception {
         if (controller.getConditionTableResults().getItems().size() == 0) {
             selectBody.setWhere(null);
             return;

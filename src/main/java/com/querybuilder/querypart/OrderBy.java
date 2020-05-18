@@ -12,10 +12,9 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OrderBy implements QueryPart {
+public class OrderBy {
 
-    @Override
-    public void load(MainController controller, PlainSelect pSelect) {
+    public static void load(MainController controller, PlainSelect pSelect) {
         TableView<TableRow> orderTableResults = controller.getOrderTableResults();
         TreeTableView<TableRow> orderFieldsTree = controller.getOrderFieldsTree();
         List<OrderByElement> orderByElements = pSelect.getOrderByElements();
@@ -39,8 +38,7 @@ public class OrderBy implements QueryPart {
         });
     }
 
-    @Override
-    public void save(MainController controller, PlainSelect selectBody) {
+    public static void save(MainController controller, PlainSelect selectBody) {
         List<OrderByElement> orderElements = new ArrayList<>();
         controller.getOrderTableResults().getItems().forEach(x -> {
             OrderByElement orderByElement = new OrderByElement();

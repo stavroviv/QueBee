@@ -170,19 +170,19 @@ public class MainController implements Subscriber {
     }
 
     private void saveCurrentQuery(Tab cteTab, Tab unionTab) {
-        PlainSelect newSelectBody = getEmptySelect();
+        PlainSelect selectBody = getEmptySelect();
         try {
-            new FromTables().save(this, newSelectBody);
-            new SelectedFields().save(this, newSelectBody);
-            new Links().save(this, newSelectBody);
-            new GroupBy().save(this, newSelectBody);
-            new OrderBy().save(this, newSelectBody);
-            new Conditions().save(this, newSelectBody);
+            FromTables.save(this, selectBody);
+            SelectedFields.save(this, selectBody);
+            Links.save(this, selectBody);
+            GroupBy.save(this, selectBody);
+            OrderBy.save(this, selectBody);
+            Conditions.save(this, selectBody);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        processUnionsAndCTE(cteTab, unionTab, newSelectBody);
+        processUnionsAndCTE(cteTab, unionTab, selectBody);
     }
 
     private void processUnionsAndCTE(Tab cteTab, Tab unionTab, PlainSelect newSelectBody) {
@@ -540,13 +540,13 @@ public class MainController implements Subscriber {
     }
 
     private void loadSelectData(PlainSelect pSelect, boolean cteChange) {
-        new FromTables().load(this, pSelect);
+        FromTables.load(this, pSelect);
         initSelectedTables();
-        new SelectedFields().load(this, pSelect);
-        new Links().load(this, pSelect);
-        new GroupBy().load(this, pSelect);
-        new OrderBy().load(this, pSelect);
-        new Conditions().load(this, pSelect);
+        SelectedFields.load(this, pSelect);
+        Links.load(this, pSelect);
+        GroupBy.load(this, pSelect);
+        OrderBy.load(this, pSelect);
+        Conditions.load(this, pSelect);
     }
 
     private void clearIfNotNull(TreeTableView<TableRow> treeTable) {

@@ -12,10 +12,9 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SelectedFields implements QueryPart {
+public class SelectedFields {
 
-    @Override
-    public void load(MainController controller, PlainSelect pSelect) {
+    public static void load(MainController controller, PlainSelect pSelect) {
         int id = 0;
         for (Object select : pSelect.getSelectItems()) {
             if (select instanceof SelectExpressionItem) {
@@ -49,8 +48,7 @@ public class SelectedFields implements QueryPart {
         return tableRow1;
     }
 
-    @Override
-    public void save(MainController controller, PlainSelect selectBody) {
+    public static void save(MainController controller, PlainSelect selectBody) {
         List<SelectItem> items = new ArrayList<>();
         controller.getFieldTable().getItems().forEach(x -> {
             SelectExpressionItem sItem = new SelectExpressionItem();

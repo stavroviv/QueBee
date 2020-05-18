@@ -13,10 +13,9 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FromTables implements QueryPart {
+public class FromTables {
 
-    @Override
-    public void load(MainController controller, PlainSelect pSelect) {
+    public static void load(MainController controller, PlainSelect pSelect) {
         TreeTableView<TableRow> tablesView = controller.getTablesView();
         FromItem fromItem = pSelect.getFromItem();
         Table table = null;
@@ -57,8 +56,7 @@ public class FromTables implements QueryPart {
         }
     }
 
-    @Override
-    public void save(MainController controller, PlainSelect selectBody) throws Exception {
+    public static void save(MainController controller, PlainSelect selectBody) throws Exception {
         if (!controller.getLinkTable().getItems().isEmpty()) {
             return;
         }

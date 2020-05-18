@@ -8,10 +8,9 @@ import javafx.scene.control.TreeTableView;
 import net.sf.jsqlparser.statement.select.GroupByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-public class GroupBy implements QueryPart {
+public class GroupBy {
 
-    @Override
-    public void load(MainController controller, PlainSelect pSelect) {
+    public static void load(MainController controller, PlainSelect pSelect) {
         TreeTableView<TableRow> groupFieldsTree = controller.getGroupFieldsTree();
         TableView<TableRow> groupTableResults = controller.getGroupTableResults();
 
@@ -30,8 +29,7 @@ public class GroupBy implements QueryPart {
         }
     }
 
-    @Override
-    public void save(MainController controller, PlainSelect selectBody) {
+    public static void save(MainController controller, PlainSelect selectBody) {
 
     }
 }

@@ -20,7 +20,7 @@ import net.sf.jsqlparser.statement.select.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Links implements QueryPart {
+public class Links {
 
     public static void init(MainController controller) {
         controller.getLinkTable().setEditable(true);
@@ -49,8 +49,7 @@ public class Links implements QueryPart {
         controller.getLinkTableJoinCondition().setCellFactory(column -> new JoinConditionCell());
     }
 
-    @Override
-    public void load(MainController controller, PlainSelect pSelect) {
+    public static void load(MainController controller, PlainSelect pSelect) {
         controller.getLinkTable().getItems().clear();
         List<Join> joins = pSelect.getJoins();
         if (joins == null) {
@@ -86,8 +85,7 @@ public class Links implements QueryPart {
         }
     }
 
-    @Override
-    public void save(MainController controller, PlainSelect selectBody) throws Exception {
+    public static void save(MainController controller, PlainSelect selectBody) throws Exception {
         if (controller.getLinkTable().getItems().isEmpty()) {
             return;
         }
