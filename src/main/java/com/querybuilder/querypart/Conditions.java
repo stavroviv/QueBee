@@ -10,6 +10,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -73,7 +74,7 @@ public class Conditions {
             parseAndExpression(controller, (AndExpression) where);
         } else {
             ConditionElement conditionElement = new ConditionElement(where.toString());
-            conditionElement.setCustom(true);
+            conditionElement.setCustom(!(where instanceof ComparisonOperator));
             controller.getConditionTableResults().getItems().add(conditionElement);
         }
     }

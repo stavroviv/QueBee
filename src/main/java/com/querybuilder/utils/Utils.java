@@ -1,7 +1,7 @@
 package com.querybuilder.utils;
 
-import com.querybuilder.controllers.Subscriber;
 import com.querybuilder.domain.TableRow;
+import com.querybuilder.eventbus.Subscriber;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;

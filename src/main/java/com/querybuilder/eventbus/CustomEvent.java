@@ -1,4 +1,4 @@
-package com.querybuilder.controllers;
+package com.querybuilder.eventbus;
 
 import lombok.Data;
 

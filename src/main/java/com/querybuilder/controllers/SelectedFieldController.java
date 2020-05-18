@@ -1,6 +1,9 @@
 package com.querybuilder.controllers;
 
 import com.querybuilder.domain.TableRow;
+import com.querybuilder.eventbus.CustomEvent;
+import com.querybuilder.eventbus.CustomEventBus;
+import com.querybuilder.eventbus.Subscriber;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
