@@ -2,12 +2,14 @@
 
 **Visual query builder IDEA plugin**
 
-can make you enterprise life easier and remind you one famous program language
-___  
+*can make you enterprise life easier and remind you one lamp develop language*
 
 **Demo**
 
-![Simple query](demo/simple.gif)  
-___  
+Simple query
 
-**Stavrov Ilia**  
+![Simple query](demo/simple.gif)  
+
+CTE
+
+![CTE](demo/cte.gif) 
