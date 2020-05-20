@@ -1,5 +1,16 @@
 package com.querybuilder.utils;
 
+import com.intellij.ide.DataManager;
+import com.intellij.openapi.actionSystem.DataConstants;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.MessageType;
+import com.intellij.openapi.ui.popup.Balloon;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.openapi.wm.IdeFrame;
+import com.intellij.openapi.wm.WindowManager;
+import com.intellij.ui.awt.RelativePoint;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.eventbus.Subscriber;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -17,6 +28,20 @@ import javafx.stage.Stage;
 import java.util.Map;
 
 public class Utils {
+
+    public static void showMessage(String message) {
+        DataContext dataContext = DataManager.getInstance().getDataContext();
+        Project project = (Project) dataContext.getData(DataConstants.PROJECT);
+        IdeFrame ideFrame = WindowManager.getInstance().getIdeFrame(project);
+        FileDocumentManager.getInstance().saveAllDocuments();
+
+        String html = "<html><body>" + message + "</body></html>";
+        JBPopupFactory.getInstance()
+                .createHtmlTextBalloonBuilder(html, MessageType.INFO, null)
+                .setFadeoutTime(10_000)
+                .createBalloon()
+                .show(RelativePoint.getCenterOf(ideFrame.getStatusBar().getComponent()), Balloon.Position.above);
+    }
 
     public static void setEmptyHeader(Control control) {
         control.widthProperty().addListener((ov, t, t1) -> {

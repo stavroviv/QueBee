@@ -27,6 +27,7 @@ import static com.querybuilder.utils.Utils.setCellFactory;
 public class SelectedFieldController implements Subscriber {
     public static final String FIELD_FORM_CLOSED_EVENT = "ClosedFieldForm";
     private Integer currentRow;
+
     @FXML
     private Button closeButton;
     @FXML
@@ -47,7 +48,6 @@ public class SelectedFieldController implements Subscriber {
     }
 
     public static String getText(String htmlText) {
-        String result = "";
         Pattern pattern = Pattern.compile("<[^>]*>");
         Matcher matcher = pattern.matcher(htmlText);
         final StringBuffer text = new StringBuffer(htmlText.length());
@@ -55,9 +55,8 @@ public class SelectedFieldController implements Subscriber {
             matcher.appendReplacement(text, " ");
         }
         matcher.appendTail(text);
-        result = text.toString().trim();
 
-        return result
+        return text.toString().trim()
                 .replaceAll("&gt;", ">")
                 .replaceAll("&lt;", "<")
                 .replaceAll("&nbsp", " ")
@@ -76,11 +75,12 @@ public class SelectedFieldController implements Subscriber {
         }
     }
 
-    public void initData(Map<String, Object> userData) {
-        availableFieldsTree.setRoot((TreeItem<TableRow>) userData.get("selectedFieldsTree"));
-        TableRow selectedItem = (TableRow) userData.get("selectedItem");
-        if (userData.get("currentRow") != null) {
-            currentRow = (Integer) userData.get("currentRow");
+    @Override
+    public void initData(Map<String, Object> data) {
+        availableFieldsTree.setRoot((TreeItem<TableRow>) data.get("selectedFieldsTree"));
+        TableRow selectedItem = (TableRow) data.get("selectedItem");
+        if (data.get("currentRow") != null) {
+            currentRow = (Integer) data.get("currentRow");
         }
         String text = selectedItem != null ? selectedItem.getName() : " ";
         fieldText.setHtmlText("<html><body contentEditable=\"true\">" + text + "</body></html>");

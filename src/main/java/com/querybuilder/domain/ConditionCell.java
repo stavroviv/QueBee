@@ -1,5 +1,8 @@
 package com.querybuilder.domain;
 
+import com.querybuilder.eventbus.CustomEvent;
+import com.querybuilder.eventbus.CustomEventBus;
+import com.querybuilder.eventbus.Subscriber;
 import com.sun.javafx.scene.control.skin.LabeledText;
 import javafx.collections.FXCollections;
 import javafx.event.EventTarget;
@@ -9,13 +12,17 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import net.engio.mbassy.listener.Handler;
+
+import java.util.Map;
 
 import static com.querybuilder.utils.Constants.DATABASE_ROOT;
 import static com.querybuilder.utils.Constants.EXPRESSIONS;
 import static com.querybuilder.utils.Utils.*;
 import static javafx.scene.control.TreeTableView.CONSTRAINED_RESIZE_POLICY;
 
-public class ConditionCell extends TableCell<ConditionElement, ConditionElement> {
+public class ConditionCell extends TableCell<ConditionElement, ConditionElement> implements Subscriber {
+    public static final String REFRESH_SELECTED_TREE = "RefreshSelectedTree";
     private final TextField customCondition = new TextField();
     private final ComboBox<String> comparisonComboBox = new ComboBox<>(
             FXCollections.observableArrayList("=", "<>", "<", ">", "<=", ">=")
@@ -28,6 +35,7 @@ public class ConditionCell extends TableCell<ConditionElement, ConditionElement>
         this.tablesView = tablesView;
         this.conditionTableResults = conditionTableResults;
         initConditionTableForPopup();
+        CustomEventBus.register(this);
     }
 
     @Override
@@ -114,18 +122,19 @@ public class ConditionCell extends TableCell<ConditionElement, ConditionElement>
         selectedConditionsTreeTableContext = new SelectedFieldsTree(tablesView, conditionsTreeTableContext);
         setEmptyHeader(conditionsTreeTableContext);
         conditionsTreeTableContext.setOnMousePressed(e -> {
-            if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
-                TreeItem<TableRow> item = conditionsTreeTableContext.getSelectionModel().getSelectedItem();
-                String parentName = item.getParent().getValue().getName();
-                if (DATABASE_ROOT.equals(parentName)) {
-                    return;
-                }
-                ConditionElement conditionElement = conditionTableResults.getSelectionModel().getSelectedItem();
-                String name = parentName + "." + item.getValue().getName();
-                conditionElement.setLeftExpression(name);
-                conditionPopup.hide();
-                conditionTableResults.refresh();
+            if (!doubleClick(e)) {
+                return;
             }
+            TreeItem<TableRow> item = conditionsTreeTableContext.getSelectionModel().getSelectedItem();
+            String parentName = item.getParent().getValue().getName();
+            if (DATABASE_ROOT.equals(parentName)) {
+                return;
+            }
+            ConditionElement conditionElement = conditionTableResults.getSelectionModel().getSelectedItem();
+            String name = parentName + "." + item.getValue().getName();
+            conditionElement.setLeftExpression(name);
+            conditionPopup.hide();
+            conditionTableResults.refresh();
         });
     }
 
@@ -154,5 +163,18 @@ public class ConditionCell extends TableCell<ConditionElement, ConditionElement>
 
         conditionPopup.show(cell, clickX, clickY + targetButton.getHeight());
         conditionTableResults.getSelectionModel().select(item);
+    }
+
+    @Override
+    public void initData(Map<String, Object> userData) {
+
+    }
+
+    @Handler
+    public void selectedFieldFormClosedHandler(CustomEvent event) {
+        if (!REFRESH_SELECTED_TREE.equals(event.getName())) {
+            return;
+        }
+        selectedConditionsTreeTableContext.applyChanges(event.getChange());
     }
 }

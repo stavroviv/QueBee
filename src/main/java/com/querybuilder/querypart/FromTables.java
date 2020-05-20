@@ -2,6 +2,8 @@ package com.querybuilder.querypart;
 
 import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.TableRow;
+import com.querybuilder.eventbus.CustomEvent;
+import com.querybuilder.eventbus.CustomEventBus;
 import com.querybuilder.utils.CustomCell;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -19,6 +21,7 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.querybuilder.domain.ConditionCell.REFRESH_SELECTED_TREE;
 import static com.querybuilder.utils.Constants.DATABASE_ROOT;
 import static com.querybuilder.utils.Constants.TABLES_ROOT;
 import static com.querybuilder.utils.Utils.doubleClick;
@@ -27,47 +30,59 @@ import static com.querybuilder.utils.Utils.setCellFactory;
 public class FromTables {
 
     public static void init(MainController controller) {
+        setCellsFactories(controller);
+        setListeners(controller);
+    }
+
+    private static void setListeners(MainController controller) {
         controller.getDatabaseTableView().setOnMousePressed(e -> {
-            if (doubleClick(e)) {
-                TreeItem<TableRow> selectedItem = controller.getDatabaseTableView().getSelectionModel().getSelectedItem();
-                String parent = selectedItem.getParent().getValue().getName();
-                String field = selectedItem.getValue().getName();
-                if (DATABASE_ROOT.equals(parent)) {
-                    addTablesRow(controller, field);
-                } else {
-                    addTablesRow(controller, parent);
-                    controller.addFieldRow(parent + "." + field);
-                }
+            if (!doubleClick(e)) {
+                return;
+            }
+            TreeItem<TableRow> selectedItem = controller.getDatabaseTableView().getSelectionModel().getSelectedItem();
+            String parent = selectedItem.getParent().getValue().getName();
+            String field = selectedItem.getValue().getName();
+            if (DATABASE_ROOT.equals(parent)) {
+                addTablesRow(controller, field);
+            } else {
+                addTablesRow(controller, parent);
+                controller.addFieldRow(parent + "." + field);
             }
         });
-        controller.getTablesView().getRoot().getChildren().addListener(
-                (ListChangeListener<TreeItem<TableRow>>) c -> {
-                    while (c.next()) {
-                        controller.getSelectedGroupFieldsTree().applyChanges(c);
-                        controller.getSelectedConditionsTreeTable().applyChanges(c);
-//                        selectedConditionsTreeTableContext.applyChanges(c);
-                        controller.getSelectedOrderFieldsTree().applyChanges(c);
-                    }
-                }
-        );
-        controller.getFieldTable().getItems().addListener(
-                (ListChangeListener<TableRow>) c -> {
-                    while (c.next()) {
-                        controller.getSelectedGroupFieldsTree().applyChangesString(c);
-                        controller.getSelectedOrderFieldsTree().applyChangesString(c);
-                    }
-                }
-        );
+
+        controller.getTablesView().getRoot().getChildren().addListener((ListChangeListener<TreeItem<TableRow>>) c -> {
+            while (c.next()) {
+                controller.getSelectedGroupFieldsTree().applyChanges(c);
+                controller.getSelectedConditionsTreeTable().applyChanges(c);
+                controller.getSelectedOrderFieldsTree().applyChanges(c);
+
+                CustomEvent customEvent = new CustomEvent();
+                customEvent.setName(REFRESH_SELECTED_TREE);
+                customEvent.setChange(c);
+                CustomEventBus.post(customEvent);
+            }
+        });
         controller.getTablesView().setOnMousePressed(e -> {
-            if (doubleClick(e)) {
-                TreeItem<TableRow> selectedItem = controller.getTablesView().getSelectionModel().getSelectedItem();
-                String parent = selectedItem.getParent().getValue().getName();
-                String field = selectedItem.getValue().getName();
-                if (!TABLES_ROOT.equals(parent)) {
-                    controller.addFieldRow(parent + "." + field);
-                }
+            if (!doubleClick(e)) {
+                return;
+            }
+            TreeItem<TableRow> selectedItem = controller.getTablesView().getSelectionModel().getSelectedItem();
+            String parent = selectedItem.getParent().getValue().getName();
+            String field = selectedItem.getValue().getName();
+            if (!TABLES_ROOT.equals(parent)) {
+                controller.addFieldRow(parent + "." + field);
             }
         });
+
+        controller.getFieldTable().getItems().addListener((ListChangeListener<TableRow>) c -> {
+            while (c.next()) {
+                controller.getSelectedGroupFieldsTree().applyChangesString(c);
+                controller.getSelectedOrderFieldsTree().applyChangesString(c);
+            }
+        });
+    }
+
+    private static void setCellsFactories(MainController controller) {
         setCellFactory(controller.getTablesViewColumn());
         controller.getTablesViewColumn().setCellFactory(ttc -> new CustomCell() {
             @Override

@@ -1,16 +1,5 @@
 package com.querybuilder.controllers;
 
-import com.intellij.ide.DataManager;
-import com.intellij.openapi.actionSystem.DataConstants;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.MessageType;
-import com.intellij.openapi.ui.popup.Balloon;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
-import com.intellij.openapi.wm.IdeFrame;
-import com.intellij.openapi.wm.WindowManager;
-import com.intellij.ui.awt.RelativePoint;
 import com.querybuilder.QueryBuilder;
 import com.querybuilder.database.DBStructure;
 import com.querybuilder.database.DBStructureImpl;
@@ -114,7 +103,7 @@ public class MainController implements Subscriber {
         reloadData();
 
         setCellFactories();
-        setPagesHandlers();
+        setPagesListeners();
 
         CustomEventBus.register(this);
     }
@@ -123,7 +112,7 @@ public class MainController implements Subscriber {
 
     private boolean notChangeUnion;
 
-    private void setPagesHandlers() {
+    private void setPagesListeners() {
         cteTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
             if (oldTab == null || newTab == null) {
                 return;
@@ -228,7 +217,6 @@ public class MainController implements Subscriber {
             }
         }
     }
-
 
     private int getTabIndex(String unionTabId) {
         int tIndex = 0;
@@ -346,20 +334,6 @@ public class MainController implements Subscriber {
                 addAliasFirstColumn(pSelect);
             }
         }
-    }
-
-    static void showMessage(String message) {
-        DataContext dataContext = DataManager.getInstance().getDataContext();
-        Project project = (Project) dataContext.getData(DataConstants.PROJECT);
-        IdeFrame ideFrame = WindowManager.getInstance().getIdeFrame(project);
-        FileDocumentManager.getInstance().saveAllDocuments();
-
-        String html = "<html><body>" + message + "</body></html>";
-        JBPopupFactory.getInstance()
-                .createHtmlTextBalloonBuilder(html, MessageType.INFO, null)
-                .setFadeoutTime(10_000)
-                .createBalloon()
-                .show(RelativePoint.getCenterOf(ideFrame.getStatusBar().getComponent()), Balloon.Position.above);
     }
 
     private void addAliasFirstColumn(PlainSelect pSelect) {
