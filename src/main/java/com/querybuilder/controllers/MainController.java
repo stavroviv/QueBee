@@ -458,7 +458,7 @@ public class MainController implements Subscriber {
         newColumn.setEditable(true);
 
         newColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValues().get(i)));
-        newColumn.setCellFactory(x -> new AliasCell(x, i, getSeletedItems()));
+        newColumn.setCellFactory(x -> new AliasCell(x, i, getSeleсtedItems()));
 
         aliasTable.getSelectionModel().selectedIndexProperty().addListener((num) -> {
             TablePosition focusedCell = aliasTable.getFocusModel().getFocusedCell();
@@ -470,7 +470,7 @@ public class MainController implements Subscriber {
         unionTable.getItems().add(new TableRow(unionName));
     }
 
-    private List<String> getSeletedItems() {
+    private List<String> getSeleсtedItems() {
         List<String> items = new ArrayList<>();
         fieldTable.getItems().forEach(x -> items.add(x.getName()));
         return items;
@@ -478,12 +478,13 @@ public class MainController implements Subscriber {
 
     private void loadSelectData(PlainSelect pSelect, boolean cteChange) {
         FromTables.load(this, pSelect);
-        initSelectedTables();
         SelectedFields.load(this, pSelect);
         Links.load(this, pSelect);
         GroupBy.load(this, pSelect);
         OrderBy.load(this, pSelect);
         Conditions.load(this, pSelect);
+
+        initSelectedTables();
     }
 
     private void clearIfNotNull(TreeTableView<TableRow> treeTable) {
@@ -504,9 +505,7 @@ public class MainController implements Subscriber {
 
         conditionTableResults.getItems().clear();
         groupTableResults.getItems().clear();
-
         groupTableAggregates.getItems().clear();
-
         orderTableResults.getItems().clear();
 
         if (cteChange) {
@@ -835,7 +834,6 @@ public class MainController implements Subscriber {
     private void setResultsTablesHandlers() {
         setGroupingHandlers();
         setOrderHandlers();
-//        setConditionHandlers();
         setSelectedFieldsHandlers();
     }
 
@@ -896,7 +894,6 @@ public class MainController implements Subscriber {
         );
         column.setCellValueFactory(cellData -> cellData.getValue().comboBoxValueProperty());
     }
-
 
     @FXML
     private TreeTableView<TableRow> groupFieldsTree;
