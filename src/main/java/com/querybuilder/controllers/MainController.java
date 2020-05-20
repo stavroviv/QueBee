@@ -20,7 +20,6 @@ import com.querybuilder.eventbus.CustomEvent;
 import com.querybuilder.eventbus.CustomEventBus;
 import com.querybuilder.eventbus.Subscriber;
 import com.querybuilder.querypart.*;
-import com.querybuilder.utils.CustomCell;
 import com.querybuilder.utils.Utils;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyIntegerProperty;
@@ -28,7 +27,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -388,53 +386,38 @@ public class MainController implements Subscriber {
     @FXML
     private TreeTableView<TableRow> databaseTableView;
 
+    public TreeTableView<TableRow> getDatabaseTableView() {
+        return databaseTableView;
+    }
+
     @FXML
     private TreeTableColumn<TableRow, TableRow> databaseTableColumn;
 
     private void initDatabaseTableView() {
-        databaseTableView.setOnMousePressed(e -> {
-            if (doubleClick(e)) {
-                TreeItem<TableRow> selectedItem = databaseTableView.getSelectionModel().getSelectedItem();
-                String parent = selectedItem.getParent().getValue().getName();
-                String field = selectedItem.getValue().getName();
-                if (DATABASE_ROOT.equals(parent)) {
-                    addTablesRow(field);
-                } else {
-                    addTablesRow(parent);
-                    addFieldRow(parent + "." + field);
-                }
-            }
-        });
-        tablesView.getRoot().getChildren().addListener(
-                (ListChangeListener<TreeItem<TableRow>>) c -> {
-                    while (c.next()) {
-                        selectedGroupFieldsTree.applyChanges(c);
-                        selectedConditionsTreeTable.applyChanges(c);
-//                        selectedConditionsTreeTableContext.applyChanges(c);
-                        selectedOrderFieldsTree.applyChanges(c);
-                    }
-                }
-        );
-        fieldTable.getItems().addListener(
-                (ListChangeListener<TableRow>) c -> {
-                    while (c.next()) {
-                        selectedGroupFieldsTree.applyChangesString(c);
-                        selectedOrderFieldsTree.applyChangesString(c);
-                    }
-                }
-        );
-
+        FromTables.init(this);
         setResultsTablesHandlers();
-
-        initTreeTablesView();
         Links.init(this);
         Conditions.init(this);
         initAliasTable();
     }
 
     private SelectedFieldsTree selectedGroupFieldsTree;
+
+    public SelectedFieldsTree getSelectedGroupFieldsTree() {
+        return selectedGroupFieldsTree;
+    }
+
     private SelectedFieldsTree selectedConditionsTreeTable;
+
+    public SelectedFieldsTree getSelectedConditionsTreeTable() {
+        return selectedConditionsTreeTable;
+    }
+
     private SelectedFieldsTree selectedOrderFieldsTree;
+
+    public SelectedFieldsTree getSelectedOrderFieldsTree() {
+        return selectedOrderFieldsTree;
+    }
 
     private void initSelectedTables() {
         selectedGroupFieldsTree = new SelectedFieldsTree(tablesView, groupFieldsTree, fieldTable);
@@ -454,32 +437,9 @@ public class MainController implements Subscriber {
         setCellFactory(databaseTableColumn);
     }
 
-    private void addTablesRow(String parent) {
-        ObservableList<TreeItem<TableRow>> children = tablesView.getRoot().getChildren();
-        if (children.stream().noneMatch(x -> x.getValue().getName().equals(parent))) {
-            tablesView.getRoot().getChildren().add(getTableItemWithFields(parent));
-        }
-        refreshLinkTable();
-    }
 
     public void refreshLinkTable() {
         linkTable.refresh();
-    }
-
-    public TreeItem<TableRow> getTableItemWithFields(String tableName) {
-        TableRow tableRow1 = new TableRow(tableName);
-        tableRow1.setRoot(true);
-        TreeItem<TableRow> treeItem = new TreeItem<>(tableRow1);
-        List<String> columns = dbElements.get(tableName);
-        if (columns != null) {
-            columns.forEach(col ->
-            {
-                TableRow tableRow = new TableRow(col);
-                TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(tableRow);
-                treeItem.getChildren().add(tableRowTreeItem);
-            });
-        }
-        return treeItem;
     }
 
     private void reloadData() {
@@ -602,7 +562,7 @@ public class MainController implements Subscriber {
         }
     }
 
-    private void addFieldRow(String name) {
+    public void addFieldRow(String name) {
         fieldTable.getItems().add(new TableRow(name));
 //        SelectExpressionItem nSItem = new SelectExpressionItem();
 //        nSItem.setAlias(new Alias("test"));
@@ -654,68 +614,16 @@ public class MainController implements Subscriber {
 
     @FXML
     private TreeTableView<TableRow> tablesView;
-    @FXML
-    private TreeTableColumn<TableRow, TableRow> tablesViewColumn;
 
     public TreeTableView<TableRow> getTablesView() {
         return tablesView;
     }
 
-    private void initTreeTablesView() {
-        tablesView.setOnMousePressed(e -> {
-            if (doubleClick(e)) {
-                TreeItem<TableRow> selectedItem = tablesView.getSelectionModel().getSelectedItem();
-                String parent = selectedItem.getParent().getValue().getName();
-                String field = selectedItem.getValue().getName();
-                if (!TABLES_ROOT.equals(parent)) {
-                    addFieldRow(parent + "." + field);
-                }
-            }
-        });
-        setCellFactory(tablesViewColumn);
-        tablesViewColumn.setCellFactory(ttc -> new CustomCell() {
-            @Override
-            protected void updateItem(TableRow item, boolean empty) {
-                super.updateItem(item, empty);
-                setItem(this, item, empty);
-                setContextMenu(tableViewGetContextMenu(item, empty));
-            }
-        });
-    }
+    @FXML
+    private TreeTableColumn<TableRow, TableRow> tablesViewColumn;
 
-    private ContextMenu tableViewGetContextMenu(TableRow item, boolean empty) {
-        MenuItem addContext = new MenuItem("Add");
-        MenuItem changeContext = new MenuItem("Change");
-        MenuItem deleteContext = new MenuItem("Delete");
-        MenuItem renameContext = new MenuItem("Rename");
-
-        addContext.setOnAction((ActionEvent event) -> {
-//            System.out.println("addContext");
-//            Object item = tablesView.getSelectionModel().getSelectedItem();
-//            System.out.println("Selected item: " + item);
-        });
-        deleteContext.setOnAction((ActionEvent event) -> deleteTableFromSelected());
-        renameContext.setOnAction((ActionEvent event) -> {
-//            System.out.println("renameContext");
-//            Object item = tablesView.getSelectionModel().getSelectedItem();
-//            System.out.println("Selected item: " + item);
-        });
-        changeContext.setOnAction((ActionEvent event) -> {
-//            System.out.println("changeContext");
-//            TableRow item = tablesView.getSelectionModel().getSelectedItem().getValue();
-            openNestedQuery(item.getQuery(), item);
-        });
-
-        ContextMenu menu = new ContextMenu();
-        menu.getItems().add(addContext);
-        if (!empty && item.isRoot()) {
-            if (item.isNested()) {
-                menu.getItems().add(changeContext);
-            }
-            menu.getItems().add(deleteContext);
-            menu.getItems().add(renameContext);
-        }
-        return menu;
+    public TreeTableColumn<TableRow, TableRow> getTablesViewColumn() {
+        return tablesViewColumn;
     }
 
     //</editor-fold>
@@ -855,7 +763,7 @@ public class MainController implements Subscriber {
         openNestedQuery("", null);
     }
 
-    private void openNestedQuery(String text, TableRow item) {
+    public void openNestedQuery(String text, TableRow item) {
         QueryBuilder qb = new QueryBuilder(text, false, this.queryBuilder.getDataSource());
 //        qb.setDataSource();,
         qb.setParentController(this);
