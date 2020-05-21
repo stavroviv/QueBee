@@ -141,7 +141,15 @@ public class Utils {
         return e.getClickCount() == 2 && e.isPrimaryButtonDown();
     }
 
-    public static <E> void addElement(ObservableList<E> list, E row) {
-        list.add(list.size() - 1, row);
+    public static <E> void addElementBeforeTree(ObservableList<E> list, E row) {
+        // try {
+        if (list.isEmpty()) {
+            list.add(row);
+        } else {
+            list.add(list.size() - 1, row);
+        }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 }

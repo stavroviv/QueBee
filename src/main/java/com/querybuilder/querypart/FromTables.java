@@ -1,6 +1,7 @@
 package com.querybuilder.querypart;
 
 import com.querybuilder.controllers.MainController;
+import com.querybuilder.domain.SelectedFieldsTree;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.eventbus.CustomEvent;
 import com.querybuilder.eventbus.CustomEventBus;
@@ -20,7 +21,9 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import static com.querybuilder.domain.ConditionCell.REFRESH_SELECTED_TREE;
 import static com.querybuilder.utils.Constants.*;
@@ -49,15 +52,17 @@ public class FromTables {
             }
         });
 
-        controller.getTablesView().getRoot().getChildren().addListener((ListChangeListener<TreeItem<TableRow>>) c -> {
-            while (c.next()) {
-                controller.getSelectedGroupFieldsTree().applyChanges(c);
-                controller.getSelectedConditionsTreeTable().applyChanges(c);
-                controller.getSelectedOrderFieldsTree().applyChanges(c);
+        controller.getTablesView().getRoot().getChildren().addListener((ListChangeListener<TreeItem<TableRow>>) change -> {
+            while (change.next()) {
+                List<SelectedFieldsTree> selectedFieldTrees = new ArrayList<>();
+                selectedFieldTrees.add(controller.getSelectedGroupFieldsTree());
+                selectedFieldTrees.add(controller.getSelectedConditionsTreeTable());
+                selectedFieldTrees.add(controller.getSelectedOrderFieldsTree());
+                applyChange(selectedFieldTrees, selectedFieldsTree -> selectedFieldsTree.applyChanges(change));
 
                 CustomEvent customEvent = new CustomEvent();
                 customEvent.setName(REFRESH_SELECTED_TREE);
-                customEvent.setChange(c);
+                customEvent.setChange(change);
                 CustomEventBus.post(customEvent);
             }
         });
@@ -73,12 +78,18 @@ public class FromTables {
             }
         });
 
-        controller.getFieldTable().getItems().addListener((ListChangeListener<TableRow>) c -> {
-            while (c.next()) {
-                controller.getSelectedGroupFieldsTree().applyChangesString(c);
-                controller.getSelectedOrderFieldsTree().applyChangesString(c);
+        controller.getFieldTable().getItems().addListener((ListChangeListener<TableRow>) change -> {
+            while (change.next()) {
+                List<SelectedFieldsTree> selectedFieldTrees = new ArrayList<>();
+                selectedFieldTrees.add(controller.getSelectedGroupFieldsTree());
+                selectedFieldTrees.add(controller.getSelectedOrderFieldsTree());
+                applyChange(selectedFieldTrees, selectedFieldsTree -> selectedFieldsTree.applyChangesString(change));
             }
         });
+    }
+
+    private static void applyChange(List<SelectedFieldsTree> fieldsTree, Consumer<SelectedFieldsTree> consumer) {
+        fieldsTree.stream().filter(Objects::nonNull).forEach(consumer);
     }
 
     private static void setCellsFactories(MainController controller) {

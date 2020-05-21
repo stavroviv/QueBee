@@ -267,8 +267,13 @@ public class MainController implements Subscriber {
             curMaxUnion = 0;
             unionColumns = new HashMap<>();
             // таблица Alias меняется только при переключении CTE
-            loadAliasTable(selectBody);
-            loadCteTables();
+            try {
+                loadAliasTable(selectBody);
+                loadCteTables();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
 
         if (selectBody instanceof SetOperationList) { // UNION
@@ -284,9 +289,9 @@ public class MainController implements Subscriber {
             loadSelectData((PlainSelect) body);
         } else if (selectBody instanceof PlainSelect) { // ONE QUERY
             loadSelectData((PlainSelect) selectBody);
-        } else if (selectBody == null) {
-            initSelectedTables();
         }
+
+        initSelectedTables(); // must be after load tables
         cteNumberPrev = cteNumber;
     }
 
@@ -337,7 +342,8 @@ public class MainController implements Subscriber {
                         name = selectItem.getAlias().getName();
                     } else {
                         Column column = (Column) selectItem.getExpression();
-                        name = column.getColumnName().split("\\.")[1];
+                        String[] split = column.getColumnName().split("\\.");
+                        name = split.length > 1 ? split[1] : split[0]; // FIXME
                     }
                     treeItem.getChildren().add(new TreeItem<>(new TableRow(name)));
                 });
@@ -350,7 +356,7 @@ public class MainController implements Subscriber {
         aliasTable.getItems().clear();
         int size = aliasTable.getColumns().size();
         aliasTable.getColumns().remove(1, size);
-        if (selectBody instanceof SetOperationList) {
+        if (selectBody instanceof SetOperationList) { // UNION
             SetOperationList setOperationList = (SetOperationList) selectBody;
             int i = 1;
             for (SelectBody sBody : setOperationList.getSelects()) {
@@ -375,9 +381,7 @@ public class MainController implements Subscriber {
                 }
                 i++;
             }
-        }
-        // ONE QUERY
-        else if (selectBody instanceof PlainSelect || selectBody == null) {
+        } else if (selectBody instanceof PlainSelect || selectBody == null) { // ONE QUERY
             addUnionColumn("Query 1", 0);
             PlainSelect pSelect = (PlainSelect) selectBody;
             if (selectBody != null) {
@@ -543,7 +547,6 @@ public class MainController implements Subscriber {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        initSelectedTables();
     }
 
     private void clearIfNotNull(TreeTableView<TableRow> treeTable) {
@@ -942,7 +945,7 @@ public class MainController implements Subscriber {
             return;
         }
         TreeItem<TableRow> treeItem = new TreeItem<>(tableRow);
-        addElement(groupFieldsTree.getRoot().getChildren(), treeItem);
+        addElementBeforeTree(groupFieldsTree.getRoot().getChildren(), treeItem);
         groupTableResults.getItems().remove(selectedItem);
     }
 

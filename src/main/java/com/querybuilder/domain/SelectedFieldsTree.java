@@ -7,7 +7,7 @@ import javafx.scene.control.TreeTableView;
 
 import static com.querybuilder.utils.Constants.ALL_FIELDS;
 import static com.querybuilder.utils.Constants.DATABASE_TABLE_ROOT;
-import static com.querybuilder.utils.Utils.addElement;
+import static com.querybuilder.utils.Utils.addElementBeforeTree;
 
 public class SelectedFieldsTree extends TreeItem<TableRow> {
     TreeItem<TableRow> allFieldsRoot;
@@ -103,7 +103,7 @@ public class SelectedFieldsTree extends TreeItem<TableRow> {
         } else if (change.wasAdded()) {
             change.getAddedSubList().forEach(x -> {
                 TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(new TableRow(x.getName(), x.getId(), false));
-                addElement(root.getChildren(), tableRowTreeItem);
+                addElementBeforeTree(root.getChildren(), tableRowTreeItem);
             });
         } else if (change.wasRemoved()) {
             change.getRemoved().forEach(x -> {
