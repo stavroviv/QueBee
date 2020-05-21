@@ -16,7 +16,7 @@ import net.engio.mbassy.listener.Handler;
 
 import java.util.Map;
 
-import static com.querybuilder.utils.Constants.DATABASE_ROOT;
+import static com.querybuilder.utils.Constants.DATABASE_TABLE_ROOT;
 import static com.querybuilder.utils.Constants.EXPRESSIONS;
 import static com.querybuilder.utils.Utils.*;
 import static javafx.scene.control.TreeTableView.CONSTRAINED_RESIZE_POLICY;
@@ -106,8 +106,8 @@ public class ConditionCell extends TableCell<ConditionElement, ConditionElement>
     }
 
     private PopupControl conditionPopup;
-    private TreeTableView<com.querybuilder.domain.TableRow> conditionsTreeTableContext;
-    private TreeTableColumn<com.querybuilder.domain.TableRow, com.querybuilder.domain.TableRow> conditionsTreeTableContextColumn;
+    private TreeTableView<TableRow> conditionsTreeTableContext;
+    private TreeTableColumn<TableRow, TableRow> conditionsTreeTableContextColumn; // ??????
     private SelectedFieldsTree selectedConditionsTreeTableContext;
 
     private void initConditionTableForPopup() {
@@ -127,7 +127,7 @@ public class ConditionCell extends TableCell<ConditionElement, ConditionElement>
             }
             TreeItem<TableRow> item = conditionsTreeTableContext.getSelectionModel().getSelectedItem();
             String parentName = item.getParent().getValue().getName();
-            if (DATABASE_ROOT.equals(parentName)) {
+            if (DATABASE_TABLE_ROOT.equals(parentName)) {
                 return;
             }
             ConditionElement conditionElement = conditionTableResults.getSelectionModel().getSelectedItem();

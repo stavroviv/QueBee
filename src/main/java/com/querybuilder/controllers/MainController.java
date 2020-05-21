@@ -26,6 +26,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.AnchorPane;
 import net.engio.mbassy.listener.Handler;
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.*;
 
 import java.util.ArrayList;
@@ -100,6 +101,7 @@ public class MainController implements Subscriber {
         this.sQuery = sQuery;
 
         initDBTables();
+        initQueryParts();
         reloadData();
 
         setCellFactories();
@@ -293,7 +295,58 @@ public class MainController implements Subscriber {
 
     private void loadCteTables() {
         // загрузить в дерево таблиц предыдущие CTE
+        TreeItem<TableRow> root = databaseTableView.getRoot();
+        root.getChildren().forEach(item -> {
+            if (item.getValue().isCte()) {
+                root.getChildren().remove(item);
+            }
+        });
 
+        List<WithItem> withItemsList = sQuery.getWithItemsList();
+        if (withItemsList == null) {
+            return;
+        }
+
+        int i = 0;
+        int currentCTE = cteTabPane.getSelectionModel().getSelectedIndex();
+        if (currentCTE == 0) {
+            return;
+        }
+
+        TableRow cteRoot = new TableRow(CTE_ROOT);
+        cteRoot.setCteRoot(true);
+        cteRoot.setCte(true);
+        TreeItem<TableRow> cteRootItem = new TreeItem<>(cteRoot);
+        cteRootItem.setExpanded(true);
+        root.getChildren().add(0, cteRootItem);
+
+        for (WithItem withItem : withItemsList) {
+            if (i == currentCTE) {
+                break;
+            }
+            String cteName = withItem.getName();
+            TableRow tableRow = new TableRow(cteName);
+            tableRow.setRoot(true);
+            tableRow.setCte(true);
+            TreeItem<TableRow> treeItem = new TreeItem<>(tableRow);
+            cteRootItem.getChildren().add(treeItem);
+            if (withItem.getSelectBody() instanceof PlainSelect) {
+                PlainSelect selectBody = (PlainSelect) withItem.getSelectBody();
+                List<SelectItem> selectItems = selectBody.getSelectItems();
+                selectItems.forEach(item -> {
+                    SelectExpressionItem selectItem = (SelectExpressionItem) item;
+                    String name;
+                    if (selectItem.getAlias() != null) {
+                        name = selectItem.getAlias().getName();
+                    } else {
+                        Column column = (Column) selectItem.getExpression();
+                        name = column.getColumnName().split("\\.")[1];
+                    }
+                    treeItem.getChildren().add(new TreeItem<>(new TableRow(name)));
+                });
+            }
+            i++;
+        }
     }
 
     private void loadAliasTable(SelectBody selectBody) {
@@ -349,10 +402,13 @@ public class MainController implements Subscriber {
 
     private void initDBTables() {
         DBStructure db = new DBStructureImpl();
-        databaseTableView.setRoot(db.getDBStructure(this.queryBuilder.getDataSource()));
+
+        TreeItem<TableRow> dbStructure = db.getDBStructure(this.queryBuilder.getDataSource());
+        databaseTableView.setRoot(new TreeItem<>());
+        databaseTableView.getRoot().getChildren().add(dbStructure);
+
         dbElements = db.getDbElements();
         tablesView.setRoot(new TreeItem<>());
-        initDatabaseTableView();
     }
 
     //</editor-fold>
@@ -367,7 +423,7 @@ public class MainController implements Subscriber {
     @FXML
     private TreeTableColumn<TableRow, TableRow> databaseTableColumn;
 
-    private void initDatabaseTableView() {
+    private void initQueryParts() {
         FromTables.init(this);
         setResultsTablesHandlers();
         Links.init(this);
@@ -406,7 +462,6 @@ public class MainController implements Subscriber {
         // cell factory
         setCellFactory(groupFieldsTreeColumn);
         setCellFactory(conditionsTreeTableColumn);
-//        setCellFactory(conditionsTreeTableContextColumn);
         setCellFactory(orderFieldsTreeColumn);
         setCellFactory(databaseTableColumn);
     }
@@ -815,7 +870,7 @@ public class MainController implements Subscriber {
         TreeItem<TableRow> parent = selectedItem.getParent();
         if (parent != null) {
             String parentName = parent.getValue().getName();
-            if (!parentName.equals(DATABASE_ROOT)) {
+            if (!parentName.equals(DATABASE_TABLE_ROOT)) {
                 name = parentName + "." + name;
             }
         }

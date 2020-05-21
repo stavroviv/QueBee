@@ -22,8 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.querybuilder.domain.ConditionCell.REFRESH_SELECTED_TREE;
-import static com.querybuilder.utils.Constants.DATABASE_ROOT;
-import static com.querybuilder.utils.Constants.TABLES_ROOT;
+import static com.querybuilder.utils.Constants.*;
 import static com.querybuilder.utils.Utils.doubleClick;
 import static com.querybuilder.utils.Utils.setCellFactory;
 
@@ -42,7 +41,7 @@ public class FromTables {
             TreeItem<TableRow> selectedItem = controller.getDatabaseTableView().getSelectionModel().getSelectedItem();
             String parent = selectedItem.getParent().getValue().getName();
             String field = selectedItem.getValue().getName();
-            if (DATABASE_ROOT.equals(parent)) {
+            if (DATABASE_TABLE_ROOT.equals(parent) || CTE_ROOT.equals(parent)) {
                 addTablesRow(controller, field);
             } else {
                 addTablesRow(controller, parent);
@@ -148,6 +147,22 @@ public class FromTables {
                 TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(tableRow);
                 treeItem.getChildren().add(tableRowTreeItem);
             });
+        }
+        // CTE
+        ObservableList<TreeItem<TableRow>> tables = controller.getDatabaseTableView().getRoot().getChildren();
+        if (tables.size() > 0 && tables.get(0).getValue().getName().equals(CTE_ROOT)) {
+            ObservableList<TreeItem<TableRow>> cte = tables.get(0).getChildren();
+            for (TreeItem<TableRow> item : cte) {
+                if (item.getValue().getName().equals(tableName)) {
+                    item.getChildren().forEach(col -> {
+                        TableRow tableRow = new TableRow(col.getValue().getName());
+                        TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(tableRow);
+                        treeItem.getChildren().add(tableRowTreeItem);
+                    });
+                    treeItem.getValue().setCte(true);
+                    break;
+                }
+            }
         }
         return treeItem;
     }

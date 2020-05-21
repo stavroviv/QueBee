@@ -13,6 +13,8 @@ public class TableRow {
     private boolean root;
     private boolean notSelectable;
     private boolean nested;
+    private boolean cte;
+    private boolean cteRoot;
 
     private SimpleStringProperty comboBoxValue = new SimpleStringProperty();
 
@@ -29,6 +31,13 @@ public class TableRow {
         this.name = name;
         this.id = id;
         this.root = root;
+    }
+
+    public TableRow(String name, int id, boolean root, boolean cte) {
+        this.name = name;
+        this.id = id;
+        this.root = root;
+        this.cte = cte;
     }
 
     public String getComboBoxValue() {

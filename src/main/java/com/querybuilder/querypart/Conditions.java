@@ -16,7 +16,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
-import static com.querybuilder.utils.Constants.DATABASE_ROOT;
+import static com.querybuilder.utils.Constants.DATABASE_TABLE_ROOT;
 import static com.querybuilder.utils.Utils.doubleClick;
 
 public class Conditions {
@@ -55,7 +55,7 @@ public class Conditions {
             TreeItem<TableRow> parent = selectedItem.getParent();
             if (parent != null) {
                 String parentName = parent.getValue().getName();
-                if (!parentName.equals(DATABASE_ROOT)) {
+                if (!parentName.equals(DATABASE_TABLE_ROOT)) {
                     name = parentName + "." + name;
                 }
             }
