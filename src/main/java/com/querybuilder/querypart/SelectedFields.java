@@ -15,6 +15,9 @@ import java.util.List;
 public class SelectedFields {
 
     public static void load(MainController controller, PlainSelect pSelect) {
+        if (pSelect.getSelectItems() == null) {
+            return;
+        }
         int id = 0;
         for (Object select : pSelect.getSelectItems()) {
             if (select instanceof SelectExpressionItem) {

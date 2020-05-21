@@ -11,9 +11,11 @@ import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.awt.RelativePoint;
+import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.eventbus.Subscriber;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -25,7 +27,12 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static com.querybuilder.utils.Constants.CTE_ROOT;
 
 public class Utils {
 
@@ -79,6 +86,30 @@ public class Utils {
     public static void setCellFactory(TreeTableColumn<com.querybuilder.domain.TableRow, TableRow> tablesViewColumn) {
         tablesViewColumn.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().getValue()));
         tablesViewColumn.setCellFactory(ttc -> new CustomCell());
+    }
+
+    public static ObservableList<String> getColumns(MainController controller, String tableName, AtomicReference<Boolean> isCte) {
+        List<String> resultColumns = new ArrayList<>();
+        List<String> dbColumns = controller.getDbElements().get(tableName);
+        if (dbColumns != null) {
+            resultColumns.addAll(dbColumns);
+            return FXCollections.observableArrayList(resultColumns);
+        }
+
+        // CTE
+        ObservableList<TreeItem<TableRow>> tables = controller.getDatabaseTableView().getRoot().getChildren();
+        if (tables.size() > 0 && tables.get(0).getValue().getName().equals(CTE_ROOT)) {
+            ObservableList<TreeItem<TableRow>> cte = tables.get(0).getChildren();
+            for (TreeItem<TableRow> item : cte) {
+                if (!item.getValue().getName().equals(tableName)) {
+                    continue;
+                }
+                isCte.set(true);
+                item.getChildren().forEach(col -> resultColumns.add(col.getValue().getName()));
+                break;
+            }
+        }
+        return FXCollections.observableArrayList(resultColumns);
     }
 
     public static void openForm(String formName, String title, Map<String, Object> userData) {

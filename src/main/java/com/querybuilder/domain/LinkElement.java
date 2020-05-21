@@ -11,10 +11,13 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static com.querybuilder.utils.Utils.getColumns;
 
 @Data
 public class LinkElement {
-    private MainController mainController;
+    private MainController controller;
 
     private SimpleStringProperty table1 = new SimpleStringProperty();
     private SimpleStringProperty table2 = new SimpleStringProperty();
@@ -29,8 +32,8 @@ public class LinkElement {
     private String expression;
     private String field2;
 
-    public LinkElement(MainController mainController, String table1, String table2, boolean allTable1, boolean allTable2, boolean custom) {
-        this.mainController = mainController;
+    public LinkElement(MainController controller, String table1, String table2, boolean allTable1, boolean allTable2, boolean custom) {
+        this.controller = controller;
         setTablesCombobox();
 
         setTable1(table1);
@@ -42,7 +45,7 @@ public class LinkElement {
 
     private void setTablesCombobox() {
         List<String> tables = new ArrayList<>();
-        mainController.getTablesView().getRoot().getChildren().forEach(
+        controller.getTablesView().getRoot().getChildren().forEach(
                 x -> tables.add(x.getValue().getName())
         );
         ObservableList<String> items = FXCollections.observableArrayList(tables);
@@ -50,8 +53,8 @@ public class LinkElement {
         table2ComboBox.setItems(items);
     }
 
-    public LinkElement(MainController mainController) {
-        this.mainController = mainController;
+    public LinkElement(MainController controller) {
+        this.controller = controller;
         setTablesCombobox();
         setTable1("");
         setTable2("");
@@ -147,7 +150,7 @@ public class LinkElement {
     public void setTable1(String table1) {
         this.table1.addListener((observable, oldValue, newValue) -> {
             ObservableList<String> columns = FXCollections.observableArrayList(
-                    mainController.getDbElements().get(newValue)
+                    getColumns(controller, newValue, new AtomicReference<>())
             );
             conditionComboBox1.setItems(columns);
         });
@@ -165,7 +168,7 @@ public class LinkElement {
     public void setTable2(String table2) {
         this.table2.addListener((observable, oldValue, newValue) -> {
             ObservableList<String> columns = FXCollections.observableArrayList(
-                    mainController.getDbElements().get(newValue)
+                    getColumns(controller, newValue, new AtomicReference<>())
             );
             conditionComboBox2.setItems(columns);
         });
@@ -177,6 +180,6 @@ public class LinkElement {
     }
 
     public LinkElement clone() {
-        return new LinkElement(mainController, getTable1(), getTable2(), isAllTable1(), isAllTable2(), isCustom());
+        return new LinkElement(controller, getTable1(), getTable2(), isAllTable1(), isAllTable2(), isCustom());
     }
 }

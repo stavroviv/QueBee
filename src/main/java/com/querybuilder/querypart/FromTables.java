@@ -20,11 +20,11 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.querybuilder.domain.ConditionCell.REFRESH_SELECTED_TREE;
 import static com.querybuilder.utils.Constants.*;
-import static com.querybuilder.utils.Utils.doubleClick;
-import static com.querybuilder.utils.Utils.setCellFactory;
+import static com.querybuilder.utils.Utils.*;
 
 public class FromTables {
 
@@ -139,31 +139,17 @@ public class FromTables {
     private static TreeItem<TableRow> getTableItemWithFields(MainController controller, String tableName) {
         TableRow tableRoot = new TableRow(tableName);
         tableRoot.setRoot(true);
+
+        AtomicReference<Boolean> cte = new AtomicReference<>(false);
+        ObservableList<String> columns = getColumns(controller, tableName, cte);
         TreeItem<TableRow> treeItem = new TreeItem<>(tableRoot);
-        List<String> columns = controller.getDbElements().get(tableName);
-        if (columns != null) {
-            columns.forEach(col -> {
-                TableRow tableRow = new TableRow(col);
-                TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(tableRow);
-                treeItem.getChildren().add(tableRowTreeItem);
-            });
-        }
-        // CTE
-        ObservableList<TreeItem<TableRow>> tables = controller.getDatabaseTableView().getRoot().getChildren();
-        if (tables.size() > 0 && tables.get(0).getValue().getName().equals(CTE_ROOT)) {
-            ObservableList<TreeItem<TableRow>> cte = tables.get(0).getChildren();
-            for (TreeItem<TableRow> item : cte) {
-                if (item.getValue().getName().equals(tableName)) {
-                    item.getChildren().forEach(col -> {
-                        TableRow tableRow = new TableRow(col.getValue().getName());
-                        TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(tableRow);
-                        treeItem.getChildren().add(tableRowTreeItem);
-                    });
-                    treeItem.getValue().setCte(true);
-                    break;
-                }
-            }
-        }
+        columns.forEach(col -> {
+            TableRow tableRow = new TableRow(col);
+            TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(tableRow);
+            treeItem.getChildren().add(tableRowTreeItem);
+        });
+        treeItem.getValue().setCte(cte.get());
+
         return treeItem;
     }
 

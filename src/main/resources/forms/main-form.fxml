@@ -672,34 +672,36 @@
                         </SplitPane>
                      </content>
                   </Tab>
-                  <Tab id="queryTabPane" text="Query batch">
-                     <content>
-                        <AnchorPane prefHeight="200.0" prefWidth="200.0">
-                           <children>
-                               <Button contentDisplay="GRAPHIC_ONLY" layoutX="11.0" layoutY="8.0" minHeight="25.0"
-                                       minWidth="25.0" mnemonicParsing="false" onAction="#addCTEClick" prefHeight="25.0"
-                                       prefWidth="25.0" text="Button">
-                                   <graphic>
-                                       <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true"
-                                                  preserveRatio="true">
-                                           <image>
-                                               <Image url="@../images/add.png"/>
-                                           </image>
-                                       </ImageView>
-                                   </graphic>
-                               </Button>
-                               <Button contentDisplay="GRAPHIC_ONLY" layoutX="69.0" layoutY="8.0" minHeight="25.0"
-                                       minWidth="25.0" mnemonicParsing="false" onAction="#removeCTEClick"
-                                       prefHeight="25.0" prefWidth="25.0" text="Button">
-                                   <graphic>
-                                       <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true"
-                                                  preserveRatio="true">
-                                           <image>
-                                               <Image url="@../images/delete.png"/>
-                                           </image>
-                                       </ImageView>
-                                   </graphic>
-                               </Button>
+                        <Tab id="queryTabPane" text="CTE">
+                            <content>
+                                <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                                    <children>
+                                        <Button contentDisplay="GRAPHIC_ONLY" layoutX="11.0" layoutY="8.0"
+                                                minHeight="25.0" minWidth="25.0" mnemonicParsing="false"
+                                                onAction="#addCTEClick" prefHeight="25.0" prefWidth="25.0"
+                                                text="Button">
+                                            <graphic>
+                                                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true"
+                                                           preserveRatio="true">
+                                                    <image>
+                                                        <Image url="@../images/add.png"/>
+                                                    </image>
+                                                </ImageView>
+                                            </graphic>
+                                        </Button>
+                                        <Button contentDisplay="GRAPHIC_ONLY" layoutX="69.0" layoutY="8.0"
+                                                minHeight="25.0" minWidth="25.0" mnemonicParsing="false"
+                                                onAction="#removeCTEClick" prefHeight="25.0" prefWidth="25.0"
+                                                text="Button">
+                                            <graphic>
+                                                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true"
+                                                           preserveRatio="true">
+                                                    <image>
+                                                        <Image url="@../images/delete.png"/>
+                                                    </image>
+                                                </ImageView>
+                                            </graphic>
+                                        </Button>
                               <Button contentDisplay="GRAPHIC_ONLY" layoutX="40.0" layoutY="8.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="Button">
                                  <graphic>
                                     <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">

@@ -271,8 +271,7 @@ public class MainController implements Subscriber {
             loadCteTables();
         }
 
-        // UNION
-        if (selectBody instanceof SetOperationList) {
+        if (selectBody instanceof SetOperationList) { // UNION
             SetOperationList setOperationList = (SetOperationList) selectBody;
             if (cteNumberPrev != cteNumber || firstRun) {
                 for (int i = 1; i <= setOperationList.getSelects().size(); i++) {
@@ -282,11 +281,9 @@ public class MainController implements Subscriber {
             }
             unionNumber = unionTabPane.getSelectionModel().getSelectedIndex();
             SelectBody body = setOperationList.getSelects().get(unionNumber == -1 ? 0 : unionNumber);
-            loadSelectData((PlainSelect) body, cteChange);
-        }
-        // ONE QUERY
-        else if (selectBody instanceof PlainSelect) {
-            loadSelectData((PlainSelect) selectBody, false);
+            loadSelectData((PlainSelect) body);
+        } else if (selectBody instanceof PlainSelect) { // ONE QUERY
+            loadSelectData((PlainSelect) selectBody);
         } else if (selectBody == null) {
             initSelectedTables();
         }
@@ -390,7 +387,11 @@ public class MainController implements Subscriber {
     }
 
     private void addAliasFirstColumn(PlainSelect pSelect) {
-        for (Object x : pSelect.getSelectItems()) {
+        List<SelectItem> selectItems = pSelect.getSelectItems();
+        if (selectItems == null) {
+            return;
+        }
+        for (Object x : selectItems) {
             SelectExpressionItem select = (SelectExpressionItem) x;
             Alias alias = select.getAlias();
             String strAlias = alias != null ? select.getAlias().getName() : select.getExpression().toString();
@@ -531,14 +532,17 @@ public class MainController implements Subscriber {
         return items;
     }
 
-    private void loadSelectData(PlainSelect pSelect, boolean cteChange) {
-        FromTables.load(this, pSelect);
-        SelectedFields.load(this, pSelect);
-        Links.load(this, pSelect);
-        GroupBy.load(this, pSelect);
-        OrderBy.load(this, pSelect);
-        Conditions.load(this, pSelect);
-
+    private void loadSelectData(PlainSelect pSelect) {
+        try {
+            FromTables.load(this, pSelect);
+            SelectedFields.load(this, pSelect);
+            Links.load(this, pSelect);
+            GroupBy.load(this, pSelect);
+            OrderBy.load(this, pSelect);
+            Conditions.load(this, pSelect);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         initSelectedTables();
     }
 
