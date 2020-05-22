@@ -15,17 +15,19 @@ import java.util.List;
 public class OrderBy {
 
     public static void load(MainController controller, PlainSelect pSelect) {
-        TableView<TableRow> orderTableResults = controller.getOrderTableResults();
-        TreeTableView<TableRow> orderFieldsTree = controller.getOrderFieldsTree();
         List<OrderByElement> orderByElements = pSelect.getOrderByElements();
         if (orderByElements == null) {
             return;
         }
+        TableView<TableRow> orderTableResults = controller.getOrderTableResults();
+        TreeTableView<TableRow> orderFieldsTree = controller.getOrderFieldsTree();
         orderByElements.forEach(x -> {
             boolean selected = false;
             for (TreeItem<TableRow> ddd : orderFieldsTree.getRoot().getChildren()) {
                 if (ddd.getValue().getName().equals(x.getExpression().toString())) {
-                    controller.makeSelect(ddd, orderFieldsTree, orderTableResults, x.isAsc() ? "Ascending" : "Descending");
+                    controller.makeSelect(
+                            ddd, orderFieldsTree, orderTableResults, x.isAsc() ? "Ascending" : "Descending"
+                    );
                     selected = true;
                     break;
                 }

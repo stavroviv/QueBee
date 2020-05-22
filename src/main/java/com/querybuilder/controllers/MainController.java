@@ -291,7 +291,6 @@ public class MainController implements Subscriber {
             loadSelectData((PlainSelect) selectBody);
         }
 
-        initSelectedTables(); // must be after load tables
         cteNumberPrev = cteNumber;
     }
 
@@ -442,10 +441,18 @@ public class MainController implements Subscriber {
         return selectedGroupFieldsTree;
     }
 
+    public void setSelectedGroupFieldsTree(SelectedFieldsTree selectedGroupFieldsTree) {
+        this.selectedGroupFieldsTree = selectedGroupFieldsTree;
+    }
+
     private SelectedFieldsTree selectedConditionsTreeTable;
 
     public SelectedFieldsTree getSelectedConditionsTreeTable() {
         return selectedConditionsTreeTable;
+    }
+
+    public void setSelectedConditionsTreeTable(SelectedFieldsTree selectedConditionsTreeTable) {
+        this.selectedConditionsTreeTable = selectedConditionsTreeTable;
     }
 
     private SelectedFieldsTree selectedOrderFieldsTree;
@@ -454,10 +461,8 @@ public class MainController implements Subscriber {
         return selectedOrderFieldsTree;
     }
 
-    private void initSelectedTables() {
-        selectedGroupFieldsTree = new SelectedFieldsTree(tablesView, groupFieldsTree, fieldTable);
-        selectedOrderFieldsTree = new SelectedFieldsTree(tablesView, orderFieldsTree, fieldTable);
-        selectedConditionsTreeTable = new SelectedFieldsTree(tablesView, conditionsTreeTable);
+    public void setSelectedOrderFieldsTree(SelectedFieldsTree selectedOrderFieldsTree) {
+        this.selectedOrderFieldsTree = selectedOrderFieldsTree;
     }
 
     private void setCellFactories() {
@@ -540,6 +545,7 @@ public class MainController implements Subscriber {
         try {
             FromTables.load(this, pSelect);
             SelectedFields.load(this, pSelect);
+            TreeHelpers.load(this); // must be after load tables
             Links.load(this, pSelect);
             GroupBy.load(this, pSelect);
             OrderBy.load(this, pSelect);
