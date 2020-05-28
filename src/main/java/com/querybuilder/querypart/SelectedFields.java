@@ -18,11 +18,13 @@ public class SelectedFields {
         if (pSelect.getSelectItems() == null) {
             return;
         }
-        int id = 0;
+
         for (Object select : pSelect.getSelectItems()) {
             if (select instanceof SelectExpressionItem) {
 
-                controller.getFieldTable().getItems().add(newTableRow(select.toString(), id));
+                controller.getFieldTable().getItems().add(
+                        new TableRow(select.toString())
+                );
 
                 // GROUPING
                 SelectExpressionItem select1 = (SelectExpressionItem) select;
@@ -39,16 +41,11 @@ public class SelectedFields {
                 }
 
             } else {
-                controller.getFieldTable().getItems().add(newTableRow(select.toString(), id));
+                controller.getFieldTable().getItems().add(
+                        new TableRow(select.toString())
+                );
             }
-            id++;
         }
-    }
-
-    private static TableRow newTableRow(String name, int id) {
-        TableRow tableRow1 = new TableRow(name);
-        tableRow1.setId(id);
-        return tableRow1;
     }
 
     public static void save(MainController controller, PlainSelect selectBody) {

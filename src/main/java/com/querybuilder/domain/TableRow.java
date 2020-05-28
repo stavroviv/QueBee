@@ -5,7 +5,9 @@ import lombok.Data;
 
 @Data
 public class TableRow {
-    private int id;
+    private static long lastId;
+
+    private long id;
     private String name;
     private String alias;
     private String query;
@@ -19,25 +21,15 @@ public class TableRow {
     private SimpleStringProperty comboBoxValue = new SimpleStringProperty();
 
     public TableRow(String name) {
-        this(name, -1, false);
-    }
-
-    public TableRow(String name, String alias) {
-        this(name, -1, false);
-        this.alias = alias;
-    }
-
-    public TableRow(String name, int id, boolean root) {
         this.name = name;
-        this.id = id;
-        this.root = root;
+        this.id = ++lastId;
     }
 
-    public TableRow(String name, int id, boolean root, boolean cte) {
-        this.name = name;
-        this.id = id;
-        this.root = root;
-        this.cte = cte;
+    public TableRow(TableRow value) {
+        this.name = value.getName();
+        this.id = value.getId();
+        this.root = value.isRoot();
+        this.cte = value.isCte();
     }
 
     public String getComboBoxValue() {

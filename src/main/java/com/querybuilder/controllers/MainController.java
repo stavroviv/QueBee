@@ -289,6 +289,8 @@ public class MainController implements Subscriber {
             loadSelectData((PlainSelect) body);
         } else if (selectBody instanceof PlainSelect) { // ONE QUERY
             loadSelectData((PlainSelect) selectBody);
+        } else if (selectBody == null) { // new empty query
+            TreeHelpers.load(this);
         }
 
         cteNumberPrev = cteNumber;
@@ -605,13 +607,6 @@ public class MainController implements Subscriber {
 
     public void addFieldRow(String name) {
         fieldTable.getItems().add(new TableRow(name));
-//        SelectExpressionItem nSItem = new SelectExpressionItem();
-//        nSItem.setAlias(new Alias("test"));
-//        nSItem.setExpression(new Column(name));
-
-//        List<SelectItem> selectItems = getSelectBody().getSelectItems() == null ? new ArrayList<>() : getSelectBody().getSelectItems();
-//        selectItems.add(nSItem);
-//        getSelectBody().setSelectItems(selectItems);
     }
 
     @FXML

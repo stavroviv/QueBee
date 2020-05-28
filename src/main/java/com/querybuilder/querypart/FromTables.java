@@ -142,7 +142,9 @@ public class FromTables {
     private static void addTablesRow(MainController controller, String parent) {
         ObservableList<TreeItem<TableRow>> children = controller.getTablesView().getRoot().getChildren();
         if (children.stream().noneMatch(x -> x.getValue().getName().equals(parent))) {
-            controller.getTablesView().getRoot().getChildren().add(getTableItemWithFields(controller, parent));
+            controller.getTablesView().getRoot().getChildren().add(
+                    getTableItemWithFields(controller, parent)
+            );
         }
         controller.refreshLinkTable();
     }
