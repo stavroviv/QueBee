@@ -20,7 +20,7 @@ public class SelectedFieldsTree extends TreeItem<TableRow> {
         this.tree = tree;
 
         fieldTable.getItems().forEach(x -> {
-            TableRow tableRow = new TableRow(x);
+            TableRow tableRow = TableRow.tableRowFromValue(x);
             TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(tableRow);
             this.getChildren().add(tableRowTreeItem);
         });
@@ -56,7 +56,7 @@ public class SelectedFieldsTree extends TreeItem<TableRow> {
     }
 
     private TreeItem<TableRow> newTreeItem(TreeItem<TableRow> treeItem) {
-        TableRow tableRow = new TableRow(treeItem.getValue());
+        TableRow tableRow = TableRow.tableRowFromValue(treeItem.getValue());
         return new TreeItem<>(tableRow);
     }
 
@@ -101,7 +101,7 @@ public class SelectedFieldsTree extends TreeItem<TableRow> {
             this.tree.refresh();
         } else if (change.wasAdded()) {
             change.getAddedSubList().forEach(x -> {
-                TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(new TableRow(x));
+                TreeItem<TableRow> tableRowTreeItem = new TreeItem<>(TableRow.tableRowFromValue(x));
                 addElementBeforeTree(root.getChildren(), tableRowTreeItem);
             });
         } else if (change.wasRemoved()) {

@@ -25,11 +25,16 @@ public class TableRow {
         this.id = ++lastId;
     }
 
-    public TableRow(TableRow value) {
-        this.name = value.getName();
-        this.id = value.getId();
-        this.root = value.isRoot();
-        this.cte = value.isCte();
+    private TableRow() {
+    }
+
+    public static TableRow tableRowFromValue(TableRow value) {
+        TableRow row = new TableRow();
+        row.name = value.getName();
+        row.id = value.getId();
+        row.root = value.isRoot();
+        row.cte = value.isCte();
+        return row;
     }
 
     public String getComboBoxValue() {
