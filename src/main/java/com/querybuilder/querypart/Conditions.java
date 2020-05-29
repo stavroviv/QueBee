@@ -43,6 +43,10 @@ public class Conditions {
                 column -> new ConditionCell(controller.getConditionTableResults(), controller.getTablesView())
         );
 
+        setListeners(controller);
+    }
+
+    private static void setListeners(MainController controller) {
         controller.getConditionsTreeTable().setOnMousePressed(e -> {
             if (!doubleClick(e)) {
                 return;
