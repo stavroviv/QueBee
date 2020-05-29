@@ -1,64 +1,113 @@
 package com.querybuilder.querypart;
 
 import com.querybuilder.controllers.MainController;
+import com.querybuilder.database.DBStructure;
+import com.querybuilder.database.DBStructureImpl;
 import com.querybuilder.domain.SelectedFieldsTree;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.eventbus.CustomEvent;
 import com.querybuilder.eventbus.CustomEventBus;
 import com.querybuilder.utils.CustomCell;
+import com.querybuilder.utils.Utils;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableView;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import net.engio.mbassy.listener.Handler;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.FromItem;
-import net.sf.jsqlparser.statement.select.Join;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import static com.querybuilder.controllers.SelectedFieldController.FIELD_FORM_CLOSED_EVENT;
 import static com.querybuilder.domain.ConditionCell.REFRESH_SELECTED_TREE;
 import static com.querybuilder.utils.Constants.*;
 import static com.querybuilder.utils.Utils.*;
 
-public class FromTables {
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class FromTables extends AbstractQueryPart {
+    @FXML
+    private Button addInnerQuery;
+    @FXML
+    private TreeTableView<TableRow> tablesView;
+    @FXML
+    private TreeTableColumn<TableRow, TableRow> tablesViewColumn;
+    @FXML
+    private TableView<TableRow> fieldTable;
+    @FXML
+    private TreeTableView<TableRow> databaseTableView;
+    @FXML
+    private TreeTableColumn<TableRow, TableRow> databaseTableColumn;
+    @FXML
+    private TableColumn<TableRow, String> fieldColumn;
 
-    public static void init(MainController controller) {
-        setCellsFactories(controller);
-        setListeners(controller);
-        setCellFactory(controller.getDatabaseTableColumn());
+    @FXML
+    @Override
+    public void initialize() {
+        tablesView.setRoot(new TreeItem<>());
+
+        setCellsFactories();
+        setListeners();
+        setCellFactory(databaseTableColumn);
+
+        fieldTable.setOnMousePressed(e -> {
+            if (doubleClick(e)) {
+                editField();
+            }
+        });
+        setStringColumnFactory(fieldColumn);
     }
 
-    private static void setListeners(MainController controller) {
-        controller.getDatabaseTableView().setOnMousePressed(e -> {
+    public void loadDbStructure() {
+        DBStructure db = new DBStructureImpl();
+        TreeItem<TableRow> dbStructure = db.getDBStructure(mainController.getQueryBuilder().getDataSource());
+        databaseTableView.setRoot(new TreeItem<>());
+        databaseTableView.getRoot().getChildren().add(dbStructure);
+    }
+
+    public void editField() {
+        TableRow selectedItem = fieldTable.getSelectionModel().getSelectedItem();
+        if (selectedItem == null) {
+            return;
+        }
+        Map<String, Object> data = new HashMap<>();
+        data.put("selectedFieldsTree", mainController.getSelectedGroupFieldsTree());
+        data.put("selectedItem", selectedItem);
+        data.put("currentRow", fieldTable.getSelectionModel().getSelectedIndex());
+        Utils.openForm("/forms/selected-field.fxml", "Custom expression", data);
+    }
+
+    private void setListeners() {
+        databaseTableView.setOnMousePressed(e -> {
             if (!doubleClick(e)) {
                 return;
             }
-            TreeItem<TableRow> selectedItem = controller.getDatabaseTableView().getSelectionModel().getSelectedItem();
+            TreeItem<TableRow> selectedItem = databaseTableView.getSelectionModel().getSelectedItem();
             String parent = selectedItem.getParent().getValue().getName();
             String field = selectedItem.getValue().getName();
             if (DATABASE_TABLE_ROOT.equals(parent) || CTE_ROOT.equals(parent)) {
-                addTablesRow(controller, field);
+                addTablesRow(mainController, field);
             } else {
-                addTablesRow(controller, parent);
-                controller.addFieldRow(parent + "." + field);
+                addTablesRow(mainController, parent);
+                addFieldRow(parent + "." + field);
             }
         });
 
-        controller.getTablesView().getRoot().getChildren().addListener((ListChangeListener<TreeItem<TableRow>>) change -> {
+        tablesView.getRoot().getChildren().addListener((ListChangeListener<TreeItem<TableRow>>) change -> {
             while (change.next()) {
                 List<SelectedFieldsTree> selectedFieldTrees = new ArrayList<>();
-                selectedFieldTrees.add(controller.getSelectedGroupFieldsTree());
-                selectedFieldTrees.add(controller.getSelectedConditionsTreeTable());
-                selectedFieldTrees.add(controller.getSelectedOrderFieldsTree());
+                selectedFieldTrees.add(mainController.getSelectedGroupFieldsTree());
+                selectedFieldTrees.add(mainController.getSelectedConditionsTreeTable());
+                selectedFieldTrees.add(mainController.getSelectedOrderFieldsTree());
                 applyChange(selectedFieldTrees, selectedFieldsTree -> selectedFieldsTree.applyChanges(change));
 
                 CustomEvent customEvent = new CustomEvent();
@@ -67,23 +116,23 @@ public class FromTables {
                 CustomEventBus.post(customEvent);
             }
         });
-        controller.getTablesView().setOnMousePressed(e -> {
+        tablesView.setOnMousePressed(e -> {
             if (!doubleClick(e)) {
                 return;
             }
-            TreeItem<TableRow> selectedItem = controller.getTablesView().getSelectionModel().getSelectedItem();
+            TreeItem<TableRow> selectedItem = tablesView.getSelectionModel().getSelectedItem();
             String parent = selectedItem.getParent().getValue().getName();
             String field = selectedItem.getValue().getName();
             if (!TABLES_ROOT.equals(parent)) {
-                controller.addFieldRow(parent + "." + field);
+                addFieldRow(parent + "." + field);
             }
         });
 
-        controller.getFieldTable().getItems().addListener((ListChangeListener<TableRow>) change -> {
+        fieldTable.getItems().addListener((ListChangeListener<TableRow>) change -> {
             while (change.next()) {
                 List<SelectedFieldsTree> selectedFieldTrees = new ArrayList<>();
-                selectedFieldTrees.add(controller.getSelectedGroupFieldsTree());
-                selectedFieldTrees.add(controller.getSelectedOrderFieldsTree());
+                selectedFieldTrees.add(mainController.getSelectedGroupFieldsTree());
+                selectedFieldTrees.add(mainController.getSelectedOrderFieldsTree());
                 applyChange(selectedFieldTrees, selectedFieldsTree -> selectedFieldsTree.applyChangesString(change));
             }
         });
@@ -93,19 +142,19 @@ public class FromTables {
         fieldsTree.stream().filter(Objects::nonNull).forEach(consumer);
     }
 
-    private static void setCellsFactories(MainController controller) {
-        setCellFactory(controller.getTablesViewColumn());
-        controller.getTablesViewColumn().setCellFactory(ttc -> new CustomCell() {
+    private void setCellsFactories() {
+        setCellFactory(tablesViewColumn);
+        tablesViewColumn.setCellFactory(ttc -> new CustomCell() {
             @Override
             protected void updateItem(TableRow item, boolean empty) {
                 super.updateItem(item, empty);
                 setItem(this, item, empty);
-                setContextMenu(tableViewGetContextMenu(controller, item, empty));
+                setContextMenu(tableViewGetContextMenu(item, empty));
             }
         });
     }
 
-    private static ContextMenu tableViewGetContextMenu(MainController controller, TableRow item, boolean empty) {
+    private ContextMenu tableViewGetContextMenu(TableRow item, boolean empty) {
         MenuItem addContext = new MenuItem("Add");
         MenuItem changeContext = new MenuItem("Change");
         MenuItem deleteContext = new MenuItem("Delete");
@@ -116,7 +165,7 @@ public class FromTables {
 //            Object item = tablesView.getSelectionModel().getSelectedItem();
 //            System.out.println("Selected item: " + item);
         });
-        deleteContext.setOnAction((ActionEvent event) -> controller.deleteTableFromSelected());
+        deleteContext.setOnAction((ActionEvent event) -> deleteTableFromSelected());
         renameContext.setOnAction((ActionEvent event) -> {
 //            System.out.println("renameContext");
 //            Object item = tablesView.getSelectionModel().getSelectedItem();
@@ -125,7 +174,7 @@ public class FromTables {
         changeContext.setOnAction((ActionEvent event) -> {
 //            System.out.println("changeContext");
 //            TableRow item = tablesView.getSelectionModel().getSelectedItem().getValue();
-            controller.openNestedQuery(item.getQuery(), item);
+            openNestedQuery(item.getQuery(), item);
         });
 
         ContextMenu menu = new ContextMenu();
@@ -140,10 +189,10 @@ public class FromTables {
         return menu;
     }
 
-    private static void addTablesRow(MainController controller, String parent) {
-        ObservableList<TreeItem<TableRow>> children = controller.getTablesView().getRoot().getChildren();
+    private void addTablesRow(MainController controller, String parent) {
+        ObservableList<TreeItem<TableRow>> children = tablesView.getRoot().getChildren();
         if (children.stream().noneMatch(x -> x.getValue().getName().equals(parent))) {
-            controller.getTablesView().getRoot().getChildren().add(
+            tablesView.getRoot().getChildren().add(
                     getTableItemWithFields(controller, parent)
             );
         }
@@ -167,13 +216,18 @@ public class FromTables {
         return treeItem;
     }
 
-    public static void load(MainController controller, PlainSelect pSelect) {
-        TreeTableView<TableRow> tablesView = controller.getTablesView();
+    @Override
+    public void load(PlainSelect pSelect) {
+        loadFromTables(pSelect);
+        loadSelectedItems(pSelect);
+    }
+
+    private void loadFromTables(PlainSelect pSelect) {
         FromItem fromItem = pSelect.getFromItem();
         Table table = null;
         if (fromItem instanceof Table) {
             table = (Table) fromItem;
-            tablesView.getRoot().getChildren().add(getTableItemWithFields(controller, table.getName()));
+            tablesView.getRoot().getChildren().add(getTableItemWithFields(mainController, table.getName()));
         }
         List<Join> joins = pSelect.getJoins();
         if (joins == null || table == null) {
@@ -185,7 +239,7 @@ public class FromTables {
             String rightItemName = "";
             if (rightItem instanceof Table) {
                 rightItemName = rightItem.toString();
-                tablesView.getRoot().getChildren().add(getTableItemWithFields(controller, rightItemName));
+                tablesView.getRoot().getChildren().add(getTableItemWithFields(mainController, rightItemName));
             } else if (rightItem instanceof SubSelect) {
                 SubSelect sSelect = (SubSelect) rightItem;
                 rightItemName = sSelect.getAlias().getName();
@@ -208,12 +262,52 @@ public class FromTables {
         }
     }
 
-    public static void save(MainController controller, PlainSelect selectBody) throws Exception {
-        if (!controller.getLinkTable().getItems().isEmpty()) {
+    public void loadSelectedItems(PlainSelect pSelect) {
+        if (pSelect.getSelectItems() == null) {
+            return;
+        }
+
+        for (Object select : pSelect.getSelectItems()) {
+            if (select instanceof SelectExpressionItem) {
+
+                fieldTable.getItems().add(
+                        new TableRow(select.toString())
+                );
+
+                // GROUPING
+                SelectExpressionItem select1 = (SelectExpressionItem) select;
+                Expression expression1 = select1.getExpression();
+                TableRow tableRow;
+                if (expression1 instanceof Function) {
+                    Function expression = (Function) select1.getExpression();
+                    if (expression.getParameters().getExpressions().size() == 1) {
+                        String columnName = expression.getParameters().getExpressions().get(0).toString();
+                        tableRow = new TableRow(columnName);
+                        tableRow.setComboBoxValue(expression.getName());
+                        mainController.getGroupTableAggregates().getItems().add(tableRow);
+                    }
+                }
+
+            } else {
+                fieldTable.getItems().add(
+                        new TableRow(select.toString())
+                );
+            }
+        }
+    }
+
+    @Override
+    public void save(PlainSelect selectBody) {
+        saveFromTables(selectBody);
+        saveSelectedFields(selectBody);
+    }
+
+    public void saveFromTables(PlainSelect selectBody) {
+        if (!mainController.getLinksController().getLinkTable().getItems().isEmpty()) {
             return;
         }
         List<Join> joins = new ArrayList<>();
-        controller.getTablesView().getRoot().getChildren().forEach(x -> {
+        tablesView.getRoot().getChildren().forEach(x -> {
             String tableName = x.getValue().getName();
             if (selectBody.getFromItem() == null) {
                 selectBody.setFromItem(new Table(tableName));
@@ -225,6 +319,75 @@ public class FromTables {
             }
         });
         selectBody.setJoins(joins);
+    }
+
+    public void saveSelectedFields(PlainSelect selectBody) {
+        List<SelectItem> items = new ArrayList<>();
+        fieldTable.getItems().forEach(x -> {
+            SelectExpressionItem sItem = new SelectExpressionItem();
+            sItem.setExpression(new Column(x.getName()));
+            items.add(sItem);
+        });
+        selectBody.setSelectItems(items);
+    }
+
+
+    @FXML
+    public void addInnerQueryOnClick() {
+        openNestedQuery("", null);
+    }
+
+    public void openNestedQuery(String text, TableRow item) {
+//        QueryBuilder qb = new QueryBuilder(text, false, this.queryBuilder.getDataSource());
+////        qb.setDataSource();,
+//        qb.setParentController(this);
+//        qb.setItem(item);
+////        qb.setParentController(this);
+    }
+
+    @Handler
+    public void selectedFieldFormClosedHandler(CustomEvent event) {
+        if (!FIELD_FORM_CLOSED_EVENT.equals(event.getName())) {
+            return;
+        }
+        if (event.getCurrentRow() == null) {
+            addFieldRow(event.getData());
+        } else {
+            TableRow tableRow = fieldTable.getItems().get(event.getCurrentRow());
+            tableRow.setName(event.getData());
+            fieldTable.getItems().set(event.getCurrentRow(), tableRow);
+        }
+    }
+
+    public void addFieldRow(String name) {
+        fieldTable.getItems().add(new TableRow(name));
+    }
+
+    @FXML
+    public void deleteTableFromSelected() {
+        int selectedItem = tablesView.getSelectionModel().getSelectedIndex();
+        tablesView.getRoot().getChildren().remove(selectedItem);
+//        refreshLinkTable();
+    }
+
+    @FXML
+    public void addFieldRowAction() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("selectedFieldsTree", mainController.getSelectedGroupFieldsTree());
+        Utils.openForm("/forms/selected-field.fxml", "Custom expression", data);
+    }
+
+
+    @FXML
+    public void deleteFieldRow() {
+        int selectedItem = fieldTable.getSelectionModel().getSelectedIndex();
+        fieldTable.getItems().remove(selectedItem);
+//        getSelectBody().getSelectItems().remove(selectedItem);
+    }
+
+    @FXML
+    private void editFieldClick() {
+        editField();
     }
 
 }

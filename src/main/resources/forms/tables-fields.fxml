@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<AnchorPane prefHeight="558.0" prefWidth="810.0" xmlns="http://javafx.com/javafx/10.0.2-internal"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.querybuilder.querypart.FromTables">
+
+    <children>
+        <SplitPane dividerPositions="0.31179039301310046, 0.6532751091703056" prefHeight="671.0" prefWidth="1002.0"
+                   AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                   AnchorPane.topAnchor="0.0">
+            <items>
+                <AnchorPane layoutX="10.0" layoutY="10.0" prefHeight="200.0" prefWidth="200.0">
+                    <children>
+                        <TreeTableView fx:id="databaseTableView" layoutY="31.0" prefHeight="640.0" prefWidth="390.0"
+                                       showRoot="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0"
+                                       AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
+                            <columns>
+                                <TreeTableColumn fx:id="databaseTableColumn" prefWidth="216.0" text="Database"/>
+                            </columns>
+                            <columnResizePolicy>
+                                <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                            </columnResizePolicy>
+                        </TreeTableView>
+                    </children>
+                </AnchorPane>
+                <AnchorPane layoutX="10.0" layoutY="10.0" prefHeight="200.0" prefWidth="200.0">
+                    <children>
+                        <TreeTableView fx:id="tablesView" layoutY="30.0" prefHeight="641.0" prefWidth="174.0"
+                                       showRoot="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                       AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
+                            <columns>
+
+                                <TreeTableColumn fx:id="tablesViewColumn" prefWidth="239.0" sortable="false"
+                                                 text="Tables">
+                                </TreeTableColumn>
+
+                            </columns>
+                            <columnResizePolicy>
+                                <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                            </columnResizePolicy>
+                        </TreeTableView>
+                        <Button fx:id="addInnerQuery" contentDisplay="GRAPHIC_ONLY" layoutX="4.0" layoutY="3.0"
+                                minHeight="25.0" minWidth="25.0" mnemonicParsing="false"
+                                onAction="#addInnerQueryOnClick" prefHeight="25.0" prefWidth="25.0" text="Button">
+                            <graphic>
+                                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../images/addNestedQuery.png"/>
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                        <Button contentDisplay="GRAPHIC_ONLY" layoutX="35.0" layoutY="3.0" minHeight="25.0"
+                                minWidth="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0"
+                                text="Button">
+                            <graphic>
+                                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../images/edit.png"/>
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                        <Button contentDisplay="GRAPHIC_ONLY" layoutX="65.0" layoutY="3.0" minHeight="25.0"
+                                minWidth="25.0" mnemonicParsing="false" onAction="#deleteTableFromSelected"
+                                prefHeight="25.0" prefWidth="25.0" text="Button">
+                            <graphic>
+                                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../images/delete.png"/>
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                    </children>
+                </AnchorPane>
+                <AnchorPane prefHeight="200.0" prefWidth="274.0">
+                    <children>
+                        <TableView fx:id="fieldTable" layoutY="31.0" prefHeight="549.0" prefWidth="276.0"
+                                   AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                   AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="30.0">
+                            <columns>
+                                <TableColumn fx:id="fieldColumn" prefWidth="75.0" sortable="false" text="Fields">
+                                </TableColumn>
+
+                            </columns>
+                            <columnResizePolicy>
+                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                            </columnResizePolicy>
+                        </TableView>
+                        <Button contentDisplay="GRAPHIC_ONLY" layoutX="3.0" layoutY="3.0" minHeight="25.0"
+                                minWidth="25.0" mnemonicParsing="false" onAction="#addFieldRowAction" prefHeight="25.0"
+                                prefWidth="25.0" text="Button">
+                            <graphic>
+                                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../images/add.png"/>
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                        <Button contentDisplay="GRAPHIC_ONLY" layoutX="63.0" layoutY="3.0" minHeight="25.0"
+                                minWidth="25.0" mnemonicParsing="false" onAction="#deleteFieldRow" prefHeight="25.0"
+                                prefWidth="25.0" text="Button">
+                            <graphic>
+                                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../images/delete.png"/>
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                        <Button contentDisplay="GRAPHIC_ONLY" layoutX="33.0" layoutY="3.0" minHeight="25.0"
+                                minWidth="25.0" mnemonicParsing="false" onAction="#editFieldClick" prefHeight="25.0"
+                                prefWidth="25.0" text="Button">
+                            <graphic>
+                                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../images/edit.png"/>
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                    </children>
+                </AnchorPane>
+            </items>
+        </SplitPane>
+    </children>
+
+</AnchorPane>

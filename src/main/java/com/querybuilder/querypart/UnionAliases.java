@@ -1,34 +1,54 @@
 package com.querybuilder.querypart;
 
-import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.AliasCell;
 import com.querybuilder.domain.AliasRow;
 import com.querybuilder.domain.TableRow;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TablePosition;
-import javafx.scene.control.TableView;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.statement.select.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import static com.querybuilder.utils.Utils.getEmptySelect;
 import static com.querybuilder.utils.Utils.showMessage;
 
-public class UnionAliases {
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class UnionAliases extends AbstractQueryPart {
+    private int curMaxUnion; // индекс максимального объединения, нумерация начинается с 0
+    private Map<String, TableColumn> unionColumns;
 
-    public static void init(MainController controller) {
+    @FXML
+    private TableView<AliasRow> aliasTable;
+    @FXML
+    private TableColumn<AliasRow, String> aliasFieldColumn;
+    @FXML
+    private TableView<TableRow> unionTable;
+    @FXML
+    private TableColumn<TableRow, String> unionTableNameColumn;
+    @FXML
+    private TableColumn<TableRow, Boolean> unionTableDistinctColumn;
 
-        controller.getAliasTable().getSelectionModel().cellSelectionEnabledProperty().set(true);
+    @FXML
+    @Override
+    public void initialize() {
 
-        controller.getAliasFieldColumn().setCellValueFactory(new PropertyValueFactory<>("alias"));
-        controller.getAliasFieldColumn().setCellFactory(TextFieldTableCell.forTableColumn());
-        controller.getAliasFieldColumn().setOnEditCommit((TableColumn.CellEditEvent<AliasRow, String> event) -> {
+        aliasTable.getSelectionModel().cellSelectionEnabledProperty().set(true);
+
+        aliasFieldColumn.setCellValueFactory(new PropertyValueFactory<>("alias"));
+        aliasFieldColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        aliasFieldColumn.setOnEditCommit((TableColumn.CellEditEvent<AliasRow, String> event) -> {
             TablePosition<AliasRow, String> pos = event.getTablePosition();
             String newFullName = event.getNewValue();
             int row = pos.getRow();
@@ -36,14 +56,23 @@ public class UnionAliases {
             person.setAlias(newFullName);
         });
 
-        controller.getUnionTableNameColumn().setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
-        controller.getUnionTableDistinctColumn().setCellFactory(tc -> new CheckBoxTableCell<>());
-        controller.getUnionTableDistinctColumn().setCellValueFactory(data -> new SimpleBooleanProperty(data.getValue().isDistinct()));
+        unionTableNameColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
+        unionTableDistinctColumn.setCellFactory(tc -> new CheckBoxTableCell<>());
+        unionTableDistinctColumn.setCellValueFactory(data -> new SimpleBooleanProperty(data.getValue().isDistinct()));
 
     }
 
-    public static void load(MainController controller, SelectBody selectBody) {
-        TableView<AliasRow> aliasTable = controller.getAliasTable();
+    @Override
+    public void load(PlainSelect pSelect) {
+
+    }
+
+    @Override
+    public void save(PlainSelect pSelect) {
+
+    }
+
+    public void loadTodo(SelectBody selectBody) {
 
         aliasTable.getItems().clear();
         int size = aliasTable.getColumns().size();
@@ -52,10 +81,10 @@ public class UnionAliases {
             SetOperationList setOperationList = (SetOperationList) selectBody;
             int i = 1;
             for (SelectBody sBody : setOperationList.getSelects()) {
-                addUnionColumn(controller, "Query " + i, i - 1);
+                addUnionColumn("Query " + i, i - 1);
                 PlainSelect pSelect = (PlainSelect) sBody;
                 if (i == 1) {
-                    addAliasFirstColumn(controller, pSelect);
+                    addAliasFirstColumn(pSelect);
                 } else {
                     int j = 0;
                     if (pSelect.getSelectItems().size() > aliasTable.getItems().size()) {
@@ -74,15 +103,15 @@ public class UnionAliases {
                 i++;
             }
         } else if (selectBody instanceof PlainSelect || selectBody == null) { // ONE QUERY
-            addUnionColumn(controller, "Query 1", 0);
+            addUnionColumn("Query 1", 0);
             PlainSelect pSelect = (PlainSelect) selectBody;
             if (selectBody != null) {
-                addAliasFirstColumn(controller, pSelect);
+                addAliasFirstColumn(pSelect);
             }
         }
     }
 
-    private static void addAliasFirstColumn(MainController controller, PlainSelect pSelect) {
+    private void addAliasFirstColumn(PlainSelect pSelect) {
         List<SelectItem> selectItems = pSelect.getSelectItems();
         if (selectItems == null) {
             return;
@@ -93,11 +122,11 @@ public class UnionAliases {
             String strAlias = alias != null ? select.getAlias().getName() : select.getExpression().toString();
             AliasRow aliasRow = new AliasRow(select.toString(), strAlias);
             aliasRow.getValues().add(strAlias);
-            controller.getAliasTable().getItems().add(aliasRow);
+            aliasTable.getItems().add(aliasRow);
         }
     }
 
-    public static void addUnionColumn(MainController controller, String unionName, int i) {
+    public void addUnionColumn(String unionName, int i) {
         TableColumn<AliasRow, String> newColumn = new TableColumn<>(unionName);
         newColumn.setEditable(true);
 
@@ -105,18 +134,120 @@ public class UnionAliases {
 
         newColumn.setCellFactory(x -> {
             List<String> items = new ArrayList<>();
-            controller.getFieldTable().getItems().forEach(x1 -> items.add(x1.getName()));
+            mainController.getTableFieldsController().getFieldTable().getItems().forEach(x1 -> items.add(x1.getName()));
             return new AliasCell(x, i, items);
         });
 
-        TableView<AliasRow> aliasTable = controller.getAliasTable();
+
         aliasTable.getSelectionModel().selectedIndexProperty().addListener((num) -> {
             TablePosition focusedCell = aliasTable.getFocusModel().getFocusedCell();
             aliasTable.edit(focusedCell.getRow(), focusedCell.getTableColumn());
         });
 
         aliasTable.getColumns().add(newColumn);
-        controller.getUnionColumns().put(unionName, newColumn);
-        controller.getUnionTable().getItems().add(new TableRow(unionName));
+        unionColumns.put(unionName, newColumn);
+        unionTable.getItems().add(new TableRow(unionName));
     }
+
+    @FXML
+    protected void addUnionQuery(ActionEvent event) {
+        curMaxUnion++;
+        aliasTable.getItems().forEach(x -> x.getValues().add(""));
+
+        addNewUnion();
+
+        if (curMaxUnion == 1) {
+            addFirstUnion();
+            return;
+        }
+
+        String unionName = "Query " + (curMaxUnion + 1);
+        addUnionColumn(unionName, curMaxUnion);
+        addUnion(unionName, curMaxUnion);
+    }
+
+    private void addFirstUnion() {
+        addUnion("Query 1", 0);
+        addUnion("Query 2", 1);
+        addUnionColumn("Query 2", curMaxUnion);
+    }
+
+    private void addNewUnion() {
+        SetOperationList selectBody = new SetOperationList();
+
+        List<SelectBody> selectBodies = new ArrayList<>();
+        SelectBody existingBody = mainController.getFullSelectBody();
+        if (existingBody instanceof SetOperationList) {
+            SetOperationList setOperationList = (SetOperationList) existingBody;
+            selectBodies.addAll(setOperationList.getSelects());
+        } else {
+            selectBodies.add(existingBody);
+        }
+        selectBodies.add(getEmptySelect());
+
+        List<Boolean> brackets = new ArrayList<>();
+        List<SetOperation> ops = new ArrayList<>();
+        selectBodies.forEach(x -> {
+            brackets.add(false);
+            UnionOp unionOp = new UnionOp();
+            unionOp.setAll(true);
+            ops.add(unionOp);
+        });
+        ops.remove(ops.size() - 1);
+
+        selectBody.setBracketsOpsAndSelects(brackets, selectBodies, ops);
+
+        int cteNumber = mainController.getCteTabPane().getSelectionModel().getSelectedIndex();
+        Select sQuery = mainController.getSQuery();
+        if (sQuery.getWithItemsList() == null || cteNumber == sQuery.getWithItemsList().size()) {
+            sQuery.setSelectBody(selectBody);
+        } else {
+            sQuery.getWithItemsList().get(cteNumber).setSelectBody(selectBody);
+        }
+    }
+
+    public void addUnion(String unionName, int curUnion) {
+        Tab tab = new Tab(unionName);
+        tab.setId(unionName);
+        mainController.getUnionTabPane().getTabs().add(tab);
+    }
+
+    @FXML
+    protected void deleteUnion(ActionEvent event) {
+        if (unionTable.getItems().size() == 1) {
+            return;
+        }
+
+        mainController.setNotChangeUnion(true);
+        TabPane unionTabPane = mainController.getUnionTabPane();
+        int selectedIndex = unionTabPane.getSelectionModel().getSelectedIndex();
+
+        TableRow selectedItem = unionTable.getSelectionModel().getSelectedItem();
+        String name = selectedItem.getName();
+        aliasTable.getColumns().remove(unionColumns.get(name));
+        unionTable.getItems().remove(selectedItem);
+
+        int delIndex = getTabIndex(name);
+        SelectBody currentSelectBody = mainController.getSQuery().getSelectBody();
+        ((SetOperationList) currentSelectBody).getSelects().remove(delIndex);
+        unionTabPane.getTabs().remove(delIndex);
+        if (selectedIndex == delIndex) {
+            unionTabPane.getSelectionModel().select(delIndex - 1);
+            mainController.loadCurrentQuery(false);
+        }
+
+        mainController.setNotChangeUnion(false);
+    }
+
+    public int getTabIndex(String unionTabId) {
+        int tIndex = 0;
+        for (Tab tPane : mainController.getUnionTabPane().getTabs()) {
+            if (tPane.getId().equals(unionTabId)) {
+                break;
+            }
+            tIndex++;
+        }
+        return tIndex;
+    }
+
 }

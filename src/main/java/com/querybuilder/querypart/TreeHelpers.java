@@ -9,10 +9,10 @@ import javafx.scene.control.TreeTableView;
 public class TreeHelpers {
 
     public static void load(MainController controller) {
-        TreeTableView<TableRow> tablesView = controller.getTablesView();
+        TreeTableView<TableRow> tablesView = controller.getTableFieldsController().getTablesView();
         TreeTableView<TableRow> groupFieldsTree = controller.getGroupFieldsTree();
         TreeTableView<TableRow> orderFieldsTree = controller.getOrderFieldsTree();
-        TableView<TableRow> fieldTable = controller.getFieldTable();
+        TableView<TableRow> fieldTable = controller.getTableFieldsController().getFieldTable();
         TreeTableView<TableRow> conditionsTreeTable = controller.getConditionsTreeTable();
 
         controller.setSelectedGroupFieldsTree(new SelectedFieldsTree(tablesView, groupFieldsTree, fieldTable));

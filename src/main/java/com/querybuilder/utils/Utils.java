@@ -29,6 +29,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,10 @@ import static com.querybuilder.utils.Constants.CTE_ROOT;
 import static com.querybuilder.utils.Constants.DATABASE_TABLE_ROOT;
 
 public class Utils {
+
+    public static PlainSelect getEmptySelect() {
+        return new PlainSelect();
+    }
 
     public static void showMessage(String message) {
         DataContext dataContext = DataManager.getInstance().getDataContext();
@@ -101,7 +106,7 @@ public class Utils {
         }
 
         // CTE
-        ObservableList<TreeItem<TableRow>> tables = controller.getDatabaseTableView().getRoot().getChildren();
+        ObservableList<TreeItem<TableRow>> tables = controller.getTableFieldsController().getDatabaseTableView().getRoot().getChildren();
         if (tables.size() > 0 && tables.get(0).getValue().getName().equals(CTE_ROOT)) {
             ObservableList<TreeItem<TableRow>> cte = tables.get(0).getChildren();
             for (TreeItem<TableRow> item : cte) {

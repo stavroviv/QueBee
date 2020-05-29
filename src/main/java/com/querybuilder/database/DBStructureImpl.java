@@ -59,7 +59,7 @@ public class DBStructureImpl implements DBStructure {
     @Override
     public Map<String, List<String>> getDbElements() {
         if (dbElements == null) {
-//           getDBStructure();
+            System.out.println("DATA SOURCE NOT SET");
         }
         return dbElements;
     }

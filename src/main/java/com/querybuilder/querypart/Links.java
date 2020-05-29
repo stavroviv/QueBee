@@ -1,12 +1,18 @@
 package com.querybuilder.querypart;
 
-import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.JoinConditionCell;
 import com.querybuilder.domain.LinkElement;
 import com.querybuilder.domain.LinkTableCell;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.cell.CheckBoxTableCell;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
@@ -20,37 +26,77 @@ import net.sf.jsqlparser.statement.select.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Links {
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class Links extends AbstractQueryPart {
+    @FXML
+    private TableView<LinkElement> linkTable;
+    @FXML
+    private TableColumn<LinkElement, LinkElement> linkTableColumnTable1;
+    @FXML
+    private TableColumn<LinkElement, LinkElement> linkTableColumnTable2;
+    @FXML
+    private TableColumn<LinkElement, Boolean> linkTableAllTable1;
+    @FXML
+    private TableColumn<LinkElement, Boolean> linkTableAllTable2;
+    @FXML
+    private TableColumn<LinkElement, Boolean> linkTableCustom;
+    @FXML
+    private TableColumn<LinkElement, LinkElement> linkTableJoinCondition;
+    @FXML
+    private Tab linkTablesPane;
 
-    public static void init(MainController controller) {
-        controller.getLinkTable().setEditable(true);
+    @FXML
+    protected void addLinkElement(ActionEvent event) {
+        LinkElement newRow = new LinkElement(mainController);
+        linkTable.getItems().add(newRow);
+    }
 
-        controller.getLinkTableAllTable1().setCellFactory(tc -> new CheckBoxTableCell<>());
-        controller.getLinkTableAllTable2().setCellFactory(tc -> new CheckBoxTableCell<>());
+    @FXML
+    protected void copyLinkElement(ActionEvent event) {
+        LinkElement selectedItem = linkTable.getSelectionModel().getSelectedItem();
+        linkTable.getItems().add(selectedItem.clone());
+    }
 
-        controller.getLinkTableCustom().setCellFactory(column -> new CheckBoxTableCell<>());
-        controller.getLinkTableCustom().setCellValueFactory(cellData -> {
+    @FXML
+    protected void deleteLinkElement(ActionEvent event) {
+        LinkElement selectedItem = linkTable.getSelectionModel().getSelectedItem();
+        linkTable.getItems().remove(selectedItem);
+    }
+
+    @FXML
+    @Override
+    public void initialize() {
+
+        linkTable.setEditable(true);
+
+        linkTableAllTable1.setCellFactory(tc -> new CheckBoxTableCell<>());
+        linkTableAllTable2.setCellFactory(tc -> new CheckBoxTableCell<>());
+
+        linkTableCustom.setCellFactory(column -> new CheckBoxTableCell<>());
+        linkTableCustom.setCellValueFactory(cellData -> {
             LinkElement cellValue = cellData.getValue();
             BooleanProperty property = cellValue.customProperty();
             property.addListener((observable, oldValue, newValue) -> {
                 cellValue.setCustom(newValue);
-                controller.refreshLinkTable();
+                mainController.refreshLinkTable();
             });
             return property;
         });
 
-        controller.getLinkTableColumnTable1().setCellValueFactory(column -> new ReadOnlyObjectWrapper<>(column.getValue()));
-        controller.getLinkTableColumnTable1().setCellFactory(param -> new LinkTableCell(controller, "table1"));
+        linkTableColumnTable1.setCellValueFactory(column -> new ReadOnlyObjectWrapper<>(column.getValue()));
+        linkTableColumnTable1.setCellFactory(param -> new LinkTableCell(mainController, "table1"));
 
-        controller.getLinkTableColumnTable2().setCellValueFactory(column -> new ReadOnlyObjectWrapper<>(column.getValue()));
-        controller.getLinkTableColumnTable2().setCellFactory(param -> new LinkTableCell(controller, "table2"));
+        linkTableColumnTable2.setCellValueFactory(column -> new ReadOnlyObjectWrapper<>(column.getValue()));
+        linkTableColumnTable2.setCellFactory(param -> new LinkTableCell(mainController, "table2"));
 
-        controller.getLinkTableJoinCondition().setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue()));
-        controller.getLinkTableJoinCondition().setCellFactory(column -> new JoinConditionCell());
+        linkTableJoinCondition.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue()));
+        linkTableJoinCondition.setCellFactory(column -> new JoinConditionCell());
     }
 
-    public static void load(MainController controller, PlainSelect pSelect) {
-        controller.getLinkTable().getItems().clear();
+    @Override
+    public void load(PlainSelect pSelect) {
+        linkTable.getItems().clear();
         List<Join> joins = pSelect.getJoins();
         if (joins == null) {
             return;
@@ -61,7 +107,7 @@ public class Links {
         for (Join join : joins) {
             FromItem rightItem = join.getRightItem();
             if (rightItem instanceof Table) {
-                addLinkRow(controller, fromItem, join);
+                addLinkRow(fromItem, join);
             } else if (rightItem instanceof SubSelect) {
 //                SubSelect sSelect = (SubSelect) rightItem;
 //                rightItemName = sSelect.getAlias().getName();
@@ -83,19 +129,21 @@ public class Links {
 
             }
         }
+
     }
 
-    public static void save(MainController controller, PlainSelect selectBody) throws Exception {
-        if (controller.getLinkTable().getItems().isEmpty()) {
+    @Override
+    public void save(PlainSelect selectBody) {
+        if (linkTable.getItems().isEmpty()) {
             return;
         }
         // 1. если JOIN есть - то надо указать связи всех таблиц
         // 2. RIGHT JOIN изменить на LEFT и упорядочить все строки кроме первой
 
-        String tableFrom = controller.getLinkTable().getItems().get(0).getTable1();
+        String tableFrom = linkTable.getItems().get(0).getTable1();
         selectBody.setFromItem(new Table(tableFrom));
         List<Join> joins = new ArrayList<>();
-        for (LinkElement item : controller.getLinkTable().getItems()) {
+        for (LinkElement item : linkTable.getItems()) {
             Join join = new Join();
             join.setRightItem(new Table(item.getTable2()));
             setJoinType(item, join);
@@ -106,7 +154,7 @@ public class Links {
         selectBody.setJoins(joins);
     }
 
-    private static void setCondition(LinkElement item, Join join) throws Exception {
+    private static void setCondition(LinkElement item, Join join) {
         String strExpression = item.getCondition();
         if (!item.isCustom()) {
             strExpression = item.getTable1() + "." + item.getField1()
@@ -116,7 +164,7 @@ public class Links {
         try {
             join.setOnExpression(getExpression(strExpression));
         } catch (JSQLParserException e) {
-            throw new Exception(e);
+            e.printStackTrace();
         }
     }
 
@@ -140,7 +188,7 @@ public class Links {
         return ((PlainSelect) select.getSelectBody()).getWhere();
     }
 
-    private static void addLinkRow(MainController controller, Table table, Join join) {
+    private void addLinkRow(Table table, Join join) {
         if (join.getOnExpression() == null) {
             return;
         }
@@ -151,20 +199,20 @@ public class Links {
             while (true) {
                 Expression rightExpression = expression.getRightExpression();
                 LinkElement linkElement = new LinkElement(
-                        controller, table.getName(), join.getRightItem().toString(),
+                        mainController, table.getName(), join.getRightItem().toString(),
                         isLeft(join), isRight(join), isCustom(rightExpression)
                 );
 
                 linkElement.setCondition(getSimpleCondition(rightExpression));
-                controller.getLinkTable().getItems().add(linkElement);
+                linkTable.getItems().add(linkElement);
                 if (!(expression.getLeftExpression() instanceof AndExpression)) {
                     Expression lExpression = expression.getLeftExpression();
                     LinkElement linkElement2 = new LinkElement(
-                            controller, table.getName(), join.getRightItem().toString(),
+                            mainController, table.getName(), join.getRightItem().toString(),
                             isLeft(join), isRight(join), isCustom(lExpression)
                     );
                     linkElement2.setCondition(getSimpleCondition(lExpression));
-                    controller.getLinkTable().getItems().add(linkElement2);
+                    linkTable.getItems().add(linkElement2);
                     break;
                 }
                 expression = (AndExpression) expression.getLeftExpression();
@@ -172,11 +220,11 @@ public class Links {
         } else {
             Expression expression = join.getOnExpression();
             LinkElement linkElement = new LinkElement(
-                    controller, table.getName(), join.getRightItem().toString(),
+                    mainController, table.getName(), join.getRightItem().toString(),
                     isLeft(join), isRight(join), isCustom(expression)
             );
             linkElement.setCondition(getSimpleCondition(expression));
-            controller.getLinkTable().getItems().add(linkElement);
+            linkTable.getItems().add(linkElement);
         }
     }
 

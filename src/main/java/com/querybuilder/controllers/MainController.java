@@ -3,20 +3,18 @@ package com.querybuilder.controllers;
 import com.querybuilder.QueryBuilder;
 import com.querybuilder.database.DBStructure;
 import com.querybuilder.database.DBStructureImpl;
+import com.querybuilder.domain.ConditionElement;
+import com.querybuilder.domain.SelectedFieldsTree;
 import com.querybuilder.domain.TableRow;
-import com.querybuilder.domain.*;
-import com.querybuilder.eventbus.CustomEvent;
 import com.querybuilder.eventbus.CustomEventBus;
 import com.querybuilder.eventbus.Subscriber;
 import com.querybuilder.querypart.*;
-import com.querybuilder.utils.Utils;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import lombok.Data;
-import net.engio.mbassy.listener.Handler;
 import net.sf.jsqlparser.statement.select.*;
 
 import java.util.ArrayList;
@@ -24,12 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.querybuilder.controllers.SelectedFieldController.FIELD_FORM_CLOSED_EVENT;
-import static com.querybuilder.querypart.UnionAliases.addUnionColumn;
 import static com.querybuilder.utils.Constants.GROUP_DEFAULT_VALUE;
 import static com.querybuilder.utils.Constants.ORDER_DEFAULT_VALUE;
-import static com.querybuilder.utils.Utils.makeDeselect;
-import static com.querybuilder.utils.Utils.makeSelect;
+import static com.querybuilder.utils.Utils.*;
 
 @Data
 public class MainController implements Subscriber {
@@ -37,12 +32,8 @@ public class MainController implements Subscriber {
     protected QueryBuilder queryBuilder;
     private Map<String, List<String>> dbElements;
 
-    @FXML
-    private Button cancelButton;
-    @FXML
-    private TableView<TableRow> fieldTable;
-    @FXML
-    private TableColumn<TableRow, String> fieldColumn;
+    //    @FXML
+//    private TableColumn<TableRow, String> fieldColumn;
     @FXML
     private TabPane qbTabPane_All;
     @FXML
@@ -57,6 +48,21 @@ public class MainController implements Subscriber {
     private TableView<String> queryCteTable;
     @FXML
     private TableColumn<String, String> queryCteColumn;
+
+
+    @FXML
+    private Links linksController;
+    @FXML
+    private FromTables tableFieldsController;
+    @FXML
+    private UnionAliases unionAliasesController;
+
+    @FXML
+    public void initialize() {
+        tableFieldsController.setMainController(this);
+        linksController.setMainController(this);
+        unionAliasesController.setMainController(this);
+    }
 
     @Override
     public void initData(Map<String, Object> userData) {
@@ -133,9 +139,8 @@ public class MainController implements Subscriber {
     private void saveCurrentQuery(Tab cteTab, Tab unionTab) {
         PlainSelect selectBody = getEmptySelect();
         try {
-            FromTables.save(this, selectBody);
-            SelectedFields.save(this, selectBody);
-            Links.save(this, selectBody);
+            tableFieldsController.save(selectBody);
+            linksController.save(selectBody);
             GroupBy.save(this, selectBody);
             OrderBy.save(this, selectBody);
             Conditions.save(this, selectBody);
@@ -152,7 +157,7 @@ public class MainController implements Subscriber {
             int selectedIndex = unionTabPane.getSelectionModel().getSelectedIndex();
             unionNumber = (selectedIndex == -1 ? 0 : selectedIndex);
         } else {
-            unionNumber = getTabIndex(unionTab.getId());
+            unionNumber = unionAliasesController.getTabIndex(unionTab.getId());
         }
 
         int cteNumber;
@@ -189,17 +194,6 @@ public class MainController implements Subscriber {
         }
     }
 
-    private int getTabIndex(String unionTabId) {
-        int tIndex = 0;
-        for (Tab tPane : unionTabPane.getTabs()) {
-            if (tPane.getId().equals(unionTabId)) {
-                break;
-            }
-            tIndex++;
-        }
-        return tIndex;
-    }
-
     private int getCteTabId(String tabId) {
         int tIndex = 0;
         for (Tab tPane : cteTabPane.getTabs()) {
@@ -211,7 +205,7 @@ public class MainController implements Subscriber {
         return tIndex;
     }
 
-    private SelectBody getFullSelectBody() {
+    public SelectBody getFullSelectBody() {
         SelectBody selectBody;
         int cteNumber = cteTabPane.getSelectionModel().getSelectedIndex();
         if (sQuery.getWithItemsList() == null || cteNumber == sQuery.getWithItemsList().size()) {
@@ -222,7 +216,7 @@ public class MainController implements Subscriber {
         return selectBody;
     }
 
-    private void loadCurrentQuery(boolean firstRun) {
+    public void loadCurrentQuery(boolean firstRun) {
         int cteNumber = cteTabPane.getSelectionModel().getSelectedIndex();
         int unionNumber;
         boolean cteChange = (cteNumberPrev != cteNumber);
@@ -232,12 +226,12 @@ public class MainController implements Subscriber {
 
         if (cteChange || firstRun) {
             unionTabPane.getTabs().clear();
-            unionTable.getItems().clear();
-            curMaxUnion = 0;
-            unionColumns = new HashMap<>();
+            unionAliasesController.getUnionTable().getItems().clear();
+            unionAliasesController.setCurMaxUnion(0);
+            unionAliasesController.setUnionColumns(new HashMap<>());
             // таблица Alias меняется только при переключении CTE
             try {
-                UnionAliases.load(this, selectBody);
+                unionAliasesController.loadTodo(selectBody);
                 CTEPart.load(this);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -249,9 +243,9 @@ public class MainController implements Subscriber {
             SetOperationList setOperationList = (SetOperationList) selectBody;
             if (cteNumberPrev != cteNumber || firstRun) {
                 for (int i = 1; i <= setOperationList.getSelects().size(); i++) {
-                    addUnion("Query " + i, i - 1);
+                    unionAliasesController.addUnion("Query " + i, i - 1);
                 }
-                curMaxUnion = setOperationList.getSelects().size() - 1;
+                unionAliasesController.setCurMaxUnion(setOperationList.getSelects().size() - 1);
             }
             unionNumber = unionTabPane.getSelectionModel().getSelectedIndex();
             SelectBody body = setOperationList.getSelects().get(unionNumber == -1 ? 0 : unionNumber);
@@ -267,30 +261,17 @@ public class MainController implements Subscriber {
 
     private void initDBTables() {
         DBStructure db = new DBStructureImpl();
-
-        TreeItem<TableRow> dbStructure = db.getDBStructure(this.queryBuilder.getDataSource());
-        databaseTableView.setRoot(new TreeItem<>());
-        databaseTableView.getRoot().getChildren().add(dbStructure);
-
+        db.getDBStructure(queryBuilder.getDataSource()); // FIXME
         dbElements = db.getDbElements();
-        tablesView.setRoot(new TreeItem<>());
+        tableFieldsController.loadDbStructure();
     }
 
     //</editor-fold>
 
-    @FXML
-    private TreeTableView<TableRow> databaseTableView;
-    @FXML
-    private TreeTableColumn<TableRow, TableRow> databaseTableColumn;
-
     private void initQueryParts() {
-        FromTables.init(this);
         OrderBy.init(this);
         GroupBy.init(this);
-        SelectedFields.init(this);
-        Links.init(this);
         Conditions.init(this);
-        UnionAliases.init(this);
         CTEPart.init(this);
     }
 
@@ -299,14 +280,14 @@ public class MainController implements Subscriber {
     private SelectedFieldsTree selectedOrderFieldsTree;
 
     public void refreshLinkTable() {
-        linkTable.refresh();
+        linksController.getLinkTable().refresh();
     }
 
     private void reloadData() {
         unionTabPane.getTabs().clear();
         cteTabPane.getTabs().clear();
         queryCteTable.getItems().clear();
-        curMaxUnion = 0;
+        unionAliasesController.setCurMaxUnion(0);
         curMaxCTE = 1;
 
         // one query
@@ -318,14 +299,12 @@ public class MainController implements Subscriber {
         }
 
         // CTE
-        int i = 0;
         for (WithItem x : withItemsList) {
             String cteName = x.getName();
             Tab tab = new Tab(cteName);
             tab.setId(cteName);
             cteTabPane.getTabs().add(tab);
             queryCteTable.getItems().add(cteName);
-            i++;
         }
 
         curMaxCTE = withItemsList.size() + 1;
@@ -341,10 +320,9 @@ public class MainController implements Subscriber {
 
     private void loadSelectData(PlainSelect pSelect) {
         try {
-            FromTables.load(this, pSelect);
-            SelectedFields.load(this, pSelect);
+            tableFieldsController.load(pSelect);
             TreeHelpers.load(this); // must be after load tables
-            Links.load(this, pSelect);
+            linksController.load(pSelect);
             GroupBy.load(this, pSelect);
             OrderBy.load(this, pSelect);
             Conditions.load(this, pSelect);
@@ -360,8 +338,8 @@ public class MainController implements Subscriber {
     }
 
     private void clearTables(boolean cteChange, boolean firstRun) {
-        fieldTable.getItems().clear();
-        tablesView.getRoot().getChildren().clear();
+        tableFieldsController.getFieldTable().getItems().clear();
+        tableFieldsController.getTablesView().getRoot().getChildren().clear();
 
         if (!firstRun) {
             clearIfNotNull(conditionsTreeTable);
@@ -375,53 +353,11 @@ public class MainController implements Subscriber {
         orderTableResults.getItems().clear();
 
         if (cteChange) {
-            unionTable.getItems().clear();
+            unionAliasesController.getUnionTable().getItems().clear();
 //            aliasTable.getItems().clear();
         }
     }
 
-    @FXML
-    public void addFieldRowAction() {
-        Map<String, Object> data = new HashMap<>();
-        data.put("selectedFieldsTree", selectedGroupFieldsTree);
-        Utils.openForm("/forms/selected-field.fxml", "Custom expression", data);
-    }
-
-    @Handler
-    public void selectedFieldFormClosedHandler(CustomEvent event) {
-        if (!FIELD_FORM_CLOSED_EVENT.equals(event.getName())) {
-            return;
-        }
-        if (event.getCurrentRow() == null) {
-            addFieldRow(event.getData());
-        } else {
-            TableRow tableRow = fieldTable.getItems().get(event.getCurrentRow());
-            tableRow.setName(event.getData());
-            fieldTable.getItems().set(event.getCurrentRow(), tableRow);
-        }
-    }
-
-    public void addFieldRow(String name) {
-        fieldTable.getItems().add(new TableRow(name));
-    }
-
-    @FXML
-    public void deleteFieldRow() {
-        int selectedItem = fieldTable.getSelectionModel().getSelectedIndex();
-        fieldTable.getItems().remove(selectedItem);
-//        getSelectBody().getSelectItems().remove(selectedItem);
-    }
-
-    @FXML
-    public void deleteTableFromSelected() {
-        int selectedItem = tablesView.getSelectionModel().getSelectedIndex();
-        tablesView.getRoot().getChildren().remove(selectedItem);
-        refreshLinkTable();
-    }
-
-    private PlainSelect getEmptySelect() {
-        return new PlainSelect();
-    }
 
     @FXML
     public void okClick() {
@@ -440,52 +376,6 @@ public class MainController implements Subscriber {
     @FXML
     public void cancelClick(ActionEvent actionEvent) {
         queryBuilder.closeForm();
-    }
-
-    //<editor-fold defaultstate="collapsed" desc="TREE SELECTED TABLES VIEW">
-
-    @FXML
-    private TreeTableView<TableRow> tablesView;
-    @FXML
-    private TreeTableColumn<TableRow, TableRow> tablesViewColumn;
-
-    //</editor-fold>
-
-    //<editor-fold defaultstate="collapsed" desc="LINK TABLE">
-
-    @FXML
-    private TableView<LinkElement> linkTable;
-    @FXML
-    private TableColumn<LinkElement, LinkElement> linkTableColumnTable1;
-    @FXML
-    private TableColumn<LinkElement, LinkElement> linkTableColumnTable2;
-    @FXML
-    private TableColumn<LinkElement, Boolean> linkTableAllTable1;
-    @FXML
-    private TableColumn<LinkElement, Boolean> linkTableAllTable2;
-    @FXML
-    private TableColumn<LinkElement, Boolean> linkTableCustom;
-    @FXML
-    private TableColumn<LinkElement, LinkElement> linkTableJoinCondition;
-    @FXML
-    private Tab linkTablesPane;
-
-    @FXML
-    protected void addLinkElement(ActionEvent event) {
-        LinkElement newRow = new LinkElement(this);
-        linkTable.getItems().add(newRow);
-    }
-
-    @FXML
-    protected void copyLinkElement(ActionEvent event) {
-        LinkElement selectedItem = linkTable.getSelectionModel().getSelectedItem();
-        linkTable.getItems().add(selectedItem.clone());
-    }
-
-    @FXML
-    protected void deleteLinkElement(ActionEvent event) {
-        LinkElement selectedItem = linkTable.getSelectionModel().getSelectedItem();
-        linkTable.getItems().remove(selectedItem);
     }
 
     @FXML
@@ -518,26 +408,6 @@ public class MainController implements Subscriber {
         conditionTableResults.getItems().add(conditionElement);
     }
 
-    //</editor-fold>
-
-    //<editor-fold defaultstate="collapsed" desc="INNER QUERY">
-
-    @FXML
-    private Button addInnerQuery;
-
-    @FXML
-    public void addInnerQueryOnClick() {
-        openNestedQuery("", null);
-    }
-
-    public void openNestedQuery(String text, TableRow item) {
-        QueryBuilder qb = new QueryBuilder(text, false, this.queryBuilder.getDataSource());
-//        qb.setDataSource();,
-        qb.setParentController(this);
-        qb.setItem(item);
-//        qb.setParentController(this);
-    }
-
     public void insertResult(String result, TableRow item, SubSelect subSelect) {
 //        item.setQuery(result);
 //        PlainSelect selectBody = getSelectBody();
@@ -551,13 +421,6 @@ public class MainController implements Subscriber {
 //            });
 //        }
 //        System.out.println(selectBody);
-    }
-
-    //</editor-fold>
-
-    @FXML
-    private void editFieldClick() {
-        SelectedFields.editField(this);
     }
 
     @FXML
@@ -634,108 +497,6 @@ public class MainController implements Subscriber {
     private TableColumn<TableRow, String> orderTableResultsFieldColumn;
     @FXML
     private TableColumn<TableRow, String> orderTableResultsSortingColumn;
-    @FXML
-    private TableView<AliasRow> aliasTable;
-    @FXML
-    private TableColumn<AliasRow, String> aliasFieldColumn;
-
-    private int curMaxUnion; // индекс максимального объединения, нумерация начинается с 0
-    private Map<String, TableColumn> unionColumns;
-
-    @FXML
-    protected void addUnionQuery(ActionEvent event) {
-        curMaxUnion++;
-        aliasTable.getItems().forEach(x -> x.getValues().add(""));
-
-        addNewUnion();
-
-        if (curMaxUnion == 1) {
-            addFirstUnion();
-            return;
-        }
-
-        String unionName = "Query " + (curMaxUnion + 1);
-        addUnionColumn(this, unionName, curMaxUnion);
-        addUnion(unionName, curMaxUnion);
-    }
-
-    private void addFirstUnion() {
-        addUnion("Query 1", 0);
-        addUnion("Query 2", 1);
-        addUnionColumn(this, "Query 2", curMaxUnion);
-    }
-
-    private void addNewUnion() {
-        SetOperationList selectBody = new SetOperationList();
-
-        List<SelectBody> selectBodies = new ArrayList<>();
-        SelectBody existingBody = getFullSelectBody();
-        if (existingBody instanceof SetOperationList) {
-            SetOperationList setOperationList = (SetOperationList) existingBody;
-            selectBodies.addAll(setOperationList.getSelects());
-        } else {
-            selectBodies.add(existingBody);
-        }
-        selectBodies.add(getEmptySelect());
-
-        List<Boolean> brackets = new ArrayList<>();
-        List<SetOperation> ops = new ArrayList<>();
-        selectBodies.forEach(x -> {
-            brackets.add(false);
-            UnionOp unionOp = new UnionOp();
-            unionOp.setAll(true);
-            ops.add(unionOp);
-        });
-        ops.remove(ops.size() - 1);
-
-        selectBody.setBracketsOpsAndSelects(brackets, selectBodies, ops);
-
-        int cteNumber = cteTabPane.getSelectionModel().getSelectedIndex();
-        if (sQuery.getWithItemsList() == null || cteNumber == sQuery.getWithItemsList().size()) {
-            sQuery.setSelectBody(selectBody);
-        } else {
-            sQuery.getWithItemsList().get(cteNumber).setSelectBody(selectBody);
-        }
-    }
-
-    private void addUnion(String unionName, int curUnion) {
-        Tab tab = new Tab(unionName);
-        tab.setId(unionName);
-        unionTabPane.getTabs().add(tab);
-    }
-
-    @FXML
-    protected void deleteUnion(ActionEvent event) {
-        if (unionTable.getItems().size() == 1) {
-            return;
-        }
-
-        notChangeUnion = true;
-        int selectedIndex = unionTabPane.getSelectionModel().getSelectedIndex();
-
-        TableRow selectedItem = unionTable.getSelectionModel().getSelectedItem();
-        String name = selectedItem.getName();
-        aliasTable.getColumns().remove(unionColumns.get(name));
-        unionTable.getItems().remove(selectedItem);
-
-        int delIndex = getTabIndex(name);
-        SelectBody currentSelectBody = sQuery.getSelectBody();
-        ((SetOperationList) currentSelectBody).getSelects().remove(delIndex);
-        unionTabPane.getTabs().remove(delIndex);
-        if (selectedIndex == delIndex) {
-            unionTabPane.getSelectionModel().select(delIndex - 1);
-            loadCurrentQuery(false);
-        }
-
-        notChangeUnion = false;
-    }
-
-    @FXML
-    private TableView<TableRow> unionTable;
-    @FXML
-    private TableColumn<TableRow, String> unionTableNameColumn;
-    @FXML
-    private TableColumn<TableRow, Boolean> unionTableDistinctColumn;
 
     public void removeCTEClick(ActionEvent actionEvent) {
     }

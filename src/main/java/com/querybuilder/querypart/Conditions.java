@@ -41,7 +41,9 @@ public class Conditions {
                 column -> new ReadOnlyObjectWrapper<>(column.getValue())
         );
         controller.getConditionTableResultsCondition().setCellFactory(
-                column -> new ConditionCell(controller.getConditionTableResults(), controller.getTablesView())
+                column -> new ConditionCell(
+                        controller.getConditionTableResults(), controller.getTableFieldsController().getTablesView()
+                )
         );
 
         setListeners(controller);

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.querybuilder.querypart.UnionAliases">
+    <SplitPane dividerPositions="0.188646288209607" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0"
+               AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <items>
+            <AnchorPane>
+                <children>
+                    <TableView fx:id="unionTable" editable="true" prefHeight="671.0" prefWidth="200.0"
+                               AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="0.0"
+                               AnchorPane.topAnchor="30.0">
+                        <columns>
+                            <TableColumn fx:id="unionTableNameColumn" editable="false" prefWidth="75.0" sortable="false"
+                                         text="Name"/>
+                            <TableColumn fx:id="unionTableDistinctColumn" maxWidth="60.0" minWidth="60.0"
+                                         prefWidth="60.0" sortable="false" text="Distinct"/>
+                        </columns>
+                        <columnResizePolicy>
+                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                        </columnResizePolicy>
+                    </TableView>
+                    <Button contentDisplay="GRAPHIC_ONLY" layoutX="10.0" layoutY="3.0" minHeight="25.0" minWidth="25.0"
+                            mnemonicParsing="false" onAction="#addUnionQuery" prefHeight="25.0" prefWidth="25.0"
+                            text="Button">
+                        <graphic>
+                            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                <image>
+                                    <Image url="@../images/add.png"/>
+                                </image>
+                            </ImageView>
+                        </graphic>
+                    </Button>
+                    <Button contentDisplay="GRAPHIC_ONLY" layoutX="69.0" layoutY="3.0" minHeight="25.0" minWidth="25.0"
+                            mnemonicParsing="false" onAction="#deleteUnion" prefHeight="25.0" prefWidth="25.0"
+                            text="Button">
+                        <graphic>
+                            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                <image>
+                                    <Image url="@../images/delete.png"/>
+                                </image>
+                            </ImageView>
+                        </graphic>
+                    </Button>
+                    <Button contentDisplay="GRAPHIC_ONLY" layoutX="39.0" layoutY="3.0" minHeight="25.0" minWidth="25.0"
+                            mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="Button">
+                        <graphic>
+                            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                <image>
+                                    <Image url="@../images/copy.png"/>
+                                </image>
+                            </ImageView>
+                        </graphic>
+                    </Button>
+                </children>
+            </AnchorPane>
+            <AnchorPane>
+                <children>
+                    <TableView fx:id="aliasTable" editable="true" prefHeight="671.0" prefWidth="810.0"
+                               AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="10.0"
+                               AnchorPane.topAnchor="30.0">
+                        <columns>
+                            <TableColumn fx:id="aliasFieldColumn" maxWidth="304.0" minWidth="200.0" prefWidth="304.0"
+                                         sortable="false" text="Field name">
+                            </TableColumn>
+
+                        </columns>
+                        <columnResizePolicy>
+                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                        </columnResizePolicy>
+                    </TableView>
+                    <Button contentDisplay="GRAPHIC_ONLY" layoutX="8.0" layoutY="3.0" minHeight="25.0" minWidth="25.0"
+                            mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="Button">
+                        <graphic>
+                            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                <image>
+                                    <Image url="@../images/delete.png"/>
+                                </image>
+                            </ImageView>
+                        </graphic>
+                    </Button>
+                </children>
+            </AnchorPane>
+        </items>
+    </SplitPane>
+</AnchorPane>

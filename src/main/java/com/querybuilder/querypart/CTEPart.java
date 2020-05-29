@@ -22,7 +22,7 @@ public class CTEPart {
 
     public static void load(MainController controller) {
         // загрузить в дерево таблиц предыдущие CTE
-        TreeItem<TableRow> root = controller.getDatabaseTableView().getRoot();
+        TreeItem<TableRow> root = controller.getTableFieldsController().getDatabaseTableView().getRoot();
         root.getChildren().forEach(item -> {
             if (item.getValue().isCte()) {
                 root.getChildren().remove(item);

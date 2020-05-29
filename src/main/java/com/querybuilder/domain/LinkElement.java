@@ -45,7 +45,7 @@ public class LinkElement {
 
     private void setTablesCombobox() {
         List<String> tables = new ArrayList<>();
-        controller.getTablesView().getRoot().getChildren().forEach(
+        controller.getTableFieldsController().getTablesView().getRoot().getChildren().forEach(
                 x -> tables.add(x.getValue().getName())
         );
         ObservableList<String> items = FXCollections.observableArrayList(tables);
