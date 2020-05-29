@@ -22,6 +22,9 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.ComboBoxTableCell;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
@@ -33,6 +36,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.querybuilder.utils.Constants.CTE_ROOT;
+import static com.querybuilder.utils.Constants.DATABASE_TABLE_ROOT;
 
 public class Utils {
 
@@ -151,5 +155,98 @@ public class Utils {
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
+    }
+
+    public static void setCellSelectionEnabled(TableView<TableRow> table) {
+        table.getSelectionModel().setCellSelectionEnabled(true);
+    }
+
+    public static void setStringColumnFactory(TableColumn<TableRow, String> resultsColumn) {
+        setStringColumnFactory(resultsColumn, false);
+    }
+
+    public static void setStringColumnFactory(TableColumn<TableRow, String> resultsColumn, boolean editable) {
+        resultsColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        resultsColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        resultsColumn.setEditable(editable);
+    }
+
+    public static void setComboBoxColumnFactory(TableColumn<TableRow, String> column, String... items) {
+        column.setEditable(true);
+        column.setCellFactory(
+                ComboBoxTableCell.forTableColumn(FXCollections.observableArrayList(items))
+        );
+        column.setCellValueFactory(cellData -> cellData.getValue().comboBoxValueProperty());
+    }
+
+    public static void setResultsTableSelectHandler(TableView<TableRow> groupTableResults, TreeTableView<TableRow> groupFieldsTree) {
+        groupTableResults.setOnMousePressed(e -> {
+            if (doubleClick(e)) {
+                makeDeselect(groupTableResults, groupFieldsTree);
+            }
+        });
+    }
+
+    public static void makeDeselect(TableView<TableRow> groupTableResults, TreeTableView<TableRow> groupFieldsTree) {
+        TableRow selectedItem = groupTableResults.getSelectionModel().getSelectedItem();
+        if (groupTableResults.getId().equals("orderTableResults")
+                && groupTableResults.getSelectionModel().getSelectedCells().get(0).getColumn() == 1) {
+            return;
+        }
+        TableRow tableRow = new TableRow(selectedItem.getName());
+        if (tableRow.isNotSelectable()) {
+            return;
+        }
+        TreeItem<TableRow> treeItem = new TreeItem<>(tableRow);
+        addElementBeforeTree(groupFieldsTree.getRoot().getChildren(), treeItem);
+        groupTableResults.getItems().remove(selectedItem);
+    }
+
+    public static void makeSelect(TreeTableView<TableRow> fieldsTree, TableView<TableRow> resultsTable) {
+        makeSelect(fieldsTree, resultsTable, null);
+    }
+
+    public static void makeSelect(TreeTableView<TableRow> fieldsTree,
+                                  TableView<TableRow> resultsTable, String defaultValue) {
+        makeSelect(null, fieldsTree, resultsTable, defaultValue);
+    }
+
+    public static void makeSelect(TreeItem<TableRow> selectedItem, TreeTableView<TableRow> fieldsTree,
+                                  TableView<TableRow> resultsTable, String defaultValue) {
+        if (selectedItem == null) {
+            selectedItem = fieldsTree.getSelectionModel().getSelectedItem();
+        }
+
+        if (selectedItem.getChildren().size() > 0) {
+            return;
+        }
+        String name = selectedItem.getValue().getName();
+        TreeItem<TableRow> parent = selectedItem.getParent();
+        if (parent != null) {
+            String parentName = parent.getValue().getName();
+            if (!parentName.equals(DATABASE_TABLE_ROOT)) {
+                name = parentName + "." + name;
+            }
+        }
+        TableRow tableRow = new TableRow(name);
+        if (defaultValue != null) {
+            tableRow.setComboBoxValue(defaultValue);
+        }
+        resultsTable.getItems().add(tableRow);
+        fieldsTree.getRoot().getChildren().remove(selectedItem);
+    }
+
+    public static void setTreeSelectHandler(TreeTableView<TableRow> fieldsTree, TableView<TableRow> resultsTable) {
+        setTreeSelectHandler(fieldsTree, resultsTable, "");
+    }
+
+    public static void setTreeSelectHandler(TreeTableView<TableRow> fieldsTree,
+                                            TableView<TableRow> resultsTable,
+                                            String defValue) {
+        fieldsTree.setOnMousePressed(e -> {
+            if (doubleClick(e)) {
+                makeSelect(fieldsTree, resultsTable, defValue);
+            }
+        });
     }
 }

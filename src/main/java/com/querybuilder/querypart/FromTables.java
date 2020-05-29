@@ -34,6 +34,7 @@ public class FromTables {
     public static void init(MainController controller) {
         setCellsFactories(controller);
         setListeners(controller);
+        setCellFactory(controller.getDatabaseTableColumn());
     }
 
     private static void setListeners(MainController controller) {

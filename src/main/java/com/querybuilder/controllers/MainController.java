@@ -10,23 +10,13 @@ import com.querybuilder.eventbus.CustomEventBus;
 import com.querybuilder.eventbus.Subscriber;
 import com.querybuilder.querypart.*;
 import com.querybuilder.utils.Utils;
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.ReadOnlyIntegerProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.control.cell.ComboBoxTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.AnchorPane;
+import lombok.Data;
 import net.engio.mbassy.listener.Handler;
-import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.*;
 
 import java.util.ArrayList;
@@ -35,24 +25,24 @@ import java.util.List;
 import java.util.Map;
 
 import static com.querybuilder.controllers.SelectedFieldController.FIELD_FORM_CLOSED_EVENT;
-import static com.querybuilder.utils.Constants.*;
-import static com.querybuilder.utils.Utils.*;
+import static com.querybuilder.querypart.UnionAliases.addUnionColumn;
+import static com.querybuilder.utils.Constants.GROUP_DEFAULT_VALUE;
+import static com.querybuilder.utils.Constants.ORDER_DEFAULT_VALUE;
+import static com.querybuilder.utils.Utils.makeDeselect;
+import static com.querybuilder.utils.Utils.makeSelect;
 
+@Data
 public class MainController implements Subscriber {
+    private Select sQuery;
+    protected QueryBuilder queryBuilder;
+    private Map<String, List<String>> dbElements;
 
     @FXML
     private Button cancelButton;
-
     @FXML
     private TableView<TableRow> fieldTable;
-
-    public TableView<TableRow> getFieldTable() {
-        return fieldTable;
-    }
-
     @FXML
     private TableColumn<TableRow, String> fieldColumn;
-
     @FXML
     private TabPane qbTabPane_All;
     @FXML
@@ -61,32 +51,12 @@ public class MainController implements Subscriber {
     private TabPane cteTabPane;
     @FXML
     private TabPane unionTabPane;
-
-    private Select sQuery;
-
     @FXML
     private Spinner<Integer> topSpinner;
-
-    public Select getsQuery() {
-        return sQuery;
-    }
-
-    public void setsQuery(Select sQuery) {
-        this.sQuery = sQuery;
-    }
-
     @FXML
     private TableView<String> queryCteTable;
     @FXML
     private TableColumn<String, String> queryCteColumn;
-
-    protected QueryBuilder queryBuilder;
-
-    private Map<String, List<String>> dbElements;
-
-    public Map<String, List<String>> getDbElements() {
-        return dbElements;
-    }
 
     @Override
     public void initData(Map<String, Object> userData) {
@@ -104,7 +74,6 @@ public class MainController implements Subscriber {
         initQueryParts();
         reloadData();
 
-        setCellFactories();
         setPagesListeners();
 
         CustomEventBus.register(this);
@@ -268,8 +237,8 @@ public class MainController implements Subscriber {
             unionColumns = new HashMap<>();
             // таблица Alias меняется только при переключении CTE
             try {
-                loadAliasTable(selectBody);
-                loadCteTables();
+                UnionAliases.load(this, selectBody);
+                CTEPart.load(this);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -296,116 +265,6 @@ public class MainController implements Subscriber {
         cteNumberPrev = cteNumber;
     }
 
-    private void loadCteTables() {
-        // загрузить в дерево таблиц предыдущие CTE
-        TreeItem<TableRow> root = databaseTableView.getRoot();
-        root.getChildren().forEach(item -> {
-            if (item.getValue().isCte()) {
-                root.getChildren().remove(item);
-            }
-        });
-
-        List<WithItem> withItemsList = sQuery.getWithItemsList();
-        if (withItemsList == null) {
-            return;
-        }
-
-        int i = 0;
-        int currentCTE = cteTabPane.getSelectionModel().getSelectedIndex();
-        if (currentCTE == 0) {
-            return;
-        }
-
-        TableRow cteRoot = new TableRow(CTE_ROOT);
-        cteRoot.setCteRoot(true);
-        cteRoot.setCte(true);
-        TreeItem<TableRow> cteRootItem = new TreeItem<>(cteRoot);
-        cteRootItem.setExpanded(true);
-        root.getChildren().add(0, cteRootItem);
-
-        for (WithItem withItem : withItemsList) {
-            if (i == currentCTE) {
-                break;
-            }
-            String cteName = withItem.getName();
-            TableRow tableRow = new TableRow(cteName);
-            tableRow.setRoot(true);
-            tableRow.setCte(true);
-            TreeItem<TableRow> treeItem = new TreeItem<>(tableRow);
-            cteRootItem.getChildren().add(treeItem);
-            if (withItem.getSelectBody() instanceof PlainSelect) {
-                PlainSelect selectBody = (PlainSelect) withItem.getSelectBody();
-                List<SelectItem> selectItems = selectBody.getSelectItems();
-                selectItems.forEach(item -> {
-                    SelectExpressionItem selectItem = (SelectExpressionItem) item;
-                    String name;
-                    if (selectItem.getAlias() != null) {
-                        name = selectItem.getAlias().getName();
-                    } else {
-                        Column column = (Column) selectItem.getExpression();
-                        String[] split = column.getColumnName().split("\\.");
-                        name = split.length > 1 ? split[1] : split[0]; // FIXME
-                    }
-                    treeItem.getChildren().add(new TreeItem<>(new TableRow(name)));
-                });
-            }
-            i++;
-        }
-    }
-
-    private void loadAliasTable(SelectBody selectBody) {
-        aliasTable.getItems().clear();
-        int size = aliasTable.getColumns().size();
-        aliasTable.getColumns().remove(1, size);
-        if (selectBody instanceof SetOperationList) { // UNION
-            SetOperationList setOperationList = (SetOperationList) selectBody;
-            int i = 1;
-            for (SelectBody sBody : setOperationList.getSelects()) {
-                addUnionColumn("Query " + i, i - 1);
-                PlainSelect pSelect = (PlainSelect) sBody;
-                if (i == 1) {
-                    addAliasFirstColumn(pSelect);
-                } else {
-                    int j = 0;
-                    if (pSelect.getSelectItems().size() > aliasTable.getItems().size()) {
-                        showMessage("Error: different number of fields in union queries");
-                        throw new RuntimeException("Разное количество полей в объединяемых запросах");
-                    }
-                    for (Object x : pSelect.getSelectItems()) {
-                        SelectExpressionItem select = (SelectExpressionItem) x;
-                        Alias alias = select.getAlias();
-                        String strAlias = alias != null ? select.getAlias().getName() : select.getExpression().toString();
-                        AliasRow aliasEl = aliasTable.getItems().get(j);
-                        aliasEl.getValues().add(strAlias);
-                        j++;
-                    }
-                }
-                i++;
-            }
-        } else if (selectBody instanceof PlainSelect || selectBody == null) { // ONE QUERY
-            addUnionColumn("Query 1", 0);
-            PlainSelect pSelect = (PlainSelect) selectBody;
-            if (selectBody != null) {
-                addAliasFirstColumn(pSelect);
-            }
-        }
-    }
-
-    private void addAliasFirstColumn(PlainSelect pSelect) {
-        List<SelectItem> selectItems = pSelect.getSelectItems();
-        if (selectItems == null) {
-            return;
-        }
-        for (Object x : selectItems) {
-            SelectExpressionItem select = (SelectExpressionItem) x;
-            Alias alias = select.getAlias();
-            String strAlias = alias != null ? select.getAlias().getName() : select.getExpression().toString();
-            AliasRow aliasRow = new AliasRow(select.toString(), strAlias);
-            aliasRow.getValues().add(strAlias);
-            aliasTable.getItems().add(aliasRow);
-        }
-    }
-
     private void initDBTables() {
         DBStructure db = new DBStructureImpl();
 
@@ -421,63 +280,23 @@ public class MainController implements Subscriber {
 
     @FXML
     private TreeTableView<TableRow> databaseTableView;
-
-    public TreeTableView<TableRow> getDatabaseTableView() {
-        return databaseTableView;
-    }
-
     @FXML
     private TreeTableColumn<TableRow, TableRow> databaseTableColumn;
 
     private void initQueryParts() {
         FromTables.init(this);
-        setResultsTablesHandlers();
+        OrderBy.init(this);
+        GroupBy.init(this);
+        SelectedFields.init(this);
         Links.init(this);
         Conditions.init(this);
-        initAliasTable();
+        UnionAliases.init(this);
+        CTEPart.init(this);
     }
 
     private SelectedFieldsTree selectedGroupFieldsTree;
-
-    public SelectedFieldsTree getSelectedGroupFieldsTree() {
-        return selectedGroupFieldsTree;
-    }
-
-    public void setSelectedGroupFieldsTree(SelectedFieldsTree selectedGroupFieldsTree) {
-        this.selectedGroupFieldsTree = selectedGroupFieldsTree;
-    }
-
     private SelectedFieldsTree selectedConditionsTreeTable;
-
-    public SelectedFieldsTree getSelectedConditionsTreeTable() {
-        return selectedConditionsTreeTable;
-    }
-
-    public void setSelectedConditionsTreeTable(SelectedFieldsTree selectedConditionsTreeTable) {
-        this.selectedConditionsTreeTable = selectedConditionsTreeTable;
-    }
-
     private SelectedFieldsTree selectedOrderFieldsTree;
-
-    public SelectedFieldsTree getSelectedOrderFieldsTree() {
-        return selectedOrderFieldsTree;
-    }
-
-    public void setSelectedOrderFieldsTree(SelectedFieldsTree selectedOrderFieldsTree) {
-        this.selectedOrderFieldsTree = selectedOrderFieldsTree;
-    }
-
-    private void setCellFactories() {
-        // table columns
-        setStringColumnFactory(fieldColumn);
-        queryCteColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
-        // cell factory
-        setCellFactory(groupFieldsTreeColumn);
-        setCellFactory(conditionsTreeTableColumn);
-        setCellFactory(orderFieldsTreeColumn);
-        setCellFactory(databaseTableColumn);
-    }
-
 
     public void refreshLinkTable() {
         linkTable.refresh();
@@ -519,29 +338,6 @@ public class MainController implements Subscriber {
     }
 
     private int cteNumberPrev = -1;
-
-    private void addUnionColumn(String unionName, int i) {
-        TableColumn<AliasRow, String> newColumn = new TableColumn<>(unionName);
-        newColumn.setEditable(true);
-
-        newColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValues().get(i)));
-        newColumn.setCellFactory(x -> new AliasCell(x, i, getSeleсtedItems()));
-
-        aliasTable.getSelectionModel().selectedIndexProperty().addListener((num) -> {
-            TablePosition focusedCell = aliasTable.getFocusModel().getFocusedCell();
-            aliasTable.edit(focusedCell.getRow(), focusedCell.getTableColumn());
-        });
-
-        aliasTable.getColumns().add(newColumn);
-        unionColumns.put(unionName, newColumn);
-        unionTable.getItems().add(new TableRow(unionName));
-    }
-
-    private List<String> getSeleсtedItems() {
-        List<String> items = new ArrayList<>();
-        fieldTable.getItems().forEach(x -> items.add(x.getName()));
-        return items;
-    }
 
     private void loadSelectData(PlainSelect pSelect) {
         try {
@@ -650,17 +446,8 @@ public class MainController implements Subscriber {
 
     @FXML
     private TreeTableView<TableRow> tablesView;
-
-    public TreeTableView<TableRow> getTablesView() {
-        return tablesView;
-    }
-
     @FXML
     private TreeTableColumn<TableRow, TableRow> tablesViewColumn;
-
-    public TreeTableColumn<TableRow, TableRow> getTablesViewColumn() {
-        return tablesViewColumn;
-    }
 
     //</editor-fold>
 
@@ -668,53 +455,18 @@ public class MainController implements Subscriber {
 
     @FXML
     private TableView<LinkElement> linkTable;
-
-    public TableView<LinkElement> getLinkTable() {
-        return linkTable;
-    }
-
     @FXML
     private TableColumn<LinkElement, LinkElement> linkTableColumnTable1;
-
-    public TableColumn<LinkElement, LinkElement> getLinkTableColumnTable1() {
-        return linkTableColumnTable1;
-    }
-
     @FXML
     private TableColumn<LinkElement, LinkElement> linkTableColumnTable2;
-
-    public TableColumn<LinkElement, LinkElement> getLinkTableColumnTable2() {
-        return linkTableColumnTable2;
-    }
-
     @FXML
     private TableColumn<LinkElement, Boolean> linkTableAllTable1;
-
-    public TableColumn<LinkElement, Boolean> getLinkTableAllTable1() {
-        return linkTableAllTable1;
-    }
-
     @FXML
     private TableColumn<LinkElement, Boolean> linkTableAllTable2;
-
-    public TableColumn<LinkElement, Boolean> getLinkTableAllTable2() {
-        return linkTableAllTable2;
-    }
-
     @FXML
     private TableColumn<LinkElement, Boolean> linkTableCustom;
-
-    public TableColumn<LinkElement, Boolean> getLinkTableCustom() {
-        return linkTableCustom;
-    }
-
     @FXML
     private TableColumn<LinkElement, LinkElement> linkTableJoinCondition;
-
-    public TableColumn<LinkElement, LinkElement> getLinkTableJoinCondition() {
-        return linkTableJoinCondition;
-    }
-
     @FXML
     private Tab linkTablesPane;
 
@@ -738,35 +490,14 @@ public class MainController implements Subscriber {
 
     @FXML
     private TreeTableView<TableRow> conditionsTreeTable;
-
-    public TreeTableView<TableRow> getConditionsTreeTable() {
-        return conditionsTreeTable;
-    }
-
-
     @FXML
     private TreeTableColumn<TableRow, TableRow> conditionsTreeTableColumn;
-
     @FXML
     private TableView<ConditionElement> conditionTableResults;
-
-    public TableView<ConditionElement> getConditionTableResults() {
-        return conditionTableResults;
-    }
-
     @FXML
     private TableColumn<ConditionElement, Boolean> conditionTableResultsCustom;
-
-    public TableColumn<ConditionElement, Boolean> getConditionTableResultsCustom() {
-        return conditionTableResultsCustom;
-    }
-
     @FXML
     private TableColumn<ConditionElement, ConditionElement> conditionTableResultsCondition;
-
-    public TableColumn<ConditionElement, ConditionElement> getConditionTableResultsCondition() {
-        return conditionTableResultsCondition;
-    }
 
     @FXML
     public void addCondition() {
@@ -824,105 +555,9 @@ public class MainController implements Subscriber {
 
     //</editor-fold>
 
-    private void setStringColumnFactory(TableColumn<TableRow, String> resultsColumn) {
-        setStringColumnFactory(resultsColumn, false);
-    }
-
-    private void setStringColumnFactory(TableColumn<TableRow, String> resultsColumn, boolean editable) {
-        resultsColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        resultsColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-        resultsColumn.setEditable(editable);
-    }
-
-    private void setTreeSelectHandler(TreeTableView<TableRow> fieldsTree, TableView<TableRow> resultsTable) {
-        setTreeSelectHandler(fieldsTree, resultsTable, "");
-    }
-
-    private void setTreeSelectHandler(TreeTableView<TableRow> fieldsTree,
-                                      TableView<TableRow> resultsTable,
-                                      String defValue) {
-        fieldsTree.setOnMousePressed(e -> {
-            if (doubleClick(e)) {
-                makeSelect(fieldsTree, resultsTable, defValue);
-            }
-        });
-    }
-
-    private void setResultsTableSelectHandler(TableView<TableRow> groupTableResults, TreeTableView<TableRow> groupFieldsTree) {
-        groupTableResults.setOnMousePressed(e -> {
-            if (doubleClick(e)) {
-                makeDeselect(groupTableResults, groupFieldsTree);
-            }
-        });
-    }
-
-    private void makeSelect(TreeTableView<TableRow> fieldsTree, TableView<TableRow> resultsTable) {
-        makeSelect(fieldsTree, resultsTable, null);
-    }
-
-    private void makeSelect(TreeTableView<TableRow> fieldsTree,
-                            TableView<TableRow> resultsTable, String defaultValue) {
-        makeSelect(null, fieldsTree, resultsTable, defaultValue);
-    }
-
-    public void makeSelect(TreeItem<TableRow> selectedItem, TreeTableView<TableRow> fieldsTree,
-                           TableView<TableRow> resultsTable, String defaultValue) {
-        if (selectedItem == null) {
-            selectedItem = fieldsTree.getSelectionModel().getSelectedItem();
-        }
-
-        if (selectedItem.getChildren().size() > 0) {
-            return;
-        }
-        String name = selectedItem.getValue().getName();
-        TreeItem<TableRow> parent = selectedItem.getParent();
-        if (parent != null) {
-            String parentName = parent.getValue().getName();
-            if (!parentName.equals(DATABASE_TABLE_ROOT)) {
-                name = parentName + "." + name;
-            }
-        }
-        TableRow tableRow = new TableRow(name);
-        if (defaultValue != null) {
-            tableRow.setComboBoxValue(defaultValue);
-        }
-        resultsTable.getItems().add(tableRow);
-        fieldsTree.getRoot().getChildren().remove(selectedItem);
-    }
-
-    private void setCellSelectionEnabled(TableView<TableRow> table) {
-        table.getSelectionModel().setCellSelectionEnabled(true);
-    }
-
-    private void setResultsTablesHandlers() {
-        setGroupingHandlers();
-        setOrderHandlers();
-        setSelectedFieldsHandlers();
-    }
-
     @FXML
     private void editFieldClick() {
-        editField();
-    }
-
-    private void setSelectedFieldsHandlers() {
-        fieldTable.setOnMousePressed(e -> {
-            if (doubleClick(e)) {
-                editField();
-            }
-        });
-    }
-
-    private void editField() {
-        TableRow selectedItem = fieldTable.getSelectionModel().getSelectedItem();
-        if (selectedItem == null) {
-            return;
-        }
-        Map<String, Object> data = new HashMap<>();
-        data.put("selectedFieldsTree", selectedGroupFieldsTree);
-        data.put("selectedItem", selectedItem);
-        data.put("currentRow", fieldTable.getSelectionModel().getSelectedIndex());
-        Utils.openForm("/forms/selected-field.fxml", "Custom expression", data);
+        SelectedFields.editField(this);
     }
 
     @FXML
@@ -935,72 +570,20 @@ public class MainController implements Subscriber {
         makeDeselect(orderTableResults, orderFieldsTree);
     }
 
-    private void makeDeselect(TableView<TableRow> groupTableResults, TreeTableView<TableRow> groupFieldsTree) {
-        TableRow selectedItem = groupTableResults.getSelectionModel().getSelectedItem();
-        if (groupTableResults.getId().equals("orderTableResults")
-                && groupTableResults.getSelectionModel().getSelectedCells().get(0).getColumn() == 1) {
-            return;
-        }
-        TableRow tableRow = new TableRow(selectedItem.getName());
-        if (tableRow.isNotSelectable()) {
-            return;
-        }
-        TreeItem<TableRow> treeItem = new TreeItem<>(tableRow);
-        addElementBeforeTree(groupFieldsTree.getRoot().getChildren(), treeItem);
-        groupTableResults.getItems().remove(selectedItem);
-    }
-
-    private void setComboBoxColumnFactory(TableColumn<TableRow, String> column, String... items) {
-        column.setEditable(true);
-        column.setCellFactory(
-                ComboBoxTableCell.forTableColumn(FXCollections.observableArrayList(items))
-        );
-        column.setCellValueFactory(cellData -> cellData.getValue().comboBoxValueProperty());
-    }
-
     @FXML
     private TreeTableView<TableRow> groupFieldsTree;
-
-    public TreeTableView<TableRow> getGroupFieldsTree() {
-        return groupFieldsTree;
-    }
-
     @FXML
     private TreeTableColumn<TableRow, TableRow> groupFieldsTreeColumn;
-
     @FXML
     private TableView<TableRow> groupTableResults;
-
-    public TableView<TableRow> getGroupTableResults() {
-        return groupTableResults;
-    }
-
     @FXML
     private TableColumn<TableRow, String> groupTableResultsFieldColumn;
-
     @FXML
     private TableView<TableRow> groupTableAggregates;
-
-    public TableView<TableRow> getGroupTableAggregates() {
-        return groupTableAggregates;
-    }
-
     @FXML
     private TableColumn<TableRow, String> groupTableAggregatesFieldColumn;
     @FXML
     private TableColumn<TableRow, String> groupTableAggregatesFunctionColumn;
-
-    private void setGroupingHandlers() {
-        setStringColumnFactory(groupTableResultsFieldColumn);
-        setStringColumnFactory(groupTableAggregatesFieldColumn);
-
-        setCellSelectionEnabled(groupTableAggregates);
-        setComboBoxColumnFactory(groupTableAggregatesFunctionColumn,
-                GROUP_DEFAULT_VALUE, "AVG", "COUNT", "MIN", "MAX");
-
-        setTreeSelectHandler(groupFieldsTree, groupTableResults);
-        setResultsTableSelectHandler(groupTableResults, groupFieldsTree);
-    }
 
     @FXML
     protected void selectGroup(ActionEvent event) {
@@ -1043,66 +626,18 @@ public class MainController implements Subscriber {
 
     @FXML
     private TreeTableView<TableRow> orderFieldsTree;
-
-    public TreeTableView<TableRow> getOrderFieldsTree() {
-        return orderFieldsTree;
-    }
-
     @FXML
     private TreeTableColumn<TableRow, TableRow> orderFieldsTreeColumn;
-
     @FXML
     private TableView<TableRow> orderTableResults;
-
-    public TableView<TableRow> getOrderTableResults() {
-        return orderTableResults;
-    }
-
     @FXML
     private TableColumn<TableRow, String> orderTableResultsFieldColumn;
     @FXML
     private TableColumn<TableRow, String> orderTableResultsSortingColumn;
-
-    private void setOrderHandlers() {
-        setTreeSelectHandler(orderFieldsTree, orderTableResults, ORDER_DEFAULT_VALUE);
-        setStringColumnFactory(orderTableResultsFieldColumn);
-
-        setComboBoxColumnFactory(orderTableResultsSortingColumn, ORDER_DEFAULT_VALUE, "Descending");
-        setResultsTableSelectHandler(orderTableResults, orderFieldsTree);
-
-        // buttons
-        ReadOnlyIntegerProperty selectedIndex = orderTableResults.getSelectionModel().selectedIndexProperty();
-        orderUpButton.disableProperty().bind(selectedIndex.lessThanOrEqualTo(0));
-        orderDownButton.disableProperty().bind(Bindings.createBooleanBinding(() -> {
-                    int index = selectedIndex.get();
-                    return index < 0 || index + 1 >= orderTableResults.getItems().size();
-                },
-                selectedIndex, orderTableResults.getItems())
-        );
-    }
-
     @FXML
     private TableView<AliasRow> aliasTable;
     @FXML
     private TableColumn<AliasRow, String> aliasFieldColumn;
-
-    private void initAliasTable() {
-        aliasTable.getSelectionModel().cellSelectionEnabledProperty().set(true);
-
-        aliasFieldColumn.setCellValueFactory(new PropertyValueFactory<>("alias"));
-        aliasFieldColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        aliasFieldColumn.setOnEditCommit((TableColumn.CellEditEvent<AliasRow, String> event) -> {
-            TablePosition<AliasRow, String> pos = event.getTablePosition();
-            String newFullName = event.getNewValue();
-            int row = pos.getRow();
-            AliasRow person = event.getTableView().getItems().get(row);
-            person.setAlias(newFullName);
-        });
-
-        unionTableNameColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
-        unionTableDistinctColumn.setCellFactory(tc -> new CheckBoxTableCell<>());
-        unionTableDistinctColumn.setCellValueFactory(data -> new SimpleBooleanProperty(data.getValue().isDistinct()));
-    }
 
     private int curMaxUnion; // индекс максимального объединения, нумерация начинается с 0
     private Map<String, TableColumn> unionColumns;
@@ -1120,14 +655,14 @@ public class MainController implements Subscriber {
         }
 
         String unionName = "Query " + (curMaxUnion + 1);
-        addUnionColumn(unionName, curMaxUnion);
+        addUnionColumn(this, unionName, curMaxUnion);
         addUnion(unionName, curMaxUnion);
     }
 
     private void addFirstUnion() {
         addUnion("Query 1", 0);
         addUnion("Query 2", 1);
-        addUnionColumn("Query 2", curMaxUnion);
+        addUnionColumn(this, "Query 2", curMaxUnion);
     }
 
     private void addNewUnion() {

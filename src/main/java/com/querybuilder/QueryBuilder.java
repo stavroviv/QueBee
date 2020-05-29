@@ -89,7 +89,7 @@ public class QueryBuilder {
 
     private SubSelect castResultToSubSelect(String alias) {
         SubSelect result = new SubSelect();
-        Select select = mainController.getsQuery();
+        Select select = mainController.getSQuery();
         result.setSelectBody(select.getSelectBody());
         result.setWithItemsList(select.getWithItemsList());
         result.setAlias(new Alias(alias));

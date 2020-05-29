@@ -18,6 +18,7 @@ import net.sf.jsqlparser.statement.select.Select;
 
 import static com.querybuilder.utils.Constants.DATABASE_TABLE_ROOT;
 import static com.querybuilder.utils.Utils.doubleClick;
+import static com.querybuilder.utils.Utils.setCellFactory;
 
 public class Conditions {
 
@@ -44,6 +45,7 @@ public class Conditions {
         );
 
         setListeners(controller);
+        setCellFactory(controller.getConditionsTreeTableColumn());
     }
 
     private static void setListeners(MainController controller) {
