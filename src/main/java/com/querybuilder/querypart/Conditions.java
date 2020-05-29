@@ -1,13 +1,16 @@
 package com.querybuilder.querypart;
 
-import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.ConditionCell;
 import com.querybuilder.domain.ConditionElement;
 import com.querybuilder.domain.TableRow;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.scene.control.TreeItem;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
@@ -20,42 +23,75 @@ import static com.querybuilder.utils.Constants.DATABASE_TABLE_ROOT;
 import static com.querybuilder.utils.Utils.doubleClick;
 import static com.querybuilder.utils.Utils.setCellFactory;
 
-public class Conditions {
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class Conditions extends AbstractQueryPart {
 
-    public static void init(MainController controller) {
-        controller.getConditionTableResults().setEditable(true);
-        controller.getConditionTableResults().getSelectionModel().cellSelectionEnabledProperty().set(true);
+    @FXML
+    private TreeTableView<TableRow> conditionsTreeTable;
+    @FXML
+    private TreeTableColumn<TableRow, TableRow> conditionsTreeTableColumn;
+    @FXML
+    private TableView<ConditionElement> conditionTableResults;
+    @FXML
+    private TableColumn<ConditionElement, Boolean> conditionTableResultsCustom;
+    @FXML
+    private TableColumn<ConditionElement, ConditionElement> conditionTableResultsCondition;
 
-        controller.getConditionTableResultsCustom().setCellFactory(column -> new CheckBoxTableCell<>());
-        controller.getConditionTableResultsCustom().setCellValueFactory(cellData -> {
+    @FXML
+    public void addCondition() {
+        conditionTableResults.getItems().add(new ConditionElement(""));
+    }
+
+    @FXML
+    public void deleteCondition() {
+        ConditionElement selectedItem = conditionTableResults.getSelectionModel().getSelectedItem();
+        conditionTableResults.getItems().remove(selectedItem);
+    }
+
+    @FXML
+    public void copyCondition() {
+        ConditionElement selectedItem = conditionTableResults.getSelectionModel().getSelectedItem();
+        ConditionElement conditionElement = new ConditionElement("");
+        conditionElement.setName(selectedItem.getName());
+        conditionTableResults.getItems().add(conditionElement);
+    }
+
+    @Override
+    public void initialize() {
+        conditionTableResults.setEditable(true);
+        conditionTableResults.getSelectionModel().cellSelectionEnabledProperty().set(true);
+
+        conditionTableResultsCustom.setCellFactory(column -> new CheckBoxTableCell<>());
+        conditionTableResultsCustom.setCellValueFactory(cellData -> {
             ConditionElement cellValue = cellData.getValue();
             BooleanProperty property = cellValue.customProperty();
             property.addListener((observable, oldValue, newValue) -> {
                 cellValue.setCustom(newValue);
-                controller.getConditionTableResults().refresh();
+                conditionTableResults.refresh();
             });
             return property;
         });
 
-        controller.getConditionTableResultsCondition().setCellValueFactory(
+        conditionTableResultsCondition.setCellValueFactory(
                 column -> new ReadOnlyObjectWrapper<>(column.getValue())
         );
-        controller.getConditionTableResultsCondition().setCellFactory(
+        conditionTableResultsCondition.setCellFactory(
                 column -> new ConditionCell(
-                        controller.getConditionTableResults(), controller.getTableFieldsController().getTablesView()
+                        conditionTableResults, mainController.getTableFieldsController().getTablesView()
                 )
         );
 
-        setListeners(controller);
-        setCellFactory(controller.getConditionsTreeTableColumn());
+        setListeners();
+        setCellFactory(conditionsTreeTableColumn);
     }
 
-    private static void setListeners(MainController controller) {
-        controller.getConditionsTreeTable().setOnMousePressed(e -> {
+    private void setListeners() {
+        conditionsTreeTable.setOnMousePressed(e -> {
             if (!doubleClick(e)) {
                 return;
             }
-            TreeItem<TableRow> selectedItem = controller.getConditionsTreeTable().getSelectionModel().getSelectedItem();
+            TreeItem<TableRow> selectedItem = conditionsTreeTable.getSelectionModel().getSelectedItem();
             if (selectedItem == null || selectedItem.getChildren().size() > 0) {
                 return;
             }
@@ -68,58 +104,66 @@ public class Conditions {
                 }
             }
             ConditionElement tableRow = new ConditionElement(name);
-            controller.getConditionTableResults().getItems().add(tableRow);
-            controller.getConditionsTreeTable().getRoot().getChildren().remove(selectedItem);
+            conditionTableResults.getItems().add(tableRow);
+            conditionsTreeTable.getRoot().getChildren().remove(selectedItem);
         });
     }
 
-    public static void load(MainController controller, PlainSelect pSelect) {
+    @Override
+    public void load(PlainSelect pSelect) {
         Expression where = pSelect.getWhere();
         if (where == null) {
             return;
         }
         if (where instanceof AndExpression) {
-            parseAndExpression(controller, (AndExpression) where);
+            parseAndExpression((AndExpression) where);
         } else {
             ConditionElement conditionElement = new ConditionElement(where.toString());
             conditionElement.setCustom(!(where instanceof ComparisonOperator));
-            controller.getConditionTableResults().getItems().add(conditionElement);
+            conditionTableResults.getItems().add(conditionElement);
         }
     }
 
-    private static void parseAndExpression(MainController controller, AndExpression where) {
+    private void parseAndExpression(AndExpression where) {
         ConditionElement conditionElement = new ConditionElement(where.getRightExpression().toString());
-        controller.getConditionTableResults().getItems().add(0, conditionElement);
+        conditionTableResults.getItems().add(0, conditionElement);
 
         Expression leftExpression = where.getLeftExpression();
         while (leftExpression instanceof AndExpression) {
             AndExpression left = (AndExpression) leftExpression;
             ConditionElement condition = new ConditionElement(left.getRightExpression().toString());
-            controller.getConditionTableResults().getItems().add(0, condition);
+            conditionTableResults.getItems().add(0, condition);
             leftExpression = left.getLeftExpression();
         }
         ConditionElement condition = new ConditionElement(leftExpression.toString());
-        controller.getConditionTableResults().getItems().add(0, condition);
+        conditionTableResults.getItems().add(0, condition);
     }
 
-    public static void save(MainController controller, PlainSelect selectBody) throws Exception {
-        if (controller.getConditionTableResults().getItems().size() == 0) {
+    @Override
+    public void save(PlainSelect selectBody) {
+        if (conditionTableResults.getItems().size() == 0) {
             selectBody.setWhere(null);
             return;
         }
         StringBuilder where = new StringBuilder();
-        for (ConditionElement item : controller.getConditionTableResults().getItems()) {
+        for (ConditionElement item : conditionTableResults.getItems()) {
             String whereExpr = item.getCondition();
             if (whereExpr.isEmpty()) {
                 whereExpr = item.getLeftExpression() + item.getExpression() + item.getRightExpression();
             }
             where.append(whereExpr).append(" AND ");
         }
-        Statement stmt = CCJSqlParserUtil.parse(
-                "SELECT * FROM TABLES WHERE " + where.substring(0, where.length() - 4)
-        );
+        Statement stmt = null;
+        try {
+            stmt = CCJSqlParserUtil.parse(
+                    "SELECT * FROM TABLES WHERE " + where.substring(0, where.length() - 4)
+            );
+        } catch (JSQLParserException e) {
+            e.printStackTrace();
+        }
         Select select = (Select) stmt;
         Expression whereExpression = ((PlainSelect) select.getSelectBody()).getWhere();
         selectBody.setWhere(whereExpression);
     }
+
 }

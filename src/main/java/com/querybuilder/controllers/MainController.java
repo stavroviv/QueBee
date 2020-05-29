@@ -3,7 +3,6 @@ package com.querybuilder.controllers;
 import com.querybuilder.QueryBuilder;
 import com.querybuilder.database.DBStructure;
 import com.querybuilder.database.DBStructureImpl;
-import com.querybuilder.domain.ConditionElement;
 import com.querybuilder.domain.SelectedFieldsTree;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.eventbus.CustomEventBus;
@@ -32,10 +31,6 @@ public class MainController implements Subscriber {
     protected QueryBuilder queryBuilder;
     private Map<String, List<String>> dbElements;
 
-    //    @FXML
-//    private TableColumn<TableRow, String> fieldColumn;
-    @FXML
-    private TabPane qbTabPane_All;
     @FXML
     private TabPane mainTabPane;
     @FXML
@@ -56,12 +51,15 @@ public class MainController implements Subscriber {
     private FromTables tableFieldsController;
     @FXML
     private UnionAliases unionAliasesController;
+    @FXML
+    private Conditions conditionsController;
 
     @FXML
     public void initialize() {
         tableFieldsController.setMainController(this);
         linksController.setMainController(this);
         unionAliasesController.setMainController(this);
+        conditionsController.setMainController(this);
     }
 
     @Override
@@ -143,7 +141,7 @@ public class MainController implements Subscriber {
             linksController.save(selectBody);
             GroupBy.save(this, selectBody);
             OrderBy.save(this, selectBody);
-            Conditions.save(this, selectBody);
+            conditionsController.save(selectBody);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -271,7 +269,6 @@ public class MainController implements Subscriber {
     private void initQueryParts() {
         OrderBy.init(this);
         GroupBy.init(this);
-        Conditions.init(this);
         CTEPart.init(this);
     }
 
@@ -325,7 +322,7 @@ public class MainController implements Subscriber {
             linksController.load(pSelect);
             GroupBy.load(this, pSelect);
             OrderBy.load(this, pSelect);
-            Conditions.load(this, pSelect);
+            conditionsController.load(pSelect);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -342,12 +339,12 @@ public class MainController implements Subscriber {
         tableFieldsController.getTablesView().getRoot().getChildren().clear();
 
         if (!firstRun) {
-            clearIfNotNull(conditionsTreeTable);
+            clearIfNotNull(conditionsController.getConditionsTreeTable());
             clearIfNotNull(groupFieldsTree);
             clearIfNotNull(orderFieldsTree);
         }
 
-        conditionTableResults.getItems().clear();
+        conditionsController.getConditionTableResults().getItems().clear();
         groupTableResults.getItems().clear();
         groupTableAggregates.getItems().clear();
         orderTableResults.getItems().clear();
@@ -376,36 +373,6 @@ public class MainController implements Subscriber {
     @FXML
     public void cancelClick(ActionEvent actionEvent) {
         queryBuilder.closeForm();
-    }
-
-    @FXML
-    private TreeTableView<TableRow> conditionsTreeTable;
-    @FXML
-    private TreeTableColumn<TableRow, TableRow> conditionsTreeTableColumn;
-    @FXML
-    private TableView<ConditionElement> conditionTableResults;
-    @FXML
-    private TableColumn<ConditionElement, Boolean> conditionTableResultsCustom;
-    @FXML
-    private TableColumn<ConditionElement, ConditionElement> conditionTableResultsCondition;
-
-    @FXML
-    public void addCondition() {
-        conditionTableResults.getItems().add(new ConditionElement(""));
-    }
-
-    @FXML
-    public void deleteCondition() {
-        ConditionElement selectedItem = conditionTableResults.getSelectionModel().getSelectedItem();
-        conditionTableResults.getItems().remove(selectedItem);
-    }
-
-    @FXML
-    public void copyCondition() {
-        ConditionElement selectedItem = conditionTableResults.getSelectionModel().getSelectedItem();
-        ConditionElement conditionElement = new ConditionElement("");
-        conditionElement.setName(selectedItem.getName());
-        conditionTableResults.getItems().add(conditionElement);
     }
 
     public void insertResult(String result, TableRow item, SubSelect subSelect) {

@@ -13,7 +13,7 @@ public class TreeHelpers {
         TreeTableView<TableRow> groupFieldsTree = controller.getGroupFieldsTree();
         TreeTableView<TableRow> orderFieldsTree = controller.getOrderFieldsTree();
         TableView<TableRow> fieldTable = controller.getTableFieldsController().getFieldTable();
-        TreeTableView<TableRow> conditionsTreeTable = controller.getConditionsTreeTable();
+        TreeTableView<TableRow> conditionsTreeTable = controller.getConditionsController().getConditionsTreeTable();
 
         controller.setSelectedGroupFieldsTree(new SelectedFieldsTree(tablesView, groupFieldsTree, fieldTable));
         controller.setSelectedOrderFieldsTree(new SelectedFieldsTree(tablesView, orderFieldsTree, fieldTable));
