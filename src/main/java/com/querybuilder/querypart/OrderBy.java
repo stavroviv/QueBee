@@ -1,10 +1,14 @@
+
 package com.querybuilder.querypart;
 
-import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.TableRow;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -15,23 +19,28 @@ import java.util.List;
 import static com.querybuilder.utils.Constants.ORDER_DEFAULT_VALUE;
 import static com.querybuilder.utils.Utils.*;
 
-public class OrderBy {
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class OrderBy extends AbstractQueryPart {
+    @FXML
+    private TreeTableView<TableRow> orderFieldsTree;
+    @FXML
+    private TreeTableColumn<TableRow, TableRow> orderFieldsTreeColumn;
+    @FXML
+    private TableView<TableRow> orderTableResults;
+    @FXML
+    private TableColumn<TableRow, String> orderTableResultsFieldColumn;
+    @FXML
+    private TableColumn<TableRow, String> orderTableResultsSortingColumn;
 
-    public static void init(MainController controller) {
-        TreeTableView<TableRow> orderFieldsTree = controller.getOrderFieldsTree();
-        TableView<TableRow> orderTableResults = controller.getOrderTableResults();
-        TableColumn<TableRow, String> orderTableResultsFieldColumn = controller.getOrderTableResultsFieldColumn();
-        TableColumn<TableRow, String> orderTableResultsSortingColumn = controller.getOrderTableResultsSortingColumn();
-
+    @Override
+    public void initialize() {
         setTreeSelectHandler(orderFieldsTree, orderTableResults, ORDER_DEFAULT_VALUE);
         setStringColumnFactory(orderTableResultsFieldColumn);
 
         setComboBoxColumnFactory(orderTableResultsSortingColumn, ORDER_DEFAULT_VALUE, "Descending");
         setResultsTableSelectHandler(orderTableResults, orderFieldsTree);
 
-        // buttons
-        Button orderDownButton = controller.getOrderDownButton();
-        Button orderUpButton = controller.getOrderUpButton();
         ReadOnlyIntegerProperty selectedIndex = orderTableResults.getSelectionModel().selectedIndexProperty();
         orderUpButton.disableProperty().bind(selectedIndex.lessThanOrEqualTo(0));
         orderDownButton.disableProperty().bind(Bindings.createBooleanBinding(() -> {
@@ -41,16 +50,15 @@ public class OrderBy {
                 selectedIndex, orderTableResults.getItems())
         );
 
-        setCellFactory(controller.getOrderFieldsTreeColumn());
+        setCellFactory(orderFieldsTreeColumn);
     }
 
-    public static void load(MainController controller, PlainSelect pSelect) {
+    @Override
+    public void load(PlainSelect pSelect) {
         List<OrderByElement> orderByElements = pSelect.getOrderByElements();
         if (orderByElements == null) {
             return;
         }
-        TableView<TableRow> orderTableResults = controller.getOrderTableResults();
-        TreeTableView<TableRow> orderFieldsTree = controller.getOrderFieldsTree();
         orderByElements.forEach(x -> {
             boolean selected = false;
             for (TreeItem<TableRow> ddd : orderFieldsTree.getRoot().getChildren()) {
@@ -70,15 +78,46 @@ public class OrderBy {
         });
     }
 
-    public static void save(MainController controller, PlainSelect selectBody) {
+    @Override
+    public void save(PlainSelect pSelect) {
         List<OrderByElement> orderElements = new ArrayList<>();
-        controller.getOrderTableResults().getItems().forEach(x -> {
+        orderTableResults.getItems().forEach(x -> {
             OrderByElement orderByElement = new OrderByElement();
             Column column = new Column(x.getName());
             orderByElement.setExpression(column);
             orderByElement.setAsc(x.getComboBoxValue().equals("Ascending"));
             orderElements.add(orderByElement);
         });
-        selectBody.setOrderByElements(orderElements);
+        pSelect.setOrderByElements(orderElements);
     }
+
+    @FXML
+    private Button orderUpButton;
+    @FXML
+    private Button orderDownButton;
+
+    @FXML
+    protected void orderUp(ActionEvent event) {
+        int index = orderTableResults.getSelectionModel().getSelectedIndex();
+        orderTableResults.getItems().add(index - 1, orderTableResults.getItems().remove(index));
+        orderTableResults.getSelectionModel().clearAndSelect(index - 1);
+    }
+
+    @FXML
+    protected void orderDown(ActionEvent event) {
+        int index = orderTableResults.getSelectionModel().getSelectedIndex();
+        orderTableResults.getItems().add(index + 1, orderTableResults.getItems().remove(index));
+        orderTableResults.getSelectionModel().clearAndSelect(index + 1);
+    }
+
+    @FXML
+    protected void deselectOrder(ActionEvent event) {
+        makeDeselect(orderTableResults, orderFieldsTree);
+    }
+
+    @FXML
+    protected void selectOrder(ActionEvent event) {
+        makeSelect(orderFieldsTree, orderTableResults, ORDER_DEFAULT_VALUE);
+    }
+
 }

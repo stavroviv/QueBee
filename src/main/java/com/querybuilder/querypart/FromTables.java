@@ -2,7 +2,7 @@ package com.querybuilder.querypart;
 
 import com.querybuilder.controllers.MainController;
 import com.querybuilder.database.DBStructure;
-import com.querybuilder.database.DBStructureImpl;
+import com.querybuilder.database.DBStructureIDEA2018;
 import com.querybuilder.domain.SelectedFieldsTree;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.eventbus.CustomEvent;
@@ -68,7 +68,7 @@ public class FromTables extends AbstractQueryPart {
     }
 
     public void loadDbStructure() {
-        DBStructure db = new DBStructureImpl();
+        DBStructure db = new DBStructureIDEA2018();
         TreeItem<TableRow> dbStructure = db.getDBStructure(mainController.getQueryBuilder().getDataSource());
         databaseTableView.setRoot(new TreeItem<>());
         databaseTableView.getRoot().getChildren().add(dbStructure);
@@ -284,7 +284,7 @@ public class FromTables extends AbstractQueryPart {
                         String columnName = expression.getParameters().getExpressions().get(0).toString();
                         tableRow = new TableRow(columnName);
                         tableRow.setComboBoxValue(expression.getName());
-                        mainController.getGroupTableAggregates().getItems().add(tableRow);
+                        mainController.getGroupingController().getGroupTableAggregates().getItems().add(tableRow);
                     }
                 }
 

@@ -10,8 +10,8 @@ public class TreeHelpers {
 
     public static void load(MainController controller) {
         TreeTableView<TableRow> tablesView = controller.getTableFieldsController().getTablesView();
-        TreeTableView<TableRow> groupFieldsTree = controller.getGroupFieldsTree();
-        TreeTableView<TableRow> orderFieldsTree = controller.getOrderFieldsTree();
+        TreeTableView<TableRow> groupFieldsTree = controller.getGroupingController().getGroupFieldsTree();
+        TreeTableView<TableRow> orderFieldsTree = controller.getOrderController().getOrderFieldsTree();
         TableView<TableRow> fieldTable = controller.getTableFieldsController().getFieldTable();
         TreeTableView<TableRow> conditionsTreeTable = controller.getConditionsController().getConditionsTreeTable();
 

@@ -2,7 +2,7 @@ package com.querybuilder.controllers;
 
 import com.querybuilder.QueryBuilder;
 import com.querybuilder.database.DBStructure;
-import com.querybuilder.database.DBStructureImpl;
+import com.querybuilder.database.DBStructureIDEA2018;
 import com.querybuilder.domain.SelectedFieldsTree;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.eventbus.CustomEventBus;
@@ -21,9 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.querybuilder.utils.Constants.GROUP_DEFAULT_VALUE;
-import static com.querybuilder.utils.Constants.ORDER_DEFAULT_VALUE;
-import static com.querybuilder.utils.Utils.*;
+import static com.querybuilder.utils.Utils.getEmptySelect;
 
 @Data
 public class MainController implements Subscriber {
@@ -44,7 +42,6 @@ public class MainController implements Subscriber {
     @FXML
     private TableColumn<String, String> queryCteColumn;
 
-
     @FXML
     private Links linksController;
     @FXML
@@ -53,13 +50,33 @@ public class MainController implements Subscriber {
     private UnionAliases unionAliasesController;
     @FXML
     private Conditions conditionsController;
+    @FXML
+    private GroupBy groupingController;
+    @FXML
+    private OrderBy orderController;
+
+    private List<AbstractQueryPart> queryParts = new ArrayList<>();
 
     @FXML
     public void initialize() {
-        tableFieldsController.setMainController(this);
-        linksController.setMainController(this);
-        unionAliasesController.setMainController(this);
-        conditionsController.setMainController(this);
+        fillQueryParts();
+        queryParts.forEach(part -> {
+            try {
+                part.setMainController(this);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        CTEPart.init(this);
+    }
+
+    private void fillQueryParts() {
+        queryParts.add(tableFieldsController);
+        queryParts.add(linksController);
+        queryParts.add(unionAliasesController);
+        queryParts.add(conditionsController);
+        queryParts.add(groupingController);
+        queryParts.add(orderController);
     }
 
     @Override
@@ -75,7 +92,7 @@ public class MainController implements Subscriber {
         this.sQuery = sQuery;
 
         initDBTables();
-        initQueryParts();
+//        initQueryParts();
         reloadData();
 
         setPagesListeners();
@@ -136,15 +153,24 @@ public class MainController implements Subscriber {
 
     private void saveCurrentQuery(Tab cteTab, Tab unionTab) {
         PlainSelect selectBody = getEmptySelect();
-        try {
-            tableFieldsController.save(selectBody);
-            linksController.save(selectBody);
-            GroupBy.save(this, selectBody);
-            OrderBy.save(this, selectBody);
-            conditionsController.save(selectBody);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        queryParts.forEach(part -> {
+            try {
+                part.save(selectBody);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+//
+//        try {
+//            queryParts.forEach(part->part.save(selectBody));
+//            tableFieldsController.save(selectBody);
+//            linksController.save(selectBody);
+//            groupingController.save(selectBody);
+//            orderController.save(selectBody);
+//            conditionsController.save(selectBody);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
         processUnionsAndCTE(cteTab, unionTab, selectBody);
     }
@@ -258,19 +284,13 @@ public class MainController implements Subscriber {
     }
 
     private void initDBTables() {
-        DBStructure db = new DBStructureImpl();
+        DBStructure db = new DBStructureIDEA2018();
         db.getDBStructure(queryBuilder.getDataSource()); // FIXME
         dbElements = db.getDbElements();
         tableFieldsController.loadDbStructure();
     }
 
     //</editor-fold>
-
-    private void initQueryParts() {
-        OrderBy.init(this);
-        GroupBy.init(this);
-        CTEPart.init(this);
-    }
 
     private SelectedFieldsTree selectedGroupFieldsTree;
     private SelectedFieldsTree selectedConditionsTreeTable;
@@ -316,16 +336,24 @@ public class MainController implements Subscriber {
     private int cteNumberPrev = -1;
 
     private void loadSelectData(PlainSelect pSelect) {
-        try {
-            tableFieldsController.load(pSelect);
-            TreeHelpers.load(this); // must be after load tables
-            linksController.load(pSelect);
-            GroupBy.load(this, pSelect);
-            OrderBy.load(this, pSelect);
-            conditionsController.load(pSelect);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            tableFieldsController.load(pSelect);
+//            TreeHelpers.load(this); // must be after load tables
+//            linksController.load(pSelect);
+//            groupingController.load(pSelect);
+//            orderController.load(pSelect);
+//            conditionsController.load(pSelect);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+        queryParts.forEach(part -> {
+            try {
+                part.load(pSelect);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        TreeHelpers.load(this); // must be after load tables
     }
 
     private void clearIfNotNull(TreeTableView<TableRow> treeTable) {
@@ -340,14 +368,14 @@ public class MainController implements Subscriber {
 
         if (!firstRun) {
             clearIfNotNull(conditionsController.getConditionsTreeTable());
-            clearIfNotNull(groupFieldsTree);
-            clearIfNotNull(orderFieldsTree);
+            clearIfNotNull(groupingController.getGroupFieldsTree());
+            clearIfNotNull(orderController.getOrderFieldsTree());
         }
 
         conditionsController.getConditionTableResults().getItems().clear();
-        groupTableResults.getItems().clear();
-        groupTableAggregates.getItems().clear();
-        orderTableResults.getItems().clear();
+        groupingController.getGroupTableResults().getItems().clear();
+        groupingController.getGroupTableAggregates().getItems().clear();
+        orderController.getOrderTableResults().getItems().clear();
 
         if (cteChange) {
             unionAliasesController.getUnionTable().getItems().clear();
@@ -389,81 +417,6 @@ public class MainController implements Subscriber {
 //        }
 //        System.out.println(selectBody);
     }
-
-    @FXML
-    protected void selectOrder(ActionEvent event) {
-        makeSelect(orderFieldsTree, orderTableResults, ORDER_DEFAULT_VALUE);
-    }
-
-    @FXML
-    protected void deselectOrder(ActionEvent event) {
-        makeDeselect(orderTableResults, orderFieldsTree);
-    }
-
-    @FXML
-    private TreeTableView<TableRow> groupFieldsTree;
-    @FXML
-    private TreeTableColumn<TableRow, TableRow> groupFieldsTreeColumn;
-    @FXML
-    private TableView<TableRow> groupTableResults;
-    @FXML
-    private TableColumn<TableRow, String> groupTableResultsFieldColumn;
-    @FXML
-    private TableView<TableRow> groupTableAggregates;
-    @FXML
-    private TableColumn<TableRow, String> groupTableAggregatesFieldColumn;
-    @FXML
-    private TableColumn<TableRow, String> groupTableAggregatesFunctionColumn;
-
-    @FXML
-    protected void selectGroup(ActionEvent event) {
-        makeSelect(groupFieldsTree, groupTableResults);
-    }
-
-    @FXML
-    protected void deselectGroup(ActionEvent event) {
-        makeDeselect(groupTableResults, groupFieldsTree);
-    }
-
-    @FXML
-    protected void selectAggregate(ActionEvent event) {
-        makeSelect(groupFieldsTree, groupTableAggregates, GROUP_DEFAULT_VALUE);
-    }
-
-    @FXML
-    protected void deselectAggregate(ActionEvent event) {
-        makeDeselect(groupTableAggregates, groupFieldsTree);
-    }
-
-    @FXML
-    private Button orderUpButton;
-    @FXML
-    private Button orderDownButton;
-
-    @FXML
-    protected void orderUp(ActionEvent event) {
-        int index = orderTableResults.getSelectionModel().getSelectedIndex();
-        orderTableResults.getItems().add(index - 1, orderTableResults.getItems().remove(index));
-        orderTableResults.getSelectionModel().clearAndSelect(index - 1);
-    }
-
-    @FXML
-    protected void orderDown(ActionEvent event) {
-        int index = orderTableResults.getSelectionModel().getSelectedIndex();
-        orderTableResults.getItems().add(index + 1, orderTableResults.getItems().remove(index));
-        orderTableResults.getSelectionModel().clearAndSelect(index + 1);
-    }
-
-    @FXML
-    private TreeTableView<TableRow> orderFieldsTree;
-    @FXML
-    private TreeTableColumn<TableRow, TableRow> orderFieldsTreeColumn;
-    @FXML
-    private TableView<TableRow> orderTableResults;
-    @FXML
-    private TableColumn<TableRow, String> orderTableResultsFieldColumn;
-    @FXML
-    private TableColumn<TableRow, String> orderTableResultsSortingColumn;
 
     public void removeCTEClick(ActionEvent actionEvent) {
     }

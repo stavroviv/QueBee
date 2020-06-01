@@ -14,7 +14,7 @@ import java.util.Map;
 
 import static com.querybuilder.utils.Constants.DATABASE_TABLE_ROOT;
 
-public class DBStructureImpl implements DBStructure {
+public class DBStructureIDEA2019 implements DBStructure {
     private Map<String, List<String>> dbElements;
 
     @Override

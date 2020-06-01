@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<AnchorPane prefHeight="450.0" prefWidth="655.0" xmlns="http://javafx.com/javafx/10.0.2-internal"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.querybuilder.querypart.GroupBy">
+    <SplitPane dividerPositions="0.2844311377245509" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0"
+               AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <items>
+            <AnchorPane>
+                <children>
+                    <TreeTableView fx:id="groupFieldsTree" prefHeight="626.0" prefWidth="233.0" showRoot="false"
+                                   AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0"
+                                   AnchorPane.rightAnchor="49.0" AnchorPane.topAnchor="10.0">
+                        <columns>
+                            <TreeTableColumn fx:id="groupFieldsTreeColumn" prefWidth="75.0" sortable="false"
+                                             text="Fields"/>
+                        </columns>
+                        <columnResizePolicy>
+                            <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                        </columnResizePolicy>
+                    </TreeTableView>
+                    <VBox alignment="TOP_RIGHT" layoutX="233.0" minWidth="30.0" prefHeight="636.0" prefWidth="57.0"
+                          AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="233.0" AnchorPane.rightAnchor="0.0"
+                          AnchorPane.topAnchor="0.0">
+
+
+                        <children>
+                            <Pane layoutX="10.0" layoutY="30.0" maxWidth="53.0" prefHeight="80.0" prefWidth="53.0"/>
+                            <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" onAction="#selectGroup"
+                                    prefHeight="25.0" prefWidth="40.0" text="&gt;">
+                                <VBox.margin>
+                                    <Insets right="5.0"/>
+                                </VBox.margin>
+                            </Button>
+                            <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0"
+                                    prefWidth="40.0" text="&gt;&gt;">
+                                <VBox.margin>
+                                    <Insets right="5.0" top="5.0"/>
+                                </VBox.margin>
+                            </Button>
+                            <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" onAction="#deselectGroup"
+                                    prefHeight="25.0" prefWidth="40.0" text="&lt;">
+                                <VBox.margin>
+                                    <Insets right="5.0" top="5.0"/>
+                                </VBox.margin>
+                            </Button>
+                            <Button layoutX="19.0" layoutY="142.0" minHeight="25.0" minWidth="40.0"
+                                    mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&lt;&lt;">
+                                <VBox.margin>
+                                    <Insets right="5.0" top="5.0"/>
+                                </VBox.margin>
+                            </Button>
+                            <Pane maxWidth="20.0" minWidth="20.0" nodeOrientation="RIGHT_TO_LEFT" prefHeight="220.0"
+                                  prefWidth="20.0"/>
+                            <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" onAction="#selectAggregate"
+                                    prefHeight="25.0" prefWidth="40.0" text="&gt;">
+                                <VBox.margin>
+                                    <Insets right="5.0"/>
+                                </VBox.margin>
+                            </Button>
+                            <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0"
+                                    prefWidth="40.0" text="&gt;&gt;">
+                                <VBox.margin>
+                                    <Insets right="5.0" top="5.0"/>
+                                </VBox.margin>
+                            </Button>
+                            <Button layoutX="19.0" layoutY="150.0" minHeight="25.0" minWidth="40.0"
+                                    mnemonicParsing="false" onAction="#deselectAggregate" prefHeight="25.0"
+                                    prefWidth="40.0" text="&lt;">
+                                <VBox.margin>
+                                    <Insets right="5.0" top="5.0"/>
+                                </VBox.margin>
+                            </Button>
+                            <Button layoutX="19.0" layoutY="180.0" minHeight="25.0" minWidth="40.0"
+                                    mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&lt;&lt;">
+                                <VBox.margin>
+                                    <Insets right="5.0" top="5.0"/>
+                                </VBox.margin>
+                            </Button>
+                        </children>
+                    </VBox>
+                </children>
+            </AnchorPane>
+            <AnchorPane>
+                <children>
+                    <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="636.0" prefWidth="702.0"
+                               AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                               AnchorPane.topAnchor="0.0">
+                        <items>
+                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                                <children>
+                                    <TableView fx:id="groupTableResults" layoutX="28.0" layoutY="35.0"
+                                               prefHeight="323.0" prefWidth="622.0" AnchorPane.bottomAnchor="0.0"
+                                               AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="10.0"
+                                               AnchorPane.topAnchor="10.0">
+                                        <columns>
+                                            <TableColumn fx:id="groupTableResultsFieldColumn" prefWidth="75.0"
+                                                         sortable="false" text="Grouping field"/>
+                                        </columns>
+                                        <columnResizePolicy>
+                                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                        </columnResizePolicy>
+                                    </TableView>
+                                </children>
+                            </AnchorPane>
+                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                                <children>
+                                    <TableView fx:id="groupTableAggregates" editable="true" layoutX="106.0"
+                                               layoutY="29.0" prefHeight="323.0" prefWidth="814.0"
+                                               AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                               AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="0.0">
+                                        <columns>
+                                            <TableColumn fx:id="groupTableAggregatesFieldColumn" prefWidth="75.0"
+                                                         sortable="false" text="Aggregate field"/>
+                                            <TableColumn fx:id="groupTableAggregatesFunctionColumn" prefWidth="75.0"
+                                                         sortable="false" text="Function"/>
+                                        </columns>
+                                        <columnResizePolicy>
+                                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                        </columnResizePolicy>
+                                    </TableView>
+                                </children>
+                            </AnchorPane>
+                        </items>
+                    </SplitPane>
+                </children>
+            </AnchorPane>
+        </items>
+    </SplitPane>
+</AnchorPane>
