@@ -29,17 +29,17 @@ public class DBStructureIDEA2018 implements DBStructure {
         // DatabaseStructure.getModel(dataSource, PostgresModModel.class).getRoot().getChildren().get(0)
         JBIterable<? extends DasObject> modelRoots = dataSource.getModel().getModelRoots();
         String sqlDialect = dataSource.getDatabaseDriver().getSqlDialect();
-        if (sqlDialect.equals("PostgreSQL")) {
-            modelRoots
-                    .find(x -> x.getKind().equals(ObjectKind.DATABASE))
-                    .getDasChildren(ObjectKind.SCHEMA)
-                    .find(x -> x.getKind().equals(ObjectKind.SCHEMA))
-                    .getDasChildren(ObjectKind.TABLE).forEach(table -> addToStructure(table, root));
-        } else if (sqlDialect.equals("MySQL")) {
-            modelRoots
-                    .find(x -> x.getKind().equals(ObjectKind.SCHEMA))
-                    .getDasChildren(ObjectKind.TABLE).forEach(table -> addToStructure(table, root));
-        }
+//        if (sqlDialect.equals("PostgreSQL")) {
+//            modelRoots
+//                    .find(x -> x.getKind().equals(ObjectKind.DATABASE))
+//                    .getDasChildren(ObjectKind.SCHEMA)
+//                    .find(x -> x.getKind().equals(ObjectKind.SCHEMA))
+//                    .getDasChildren(ObjectKind.TABLE).forEach(table -> addToStructure(table, root));
+//        } else if (sqlDialect.equals("MySQL")) {
+//            modelRoots
+//                    .find(x -> x.getKind().equals(ObjectKind.SCHEMA))
+//                    .getDasChildren(ObjectKind.TABLE).forEach(table -> addToStructure(table, root));
+//        }
         return root;
     }
 
