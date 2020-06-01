@@ -2,6 +2,9 @@ package com.querybuilder;
 
 import com.intellij.database.console.JdbcConsole;
 import com.intellij.database.dataSource.LocalDataSource;
+import com.intellij.database.model.DasObject;
+import com.intellij.database.model.ObjectKind;
+import com.intellij.database.util.ObjectPath;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -16,6 +19,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CodeStyleManager;
+import com.intellij.util.containers.JBIterable;
 import javafx.embed.swing.JFXPanel;
 
 public class MainAction extends AnAction {
@@ -29,8 +33,31 @@ public class MainAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-        JdbcConsole maybeAttachedSession = JdbcConsole.findConsole(e);
-        LocalDataSource dataSource = maybeAttachedSession.getDataSource();
+        JdbcConsole console = JdbcConsole.findConsole(e);
+        LocalDataSource dataSource = console.getDataSource();
+
+        ObjectPath currentNamespace = console.getCurrentNamespace();
+        //   System.out.println(currentNamespace);
+        JBIterable<? extends DasObject> modelRoots = dataSource.getModel().getModelRoots();
+//        for (DasObject modelRoot : modelRoots) {
+//            System.out.println(modelRoot.getName());
+//        }
+        String sqlDialect = dataSource.getDatabaseDriver().getSqlDialect();
+        if (sqlDialect.equals("PostgreSQL")) {
+            //   modelRoots.find(x->x.getName().equals(currentNamespace.getName())).getDasChildren()
+            DasObject dasObject = modelRoots.find(x -> x.getName().equals(currentNamespace.getName()));
+            JBIterable<? extends DasObject> dasChildren = dasObject.getDasChildren(ObjectKind.SCHEMA);
+            DasObject dasObject1 = dasChildren.find(x -> x.getName().equals("public: schema"));
+            for (DasObject dasChild : dasChildren) {
+                System.out.println(dasChild);
+                // (PgImplModel.) dasChild;
+            }
+            JBIterable<? extends DasObject> dasChildren1 = dasObject1.getDasChildren(ObjectKind.TABLE);
+            for (DasObject object : dasChildren1) {
+                System.out.println(object);
+            }
+        }
+
         QueryBuilder qb = new QueryBuilder(getSelectionText(e), true, dataSource);
         qb.setMainAction(this);
     }
