@@ -2,16 +2,23 @@ package com.querybuilder.database;
 
 import com.intellij.database.console.JdbcConsole;
 import com.intellij.database.dataSource.DataSourceSchemaMapping;
+import com.intellij.database.dataSource.DatabaseDriver;
 import com.intellij.database.dataSource.LocalDataSource;
 import com.intellij.database.model.DasObject;
 import com.intellij.database.model.ObjectKind;
-import com.intellij.database.util.*;
+import com.intellij.database.util.DasUtil;
+import com.intellij.database.util.ObjectPath;
+import com.intellij.database.util.ObjectPaths;
+import com.intellij.database.util.TreePattern;
 import com.intellij.util.containers.JBIterable;
 import com.intellij.util.containers.JBTreeTraverser;
 import com.querybuilder.domain.TableRow;
 import javafx.scene.control.TreeItem;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.querybuilder.utils.Constants.DATABASE_TABLE_ROOT;
 
@@ -27,48 +34,39 @@ public class DBStructureIDEA2019 implements DBStructure {
         TreeItem<TableRow> root = new TreeItem<>(tablesRoot);
         root.setExpanded(true);
 
-
         LocalDataSource dataSource = console.getDataSource();
+        DatabaseDriver databaseDriver = dataSource.getDatabaseDriver();
+        if (databaseDriver == null) {
+            throw new IllegalStateException("Database driver not set");
+        }
 
-        ObjectPath currentNamespace = console.getCurrentNamespace();
-        JBIterable<? extends DasObject> modelRoots = dataSource.getModel().getModelRoots();
-        String sqlDialect = dataSource.getDatabaseDriver().getSqlDialect();
-
-        TreePattern scope = console.getDataSource().getIntrospectionScope();
-
+        String sqlDialect = databaseDriver.getSqlDialect();
         if (!sqlDialect.equals("PostgreSQL")) {
             throw new IllegalStateException("Not supported yet");
         }
 
-        ObjectPath cur = SearchPath.getCurrent(console.getSearchPath());
-
-        dataSource.getIntrospectionScope();
-        Iterator var9 = ((JBTreeTraverser) dataSource.getModel().traverser().expand(DasUtil.byKind(ObjectKind.DATABASE))).iterator();
-        while (var9.hasNext()) {
-            DasObject namespace = (DasObject) var9.next();
-            ObjectPath path = ObjectPaths.of(namespace);
-
-            //List<ObjectPath> searchPath = new ArrayList(SearchPath.getElements(console.getSearchPath()));
-
-            Iterator var10000 = ((JBTreeTraverser) dataSource.getModel()
+        TreePattern scope = console.getDataSource().getIntrospectionScope();
+        JBTreeTraverser<DasObject> databases = dataSource.getModel().traverser().expand(
+                DasUtil.byKind(ObjectKind.DATABASE)
+        );
+        for (DasObject database : databases) {
+            ObjectPath path = ObjectPaths.of(database);
+            JBIterable<DasObject> schemas = dataSource.getModel()
                     .traverser()
                     .expandAndSkip(
                             x -> x.getKind() == ObjectKind.DATABASE && x.getName().equals(path.getName()))
-            ).filter(DasUtil.byKind(ObjectKind.SCHEMA)).traverse().iterator();
+                    .filter(DasUtil.byKind(ObjectKind.SCHEMA)).traverse();
 
-            while (var10000.hasNext()) {
-                DasObject schema = (DasObject) var10000.next();
-                boolean introspected = DataSourceSchemaMapping.isIntrospected(scope, schema);
-                if (introspected) {
-                    JBIterable<? extends DasObject> dasChildren1 = schema.getDasChildren(ObjectKind.TABLE);
-                    for (DasObject object : dasChildren1) {
-                        addToStructure(object, root);
-                    }
-                    break;
+            for (DasObject schema : schemas) {
+                if (!DataSourceSchemaMapping.isIntrospected(scope, schema)) {
+                    continue;
                 }
-
+                JBIterable<? extends DasObject> dasChildren1 = schema.getDasChildren(ObjectKind.TABLE);
+                for (DasObject object : dasChildren1) {
+                    addToStructure(object, root);
+                }
+                break;
             }
-
         }
 
         return root;
