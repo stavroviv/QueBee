@@ -3,7 +3,7 @@
     <name>QueBee</name>
     <vendor email="QueBee@gmail.com" url="http://www.homelab.com">QueBee</vendor>
 
-    <description><![CDATA[ Query builder for making selects queries<br> <em>in Postgres, MySQL</em>]]></description>
+    <description><![CDATA[ Query builder for making select queries in <em>Postgres</em>]]></description>
 
     <depends>com.intellij.modules.database</depends>
     <depends>com.intellij.modules.ultimate</depends>
@@ -12,13 +12,10 @@
     </extensions>
 
     <actions>
-        <action id="com.querybuilder.home.lab.SQLQueryBuilder" class="com.querybuilder.MainAction"
-                text="SQL query builder" description="Open best in the world SQL query builder">
-            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
-        </action>
-        <action id="com.querybuilder.MainAction" class="com.querybuilder.MainAction" text="QB"
-                description="Query builder" icon="/images/qbicon.png">
+        <action id="com.querybuilder.MainAction" class="com.querybuilder.MainAction" text="Open QB"
+                description="Open QueBee to edit query" icon="/images/qbicon.png">
             <add-to-group group-id="Console.Jdbc.Left" anchor="after" relative-to-action="Database.Settings"/>
         </action>
     </actions>
+
 </idea-plugin>
