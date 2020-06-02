@@ -21,28 +21,28 @@ import javafx.embed.swing.JFXPanel;
 public class MainAction extends AnAction {
     private Editor editor;
     private Project project;
-    private AnActionEvent e;
+    private AnActionEvent mainEvent;
 
     static {
         new JFXPanel();
     }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
-        JdbcConsole maybeAttachedSession = JdbcConsole.findConsole(e);
-        LocalDataSource dataSource = maybeAttachedSession.getDataSource();
-        QueryBuilder qb = new QueryBuilder(getSelectionText(e), true, dataSource);
+    public void actionPerformed(AnActionEvent event) {
+        this.editor = event.getRequiredData(CommonDataKeys.EDITOR);
+        this.project = event.getRequiredData(CommonDataKeys.PROJECT);
+        this.mainEvent = event;
+        JdbcConsole console = JdbcConsole.findConsole(event);
+        LocalDataSource dataSource = console.getDataSource();
+        QueryBuilder qb = new QueryBuilder(getSelectionText(event), true, dataSource);
         qb.setMainAction(this);
     }
 
-    private String getSelectionText(AnActionEvent e) {
-        editor = e.getRequiredData(CommonDataKeys.EDITOR);
-        project = e.getRequiredData(CommonDataKeys.PROJECT);
-        this.e = e;
+    private String getSelectionText(AnActionEvent event) {
         CaretModel caretModel = editor.getCaretModel();
         Caret currentCaret = caretModel.getCurrentCaret();
         return currentCaret.hasSelection()
-                ? currentCaret.getSelectedText() : e.getData(CommonDataKeys.PSI_FILE).getText();
+                ? currentCaret.getSelectedText() : event.getData(CommonDataKeys.PSI_FILE).getText();
     }
 
     void insertResult(String resultQuery) {
@@ -54,18 +54,15 @@ public class MainAction extends AnAction {
             int end = primaryCaret.getSelectionEnd();
             // Replace the selection with a fixed string.
             // Must do this document change in a write action context.
-            WriteCommandAction.runWriteCommandAction(
-                    project, () ->
-                    {
-                        PsiElement data = e.getData(LangDataKeys.PSI_FILE);
-                        if (start != end) {
-                            document.replaceString(start, end, resultQuery);
-                        } else {
-                            document.replaceString(0, document.getTextLength(), resultQuery);
-                        }
-                        CodeStyleManager.getInstance(project).reformatText((PsiFile) data, 0, document.getTextLength());
-                    }
-            );
+            WriteCommandAction.runWriteCommandAction(project, () -> {
+                PsiElement data = mainEvent.getData(LangDataKeys.PSI_FILE);
+                if (start != end) {
+                    document.replaceString(start, end, resultQuery);
+                } else {
+                    document.replaceString(0, document.getTextLength(), resultQuery);
+                }
+                CodeStyleManager.getInstance(project).reformatText((PsiFile) data, 0, document.getTextLength());
+            });
         });
     }
 }
