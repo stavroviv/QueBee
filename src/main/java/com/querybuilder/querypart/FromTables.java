@@ -1,12 +1,12 @@
 package com.querybuilder.querypart;
 
 import com.querybuilder.controllers.MainController;
-import com.querybuilder.database.DBStructure;
-import com.querybuilder.database.DBStructureIDEA2019;
+import com.querybuilder.domain.DBTables;
 import com.querybuilder.domain.SelectedFieldsTree;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.eventbus.CustomEvent;
 import com.querybuilder.eventbus.CustomEventBus;
+import com.querybuilder.eventbus.Subscriber;
 import com.querybuilder.utils.CustomCell;
 import com.querybuilder.utils.Utils;
 import javafx.collections.ListChangeListener;
@@ -34,7 +34,7 @@ import static com.querybuilder.utils.Utils.*;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class FromTables extends AbstractQueryPart {
+public class FromTables extends AbstractQueryPart implements Subscriber {
     @FXML
     private Button addInnerQuery;
     @FXML
@@ -65,13 +65,12 @@ public class FromTables extends AbstractQueryPart {
             }
         });
         setStringColumnFactory(fieldColumn);
+        CustomEventBus.register(this);
     }
 
-    public void loadDbStructure() {
-        DBStructure db = new DBStructureIDEA2019();
-        TreeItem<TableRow> dbStructure = db.getDBStructure(mainController.getQueryBuilder().getConsole());
+    public void loadDbStructureToTree(DBTables dbStructure) {
         databaseTableView.setRoot(new TreeItem<>());
-        databaseTableView.getRoot().getChildren().add(dbStructure);
+        databaseTableView.getRoot().getChildren().add(dbStructure.getRoot());
     }
 
     public void editField() {
@@ -220,6 +219,7 @@ public class FromTables extends AbstractQueryPart {
     public void load(PlainSelect pSelect) {
         loadFromTables(pSelect);
         loadSelectedItems(pSelect);
+        TreeHelpers.load(mainController);
     }
 
     private void loadFromTables(PlainSelect pSelect) {
@@ -236,7 +236,7 @@ public class FromTables extends AbstractQueryPart {
 
         for (Join join : joins) {
             FromItem rightItem = join.getRightItem();
-            String rightItemName = "";
+            String rightItemName;
             if (rightItem instanceof Table) {
                 rightItemName = rightItem.toString();
                 tablesView.getRoot().getChildren().add(getTableItemWithFields(mainController, rightItemName));
@@ -390,4 +390,8 @@ public class FromTables extends AbstractQueryPart {
         editField();
     }
 
+    @Override
+    public void initData(Map<String, Object> data) {
+
+    }
 }

@@ -12,6 +12,7 @@ import com.intellij.database.util.ObjectPaths;
 import com.intellij.database.util.TreePattern;
 import com.intellij.util.containers.JBIterable;
 import com.intellij.util.containers.JBTreeTraverser;
+import com.querybuilder.domain.DBTables;
 import com.querybuilder.domain.TableRow;
 import javafx.scene.control.TreeItem;
 
@@ -22,11 +23,11 @@ import java.util.Map;
 
 import static com.querybuilder.utils.Constants.DATABASE_TABLE_ROOT;
 
-public class DBStructureIDEA2019 implements DBStructure {
+public class DBStructureImpl implements DBStructure {
     private Map<String, List<String>> dbElements;
 
     @Override
-    public TreeItem<TableRow> getDBStructure(JdbcConsole console) {
+    public DBTables getDBStructure(JdbcConsole console) {
         dbElements = new HashMap<>();
 
         TableRow tablesRoot = new TableRow(DATABASE_TABLE_ROOT);
@@ -69,7 +70,10 @@ public class DBStructureIDEA2019 implements DBStructure {
             }
         }
 
-        return root;
+        DBTables data = new DBTables();
+        data.setDbElements(dbElements);
+        data.setRoot(root);
+        return data;
     }
 
     private void addToStructure(DasObject table, TreeItem<TableRow> root) {
@@ -83,13 +87,5 @@ public class DBStructureIDEA2019 implements DBStructure {
             stringTreeItem.getChildren().add(new TreeItem<>(new TableRow(column.getName())));
         });
         dbElements.put(table.getName(), tableElements);
-    }
-
-    @Override
-    public Map<String, List<String>> getDbElements() {
-        if (dbElements == null) {
-            System.out.println("DATA SOURCE NOT SET");
-        }
-        return dbElements;
     }
 }

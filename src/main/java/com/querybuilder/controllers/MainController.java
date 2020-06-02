@@ -2,10 +2,10 @@ package com.querybuilder.controllers;
 
 import com.querybuilder.QueryBuilder;
 import com.querybuilder.database.DBStructure;
-import com.querybuilder.database.DBStructureIDEA2019;
+import com.querybuilder.database.DBStructureImpl;
+import com.querybuilder.domain.DBTables;
 import com.querybuilder.domain.SelectedFieldsTree;
 import com.querybuilder.domain.TableRow;
-import com.querybuilder.eventbus.CustomEventBus;
 import com.querybuilder.eventbus.Subscriber;
 import com.querybuilder.querypart.*;
 import javafx.collections.ListChangeListener;
@@ -92,12 +92,8 @@ public class MainController implements Subscriber {
         this.sQuery = sQuery;
 
         initDBTables();
-//        initQueryParts();
         reloadData();
-
         setPagesListeners();
-
-        CustomEventBus.register(this);
     }
 
     //<editor-fold defaultstate="collapsed" desc="FILL SHOW AUERY">
@@ -160,18 +156,6 @@ public class MainController implements Subscriber {
                 e.printStackTrace();
             }
         });
-//
-//        try {
-//            queryParts.forEach(part->part.save(selectBody));
-//            tableFieldsController.save(selectBody);
-//            linksController.save(selectBody);
-//            groupingController.save(selectBody);
-//            orderController.save(selectBody);
-//            conditionsController.save(selectBody);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-
         processUnionsAndCTE(cteTab, unionTab, selectBody);
     }
 
@@ -284,10 +268,10 @@ public class MainController implements Subscriber {
     }
 
     private void initDBTables() {
-        DBStructure db = new DBStructureIDEA2019();
-        db.getDBStructure(queryBuilder.getConsole()); // FIXME
-        dbElements = db.getDbElements();
-        tableFieldsController.loadDbStructure();
+        DBStructure db = new DBStructureImpl();
+        DBTables dbStructure = db.getDBStructure(queryBuilder.getConsole());
+        dbElements = dbStructure.getDbElements();
+        tableFieldsController.loadDbStructureToTree(dbStructure);
     }
 
     //</editor-fold>
@@ -336,16 +320,6 @@ public class MainController implements Subscriber {
     private int cteNumberPrev = -1;
 
     private void loadSelectData(PlainSelect pSelect) {
-//        try {
-//            tableFieldsController.load(pSelect);
-//            TreeHelpers.load(this); // must be after load tables
-//            linksController.load(pSelect);
-//            groupingController.load(pSelect);
-//            orderController.load(pSelect);
-//            conditionsController.load(pSelect);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
         queryParts.forEach(part -> {
             try {
                 part.load(pSelect);
@@ -353,7 +327,6 @@ public class MainController implements Subscriber {
                 e.printStackTrace();
             }
         });
-        TreeHelpers.load(this); // must be after load tables
     }
 
     private void clearIfNotNull(TreeTableView<TableRow> treeTable) {

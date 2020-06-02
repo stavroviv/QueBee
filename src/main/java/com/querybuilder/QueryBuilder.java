@@ -71,6 +71,7 @@ public class QueryBuilder {
             Map<String, Object> data = new HashMap<>();
             data.put("sQuery", statement);
             data.put("queryBuilder", this);
+
             JFXPanel fxPanel = new JFXPanel();
             fxPanel.setScene(getScene("/forms/main-form.fxml", data));
 
@@ -78,7 +79,6 @@ public class QueryBuilder {
             frame.setContentPane(fxPanel);
             frame.pack();
             frame.setSize(900, 650);
-
 
             IdeFrame ideFrame = WindowManager.getInstance().getIdeFrame(action.getProject());
             frame.setLocationRelativeTo(ideFrame.getComponent());

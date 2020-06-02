@@ -97,20 +97,21 @@ public class Utils {
         tablesViewColumn.setCellFactory(ttc -> new CustomCell());
     }
 
-    public static ObservableList<String> getColumns(MainController controller, String tableName, AtomicReference<Boolean> isCte) {
+    public static ObservableList<String> getColumns(MainController controller, String table, AtomicReference<Boolean> isCte) {
         List<String> resultColumns = new ArrayList<>();
-        List<String> dbColumns = controller.getDbElements().get(tableName);
+        List<String> dbColumns = controller.getDbElements().get(table);
         if (dbColumns != null) {
             resultColumns.addAll(dbColumns);
             return FXCollections.observableArrayList(resultColumns);
         }
 
         // CTE
-        ObservableList<TreeItem<TableRow>> tables = controller.getTableFieldsController().getDatabaseTableView().getRoot().getChildren();
+        TreeTableView<TableRow> databaseTableView = controller.getTableFieldsController().getDatabaseTableView();
+        ObservableList<TreeItem<TableRow>> tables = databaseTableView.getRoot().getChildren();
         if (tables.size() > 0 && tables.get(0).getValue().getName().equals(CTE_ROOT)) {
             ObservableList<TreeItem<TableRow>> cte = tables.get(0).getChildren();
             for (TreeItem<TableRow> item : cte) {
-                if (!item.getValue().getName().equals(tableName)) {
+                if (!item.getValue().getName().equals(table)) {
                     continue;
                 }
                 isCte.set(true);
@@ -245,12 +246,10 @@ public class Utils {
         setTreeSelectHandler(fieldsTree, resultsTable, "");
     }
 
-    public static void setTreeSelectHandler(TreeTableView<TableRow> fieldsTree,
-                                            TableView<TableRow> resultsTable,
-                                            String defValue) {
-        fieldsTree.setOnMousePressed(e -> {
+    public static void setTreeSelectHandler(TreeTableView<TableRow> tree, TableView<TableRow> table, String value) {
+        tree.setOnMousePressed(e -> {
             if (doubleClick(e)) {
-                makeSelect(fieldsTree, resultsTable, defValue);
+                makeSelect(tree, table, value);
             }
         });
     }
