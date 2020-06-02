@@ -1,7 +1,5 @@
 package com.querybuilder;
 
-import com.intellij.database.console.JdbcConsole;
-import com.intellij.database.dataSource.LocalDataSource;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -9,7 +7,6 @@ import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Caret;
-import com.intellij.openapi.editor.CaretModel;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
@@ -17,11 +14,15 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import javafx.embed.swing.JFXPanel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@Data
+@EqualsAndHashCode(callSuper = false)
 public class MainAction extends AnAction {
     private Editor editor;
     private Project project;
-    private AnActionEvent mainEvent;
+    private AnActionEvent event;
 
     static {
         new JFXPanel();
@@ -31,18 +32,10 @@ public class MainAction extends AnAction {
     public void actionPerformed(AnActionEvent event) {
         this.editor = event.getRequiredData(CommonDataKeys.EDITOR);
         this.project = event.getRequiredData(CommonDataKeys.PROJECT);
-        this.mainEvent = event;
-        JdbcConsole console = JdbcConsole.findConsole(event);
-        LocalDataSource dataSource = console.getDataSource();
-        QueryBuilder qb = new QueryBuilder(getSelectionText(event), true, dataSource);
-        qb.setMainAction(this);
-    }
+        this.event = event;
 
-    private String getSelectionText(AnActionEvent event) {
-        CaretModel caretModel = editor.getCaretModel();
-        Caret currentCaret = caretModel.getCurrentCaret();
-        return currentCaret.hasSelection()
-                ? currentCaret.getSelectedText() : event.getData(CommonDataKeys.PSI_FILE).getText();
+        QueryBuilder qb = new QueryBuilder(this, true);
+        qb.setMainAction(this);
     }
 
     void insertResult(String resultQuery) {
@@ -55,7 +48,7 @@ public class MainAction extends AnAction {
             // Replace the selection with a fixed string.
             // Must do this document change in a write action context.
             WriteCommandAction.runWriteCommandAction(project, () -> {
-                PsiElement data = mainEvent.getData(LangDataKeys.PSI_FILE);
+                PsiElement data = event.getData(LangDataKeys.PSI_FILE);
                 if (start != end) {
                     document.replaceString(start, end, resultQuery);
                 } else {

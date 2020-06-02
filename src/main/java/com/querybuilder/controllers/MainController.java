@@ -285,7 +285,7 @@ public class MainController implements Subscriber {
 
     private void initDBTables() {
         DBStructure db = new DBStructureIDEA2018();
-        db.getDBStructure(queryBuilder.getDataSource()); // FIXME
+        db.getDBStructure(queryBuilder.getConsole()); // FIXME
         dbElements = db.getDbElements();
         tableFieldsController.loadDbStructure();
     }

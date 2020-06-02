@@ -1,15 +1,15 @@
 package com.querybuilder;
 
-import com.intellij.database.dataSource.LocalDataSource;
-import com.intellij.ide.DataManager;
-import com.intellij.openapi.actionSystem.DataConstants;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.project.Project;
+import com.intellij.database.console.JdbcConsole;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.editor.Caret;
+import com.intellij.openapi.editor.CaretModel;
 import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.openapi.wm.WindowManager;
 import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.TableRow;
 import javafx.embed.swing.JFXPanel;
+import lombok.Data;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -23,6 +23,7 @@ import java.util.Map;
 
 import static com.querybuilder.utils.Utils.getScene;
 
+@Data
 public class QueryBuilder {
     private JFrame frame;
     private boolean mainForm;
@@ -32,29 +33,40 @@ public class QueryBuilder {
     private MainController mainController;
     private TableRow item;
 
-    public QueryBuilder(String text, boolean mainForm, LocalDataSource dataSource) {
-        this.mainForm = mainForm;
-        this.dataSource = dataSource;
+    private JdbcConsole console;
 
-        Statement stmt;
+    public QueryBuilder(MainAction action, boolean mainForm) {
+        this.mainForm = mainForm;
+        this.console = JdbcConsole.findConsole(action.getEvent());
+
+        String text = getSelectionText(action);
+        Statement statement;
         if (text != null && !text.isEmpty()) {
             try {
-                stmt = CCJSqlParserUtil.parse(text);
+                statement = CCJSqlParserUtil.parse(text);
             } catch (JSQLParserException exception) {
-                JOptionPane.showMessageDialog(null,
-                        "Cannot parse query\n" + exception.getCause().getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Cannot parse query\n" + exception.getCause().getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
                 return;
             }
         } else {
-            stmt = new Select();
+            statement = new Select();
         }
 
-        if (!(stmt instanceof Select)) {
+        if (!(statement instanceof Select)) {
             return;
         }
 
+        buildForm(action, statement);
+    }
+
+    private void buildForm(MainAction action, Statement statement) {
         Map<String, Object> data = new HashMap<>();
-        data.put("sQuery", stmt);
+        data.put("sQuery", statement);
         data.put("queryBuilder", this);
 
         JFXPanel fxPanel = new JFXPanel();
@@ -65,12 +77,17 @@ public class QueryBuilder {
         frame.pack();
         frame.setSize(900, 650);
 
-        DataContext dataContext = DataManager.getInstance().getDataContext();
-        Project project = (Project) dataContext.getData(DataConstants.PROJECT);
-        IdeFrame ideFrame = WindowManager.getInstance().getIdeFrame(project);
-
+        IdeFrame ideFrame = WindowManager.getInstance().getIdeFrame(action.getProject());
         frame.setLocationRelativeTo(ideFrame.getComponent());
         frame.setVisible(true);
+    }
+
+    private String getSelectionText(MainAction action) {
+        CaretModel caretModel = action.getEditor().getCaretModel();
+        Caret currentCaret = caretModel.getCurrentCaret();
+        return currentCaret.hasSelection()
+                ? currentCaret.getSelectedText()
+                : action.getEvent().getData(CommonDataKeys.PSI_FILE).getText();
     }
 
     public void closeForm() {
@@ -94,35 +111,5 @@ public class QueryBuilder {
         result.setWithItemsList(select.getWithItemsList());
         result.setAlias(new Alias(alias));
         return result;
-    }
-
-    public void setMainAction(MainAction mainAction) {
-        this.mainAction = mainAction;
-    }
-
-    public MainAction getMainAction() {
-        return mainAction;
-    }
-
-    public MainController getParentController() {
-        return parentController;
-    }
-
-    public void setParentController(MainController parentController) {
-        this.parentController = parentController;
-    }
-
-    public void setItem(TableRow item) {
-        this.item = item;
-    }
-
-    public LocalDataSource getDataSource() {
-        return dataSource;
-    }
-
-    private LocalDataSource dataSource;
-
-    public void setDataSource(LocalDataSource dataSource) {
-        this.dataSource = dataSource;
     }
 }

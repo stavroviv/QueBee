@@ -69,7 +69,7 @@ public class FromTables extends AbstractQueryPart {
 
     public void loadDbStructure() {
         DBStructure db = new DBStructureIDEA2018();
-        TreeItem<TableRow> dbStructure = db.getDBStructure(mainController.getQueryBuilder().getDataSource());
+        TreeItem<TableRow> dbStructure = db.getDBStructure(mainController.getQueryBuilder().getConsole());
         databaseTableView.setRoot(new TreeItem<>());
         databaseTableView.getRoot().getChildren().add(dbStructure);
     }

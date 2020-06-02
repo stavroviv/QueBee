@@ -1,9 +1,8 @@
 package com.querybuilder.database;
 
-import com.intellij.database.dataSource.LocalDataSource;
+import com.intellij.database.console.JdbcConsole;
 import com.intellij.database.model.DasObject;
 import com.intellij.database.model.ObjectKind;
-import com.intellij.util.containers.JBIterable;
 import com.querybuilder.domain.TableRow;
 import javafx.scene.control.TreeItem;
 
@@ -18,7 +17,7 @@ public class DBStructureIDEA2019 implements DBStructure {
     private Map<String, List<String>> dbElements;
 
     @Override
-    public TreeItem<TableRow> getDBStructure(LocalDataSource dataSource) {
+    public TreeItem<TableRow> getDBStructure(JdbcConsole console) {
         dbElements = new HashMap<>();
 
         TableRow tablesRoot = new TableRow(DATABASE_TABLE_ROOT);
@@ -27,19 +26,19 @@ public class DBStructureIDEA2019 implements DBStructure {
         root.setExpanded(true);
         // посмотреть это для получени структуры БД
         // DatabaseStructure.getModel(dataSource, PostgresModModel.class).getRoot().getChildren().get(0)
-        JBIterable<? extends DasObject> modelRoots = dataSource.getModel().getModelRoots();
-        String sqlDialect = dataSource.getDatabaseDriver().getSqlDialect();
-        if (sqlDialect.equals("PostgreSQL")) {
-            modelRoots
-                    .find(x -> x.getKind().equals(ObjectKind.DATABASE))
-                    .getDasChildren(ObjectKind.SCHEMA)
-                    .find(x -> x.getKind().equals(ObjectKind.SCHEMA))
-                    .getDasChildren(ObjectKind.TABLE).forEach(table -> addToStructure(table, root));
-        } else if (sqlDialect.equals("MySQL")) {
-            modelRoots
-                    .find(x -> x.getKind().equals(ObjectKind.SCHEMA))
-                    .getDasChildren(ObjectKind.TABLE).forEach(table -> addToStructure(table, root));
-        }
+//        JBIterable<? extends DasObject> modelRoots = dataSource.getModel().getModelRoots();
+//        String sqlDialect = dataSource.getDatabaseDriver().getSqlDialect();
+//        if (sqlDialect.equals("PostgreSQL")) {
+//            modelRoots
+//                    .find(x -> x.getKind().equals(ObjectKind.DATABASE))
+//                    .getDasChildren(ObjectKind.SCHEMA)
+//                    .find(x -> x.getKind().equals(ObjectKind.SCHEMA))
+//                    .getDasChildren(ObjectKind.TABLE).forEach(table -> addToStructure(table, root));
+//        } else if (sqlDialect.equals("MySQL")) {
+//            modelRoots
+//                    .find(x -> x.getKind().equals(ObjectKind.SCHEMA))
+//                    .getDasChildren(ObjectKind.TABLE).forEach(table -> addToStructure(table, root));
+//        }
         return root;
     }
 

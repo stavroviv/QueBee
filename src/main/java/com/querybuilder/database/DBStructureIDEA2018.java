@@ -1,5 +1,6 @@
 package com.querybuilder.database;
 
+import com.intellij.database.console.JdbcConsole;
 import com.intellij.database.dataSource.LocalDataSource;
 import com.intellij.database.model.DasObject;
 import com.intellij.database.model.ObjectKind;
@@ -18,9 +19,9 @@ public class DBStructureIDEA2018 implements DBStructure {
     private Map<String, List<String>> dbElements;
 
     @Override
-    public TreeItem<TableRow> getDBStructure(LocalDataSource dataSource) {
+    public TreeItem<TableRow> getDBStructure(JdbcConsole console) {
         dbElements = new HashMap<>();
-
+        LocalDataSource dataSource = console.getDataSource();
         TableRow tablesRoot = new TableRow(DATABASE_TABLE_ROOT);
         tablesRoot.setRoot(true);
         TreeItem<TableRow> root = new TreeItem<>(tablesRoot);
