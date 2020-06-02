@@ -2,7 +2,7 @@ package com.querybuilder.controllers;
 
 import com.querybuilder.QueryBuilder;
 import com.querybuilder.database.DBStructure;
-import com.querybuilder.database.DBStructureIDEA2018;
+import com.querybuilder.database.DBStructureIDEA2019;
 import com.querybuilder.domain.SelectedFieldsTree;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.eventbus.CustomEventBus;
@@ -284,7 +284,7 @@ public class MainController implements Subscriber {
     }
 
     private void initDBTables() {
-        DBStructure db = new DBStructureIDEA2018();
+        DBStructure db = new DBStructureIDEA2019();
         db.getDBStructure(queryBuilder.getConsole()); // FIXME
         dbElements = db.getDbElements();
         tableFieldsController.loadDbStructure();

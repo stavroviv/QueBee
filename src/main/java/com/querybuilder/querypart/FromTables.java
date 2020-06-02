@@ -2,7 +2,7 @@ package com.querybuilder.querypart;
 
 import com.querybuilder.controllers.MainController;
 import com.querybuilder.database.DBStructure;
-import com.querybuilder.database.DBStructureIDEA2018;
+import com.querybuilder.database.DBStructureIDEA2019;
 import com.querybuilder.domain.SelectedFieldsTree;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.eventbus.CustomEvent;
@@ -68,7 +68,7 @@ public class FromTables extends AbstractQueryPart {
     }
 
     public void loadDbStructure() {
-        DBStructure db = new DBStructureIDEA2018();
+        DBStructure db = new DBStructureIDEA2019();
         TreeItem<TableRow> dbStructure = db.getDBStructure(mainController.getQueryBuilder().getConsole());
         databaseTableView.setRoot(new TreeItem<>());
         databaseTableView.getRoot().getChildren().add(dbStructure);

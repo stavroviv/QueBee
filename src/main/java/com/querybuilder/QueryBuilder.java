@@ -8,6 +8,7 @@ import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.openapi.wm.WindowManager;
 import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.TableRow;
+import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import lombok.Data;
 import net.sf.jsqlparser.JSQLParserException;
@@ -65,21 +66,24 @@ public class QueryBuilder {
     }
 
     private void buildForm(MainAction action, Statement statement) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("sQuery", statement);
-        data.put("queryBuilder", this);
+        Platform.setImplicitExit(false);
+        Platform.runLater(() -> {
+            Map<String, Object> data = new HashMap<>();
+            data.put("sQuery", statement);
+            data.put("queryBuilder", this);
+            JFXPanel fxPanel = new JFXPanel();
+            fxPanel.setScene(getScene("/forms/main-form.fxml", data));
 
-        JFXPanel fxPanel = new JFXPanel();
-        fxPanel.setScene(getScene("/forms/main-form.fxml", data));
+            frame = new JFrame("Query builder");
+            frame.setContentPane(fxPanel);
+            frame.pack();
+            frame.setSize(900, 650);
 
-        frame = new JFrame("Query builder");
-        frame.setContentPane(fxPanel);
-        frame.pack();
-        frame.setSize(900, 650);
 
-        IdeFrame ideFrame = WindowManager.getInstance().getIdeFrame(action.getProject());
-        frame.setLocationRelativeTo(ideFrame.getComponent());
-        frame.setVisible(true);
+            IdeFrame ideFrame = WindowManager.getInstance().getIdeFrame(action.getProject());
+            frame.setLocationRelativeTo(ideFrame.getComponent());
+            frame.setVisible(true);
+        });
     }
 
     private String getSelectionText(MainAction action) {

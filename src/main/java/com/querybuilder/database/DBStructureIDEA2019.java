@@ -1,15 +1,17 @@
 package com.querybuilder.database;
 
 import com.intellij.database.console.JdbcConsole;
+import com.intellij.database.dataSource.DataSourceSchemaMapping;
+import com.intellij.database.dataSource.LocalDataSource;
 import com.intellij.database.model.DasObject;
 import com.intellij.database.model.ObjectKind;
+import com.intellij.database.util.*;
+import com.intellij.util.containers.JBIterable;
+import com.intellij.util.containers.JBTreeTraverser;
 import com.querybuilder.domain.TableRow;
 import javafx.scene.control.TreeItem;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.querybuilder.utils.Constants.DATABASE_TABLE_ROOT;
 
@@ -24,21 +26,51 @@ public class DBStructureIDEA2019 implements DBStructure {
         tablesRoot.setRoot(true);
         TreeItem<TableRow> root = new TreeItem<>(tablesRoot);
         root.setExpanded(true);
-        // посмотреть это для получени структуры БД
-        // DatabaseStructure.getModel(dataSource, PostgresModModel.class).getRoot().getChildren().get(0)
-//        JBIterable<? extends DasObject> modelRoots = dataSource.getModel().getModelRoots();
-//        String sqlDialect = dataSource.getDatabaseDriver().getSqlDialect();
-//        if (sqlDialect.equals("PostgreSQL")) {
-//            modelRoots
-//                    .find(x -> x.getKind().equals(ObjectKind.DATABASE))
-//                    .getDasChildren(ObjectKind.SCHEMA)
-//                    .find(x -> x.getKind().equals(ObjectKind.SCHEMA))
-//                    .getDasChildren(ObjectKind.TABLE).forEach(table -> addToStructure(table, root));
-//        } else if (sqlDialect.equals("MySQL")) {
-//            modelRoots
-//                    .find(x -> x.getKind().equals(ObjectKind.SCHEMA))
-//                    .getDasChildren(ObjectKind.TABLE).forEach(table -> addToStructure(table, root));
-//        }
+
+
+        LocalDataSource dataSource = console.getDataSource();
+
+        ObjectPath currentNamespace = console.getCurrentNamespace();
+        JBIterable<? extends DasObject> modelRoots = dataSource.getModel().getModelRoots();
+        String sqlDialect = dataSource.getDatabaseDriver().getSqlDialect();
+
+        TreePattern scope = console.getDataSource().getIntrospectionScope();
+
+        if (!sqlDialect.equals("PostgreSQL")) {
+            throw new IllegalStateException("Not supported yet");
+        }
+
+        ObjectPath cur = SearchPath.getCurrent(console.getSearchPath());
+
+        dataSource.getIntrospectionScope();
+        Iterator var9 = ((JBTreeTraverser) dataSource.getModel().traverser().expand(DasUtil.byKind(ObjectKind.DATABASE))).iterator();
+        while (var9.hasNext()) {
+            DasObject namespace = (DasObject) var9.next();
+            ObjectPath path = ObjectPaths.of(namespace);
+
+            //List<ObjectPath> searchPath = new ArrayList(SearchPath.getElements(console.getSearchPath()));
+
+            Iterator var10000 = ((JBTreeTraverser) dataSource.getModel()
+                    .traverser()
+                    .expandAndSkip(
+                            x -> x.getKind() == ObjectKind.DATABASE && x.getName().equals(path.getName()))
+            ).filter(DasUtil.byKind(ObjectKind.SCHEMA)).traverse().iterator();
+
+            while (var10000.hasNext()) {
+                DasObject schema = (DasObject) var10000.next();
+                boolean introspected = DataSourceSchemaMapping.isIntrospected(scope, schema);
+                if (introspected) {
+                    JBIterable<? extends DasObject> dasChildren1 = schema.getDasChildren(ObjectKind.TABLE);
+                    for (DasObject object : dasChildren1) {
+                        addToStructure(object, root);
+                    }
+                    break;
+                }
+
+            }
+
+        }
+
         return root;
     }
 
