@@ -12,8 +12,11 @@
     </extensions>
 
     <actions>
-        <action id="com.querybuilder.MainAction" class="com.querybuilder.MainAction" text="Open QB"
-                description="Open QueBee to edit query" icon="/images/qbicon.png">
+        <action id="com.querybuilder.MainAction"
+                class="com.querybuilder.MainAction"
+                text="Open QueBee to Edit Query"
+                description="Open QueBee to edit query"
+                icon="/images/qbicon.png">
             <add-to-group group-id="Console.Jdbc.Left" anchor="after" relative-to-action="Database.Settings"/>
         </action>
     </actions>
