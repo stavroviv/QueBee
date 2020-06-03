@@ -267,31 +267,27 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
             return;
         }
 
-        for (Object select : pSelect.getSelectItems()) {
-            if (select instanceof SelectExpressionItem) {
-
-                fieldTable.getItems().add(
-                        new TableRow(select.toString())
-                );
+        for (Object selectField : pSelect.getSelectItems()) {
+            if (selectField instanceof SelectExpressionItem) {
 
                 // GROUPING
-                SelectExpressionItem select1 = (SelectExpressionItem) select;
-                Expression expression1 = select1.getExpression();
-                TableRow tableRow;
-                if (expression1 instanceof Function) {
-                    Function expression = (Function) select1.getExpression();
-                    if (expression.getParameters().getExpressions().size() == 1) {
-                        String columnName = expression.getParameters().getExpressions().get(0).toString();
-                        tableRow = new TableRow(columnName);
-                        tableRow.setComboBoxValue(expression.getName());
-                        mainController.getGroupingController().getGroupTableAggregates().getItems().add(tableRow);
-                    }
+                SelectExpressionItem item = (SelectExpressionItem) selectField;
+                Expression expression = item.getExpression();
+
+                if (expression instanceof Function
+                        && ((Function) item.getExpression()).getParameters().getExpressions().size() == 1) {
+                    Function function = (Function) item.getExpression();
+                    String columnName = function.getParameters().getExpressions().get(0).toString();
+                    TableRow newField = new TableRow(columnName);
+                    mainController.getGroupingController().loadAggregate(newField, function);
+                    fieldTable.getItems().add(newField);
+
+                } else {
+                    fieldTable.getItems().add(new TableRow(selectField.toString()));
                 }
 
             } else {
-                fieldTable.getItems().add(
-                        new TableRow(select.toString())
-                );
+                fieldTable.getItems().add(new TableRow(selectField.toString()));
             }
         }
     }
@@ -323,9 +319,12 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
 
     public void saveSelectedFields(PlainSelect selectBody) {
         List<SelectItem> items = new ArrayList<>();
-        fieldTable.getItems().forEach(x -> {
+        fieldTable.getItems().forEach(item -> {
+            if (mainController.getGroupingController().containAggregate(item)) {
+                return;
+            }
             SelectExpressionItem sItem = new SelectExpressionItem();
-            sItem.setExpression(new Column(x.getName()));
+            sItem.setExpression(new Column(item.getName()));
             items.add(sItem);
         });
         selectBody.setSelectItems(items);

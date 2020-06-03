@@ -3,7 +3,7 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane prefHeight="450.0" prefWidth="655.0" xmlns="http://javafx.com/javafx/10.0.2-internal"
+<AnchorPane prefHeight="468.0" prefWidth="655.0" xmlns="http://javafx.com/javafx/10.0.2-internal"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.querybuilder.querypart.GroupBy">
     <SplitPane dividerPositions="0.2844311377245509" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0"
                AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -61,8 +61,8 @@
                                     <Insets right="5.0"/>
                                 </VBox.margin>
                             </Button>
-                            <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0"
-                                    prefWidth="40.0" text="&gt;&gt;">
+                            <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false"
+                                    onAction="#selectAggregateAll" prefHeight="25.0" prefWidth="40.0" text="&gt;&gt;">
                                 <VBox.margin>
                                     <Insets right="5.0" top="5.0"/>
                                 </VBox.margin>
@@ -75,7 +75,8 @@
                                 </VBox.margin>
                             </Button>
                             <Button layoutX="19.0" layoutY="180.0" minHeight="25.0" minWidth="40.0"
-                                    mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&lt;&lt;">
+                                    mnemonicParsing="false" onAction="#deselectAggregateAll" prefHeight="25.0"
+                                    prefWidth="40.0" text="&lt;&lt;">
                                 <VBox.margin>
                                     <Insets right="5.0" top="5.0"/>
                                 </VBox.margin>

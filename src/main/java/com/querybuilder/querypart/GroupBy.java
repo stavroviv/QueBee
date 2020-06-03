@@ -52,11 +52,17 @@ public class GroupBy extends AbstractQueryPart {
 
         setTreeSelectHandler(groupFieldsTree, groupTableResults);
         setResultsTableSelectHandler(groupTableResults, groupFieldsTree);
+        setResultsTableSelectHandler(groupTableAggregates, groupFieldsTree);
         setCellFactory(groupFieldsTreeColumn);
     }
 
     @Override
     public void load(PlainSelect pSelect) {
+        loadGroupBy(pSelect);
+        deselectAggregates();
+    }
+
+    private void loadGroupBy(PlainSelect pSelect) {
         GroupByElement groupBy = pSelect.getGroupBy();
         if (groupBy == null) {
             return;
@@ -73,33 +79,34 @@ public class GroupBy extends AbstractQueryPart {
         });
     }
 
+    private void deselectAggregates() {
+        for (TableRow item : groupTableAggregates.getItems()) {
+            for (TreeItem<TableRow> child : groupFieldsTree.getRoot().getChildren()) {
+                if (child.getValue().getId() == item.getId()) {
+                    groupFieldsTree.getRoot().getChildren().remove(child);
+                    break;
+                }
+            }
+        }
+    }
+
+    public void loadAggregate(TableRow newField, Function function) {
+        TableRow tableRow = TableRow.tableRowFromValue(newField);
+        tableRow.setComboBoxValue(function.getName());
+        groupTableAggregates.getItems().add(tableRow);
+    }
+
     @Override
     public void save(PlainSelect pSelect) {
-        if (groupTableResults.getItems().isEmpty() && groupTableAggregates.getItems().isEmpty()) {
-            pSelect.setGroupByElement(null);
-            return;
-        }
         saveGroupBy(pSelect);
         saveAggregates(pSelect);
     }
 
-    private void saveAggregates(PlainSelect pSelect) {
-        List<SelectItem> items = new ArrayList<>();
-        for (TableRow x : groupTableAggregates.getItems()) {
-            SelectExpressionItem sItem = new SelectExpressionItem();
-            Function expression = new Function();
-            expression.setName(x.getComboBoxValue());
-            ExpressionList list = new ExpressionList();
-            Column col = new Column(x.getName());
-            list.setExpressions(Collections.singletonList(col));
-            expression.setParameters(list);
-            sItem.setExpression(expression);
-            items.add(sItem);
-        }
-        pSelect.setSelectItems(items);
-    }
-
     private void saveGroupBy(PlainSelect pSelect) {
+        if (groupTableResults.getItems().isEmpty() && groupTableAggregates.getItems().isEmpty()) {
+            pSelect.setGroupByElement(null);
+            return;
+        }
         List<Expression> expressions = new ArrayList<>();
         for (TableRow item : groupTableResults.getItems()) {
             Column groupByItem = new Column(item.getName());
@@ -113,9 +120,43 @@ public class GroupBy extends AbstractQueryPart {
             expressions.add(groupByItem);
         }
 
+        if (expressions.isEmpty()) {
+            pSelect.setGroupByElement(null);
+            return;
+        }
         GroupByElement groupByElement = new GroupByElement();
         groupByElement.setGroupByExpressions(expressions);
         pSelect.setGroupByElement(groupByElement);
+    }
+
+    private void saveAggregates(PlainSelect pSelect) {
+        if (groupTableAggregates.getItems().isEmpty()) {
+            return;
+        }
+
+        // add aggregates
+        List<SelectItem> selectItems = pSelect.getSelectItems();
+        for (TableRow x : groupTableAggregates.getItems()) {
+            SelectExpressionItem sItem = new SelectExpressionItem();
+            Function expression = new Function();
+            expression.setName(x.getComboBoxValue());
+            ExpressionList list = new ExpressionList();
+            Column col = new Column(x.getName());
+            list.setExpressions(Collections.singletonList(col));
+            expression.setParameters(list);
+            sItem.setExpression(expression);
+            selectItems.add(sItem);
+        }
+        pSelect.setSelectItems(selectItems);
+    }
+
+    public boolean containAggregate(TableRow field) {
+        for (TableRow x : groupTableAggregates.getItems()) {
+            if (x.getId() == field.getId()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @FXML
@@ -144,7 +185,17 @@ public class GroupBy extends AbstractQueryPart {
     }
 
     @FXML
+    private void selectAggregateAll(ActionEvent event) {
+        makeSelectAll(groupFieldsTree, groupTableAggregates, GROUP_DEFAULT_VALUE);
+    }
+
+    @FXML
     private void deselectAggregate(ActionEvent event) {
         makeDeselect(groupTableAggregates, groupFieldsTree);
+    }
+
+    @FXML
+    private void deselectAggregateAll(ActionEvent event) {
+        makeDeselectAll(groupTableAggregates, groupFieldsTree);
     }
 }

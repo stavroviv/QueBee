@@ -206,7 +206,7 @@ public class Utils {
         if (item == null) {
             item = resultsTable.getSelectionModel().getSelectedItem();
         }
-        if (resultsTable.getId().equals("orderTableResults")
+        if (resultsTable.getId().equals("groupTableAggregates")
                 && resultsTable.getSelectionModel().getSelectedCells().get(0).getColumn() == 1) {
             return;
         }
@@ -224,8 +224,7 @@ public class Utils {
     }
 
     // SELECT
-
-    public static void makeSelectAll(TreeTableView<TableRow> fieldsTree, TableView<TableRow> resultsTable) {
+    public static void makeSelectAll(TreeTableView<TableRow> fieldsTree, TableView<TableRow> resultsTable, String value) {
         List<TreeItem<TableRow>> deleteItems = new ArrayList<>();
         for (TreeItem<TableRow> item : fieldsTree.getRoot().getChildren()) {
             if (item.getValue().getName().equals(ALL_FIELDS)) {
@@ -233,6 +232,9 @@ public class Utils {
             }
             deleteItems.add(item);
             TableRow tableRow = TableRow.tableRowFromValue(item.getValue());
+            if (value != null) {
+                tableRow.setComboBoxValue(value);
+            }
             resultsTable.getItems().add(tableRow);
         }
         for (TreeItem<TableRow> item : deleteItems) {
@@ -240,19 +242,20 @@ public class Utils {
         }
     }
 
-    public static void makeSelect(TreeTableView<TableRow> fieldsTree, TableView<TableRow> resultsTable) {
-        makeSelect(fieldsTree, resultsTable, null);
+    public static void makeSelectAll(TreeTableView<TableRow> fieldsTree, TableView<TableRow> resultsTable) {
+        makeSelectAll(fieldsTree, resultsTable, "");
     }
 
-    public static void makeSelect(TreeTableView<TableRow> fieldsTree,
-                                  TableView<TableRow> resultsTable, String defaultValue) {
-        makeSelect(fieldsTree, resultsTable, null, defaultValue);
+    public static void makeSelect(TreeTableView<TableRow> fieldsTree, TableView<TableRow> table) {
+        makeSelect(fieldsTree, table, null);
     }
 
-    public static void makeSelect(TreeTableView<TableRow> fieldsTree,
-                                  TableView<TableRow> resultsTable,
-                                  TreeItem<TableRow> item,
-                                  String defaultValue) {
+    public static void makeSelect(TreeTableView<TableRow> fieldsTree, TableView<TableRow> table, String value) {
+        makeSelect(fieldsTree, table, null, value);
+    }
+
+    public static void makeSelect(TreeTableView<TableRow> fieldsTree, TableView<TableRow> table,
+                                  TreeItem<TableRow> item, String value) {
         if (item == null) {
             item = fieldsTree.getSelectionModel().getSelectedItem();
         }
@@ -261,23 +264,26 @@ public class Utils {
             return;
         }
         String name = item.getValue().getName();
+
         TreeItem<TableRow> parent = item.getParent();
-        if (parent != null) {
-            String parentName = parent.getValue().getName();
-            if (!parentName.equals(DATABASE_TABLE_ROOT)) {
-                name = parentName + "." + name;
-            }
+        String parentName = parent.getValue().getName();
+        TableRow newItem;
+        if (!parentName.equals(DATABASE_TABLE_ROOT)) {
+            name = parentName + "." + name;
+            newItem = new TableRow(name);
+        } else {
+            newItem = TableRow.tableRowFromValue(item.getValue());
         }
-        TableRow tableRow = new TableRow(name);
-        if (defaultValue != null) {
-            tableRow.setComboBoxValue(defaultValue);
+
+        if (value != null) {
+            newItem.setComboBoxValue(value);
         }
-        resultsTable.getItems().add(tableRow);
+        table.getItems().add(newItem);
         fieldsTree.getRoot().getChildren().remove(item);
     }
 
-    public static void setTreeSelectHandler(TreeTableView<TableRow> fieldsTree, TableView<TableRow> resultsTable) {
-        setTreeSelectHandler(fieldsTree, resultsTable, "");
+    public static void setTreeSelectHandler(TreeTableView<TableRow> fieldsTree, TableView<TableRow> table) {
+        setTreeSelectHandler(fieldsTree, table, "");
     }
 
     public static void setTreeSelectHandler(TreeTableView<TableRow> tree, TableView<TableRow> table, String value) {
