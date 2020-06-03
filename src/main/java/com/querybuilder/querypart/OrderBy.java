@@ -64,7 +64,7 @@ public class OrderBy extends AbstractQueryPart {
             for (TreeItem<TableRow> ddd : orderFieldsTree.getRoot().getChildren()) {
                 if (ddd.getValue().getName().equals(x.getExpression().toString())) {
                     makeSelect(
-                            ddd, orderFieldsTree, orderTableResults, x.isAsc() ? "Ascending" : "Descending"
+                            orderFieldsTree, orderTableResults, ddd, x.isAsc() ? "Ascending" : "Descending"
                     );
                     selected = true;
                     break;

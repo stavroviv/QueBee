@@ -34,8 +34,8 @@
                                     <Insets right="5.0"/>
                                 </VBox.margin>
                             </Button>
-                            <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0"
-                                    prefWidth="40.0" text="&gt;&gt;">
+                            <Button minHeight="25.0" minWidth="40.0" mnemonicParsing="false" onAction="#selectGroupAll"
+                                    prefHeight="25.0" prefWidth="40.0" text="&gt;&gt;">
                                 <VBox.margin>
                                     <Insets right="5.0" top="5.0"/>
                                 </VBox.margin>
@@ -47,7 +47,8 @@
                                 </VBox.margin>
                             </Button>
                             <Button layoutX="19.0" layoutY="142.0" minHeight="25.0" minWidth="40.0"
-                                    mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="&lt;&lt;">
+                                    mnemonicParsing="false" onAction="#deselectGroupAll" prefHeight="25.0"
+                                    prefWidth="40.0" text="&lt;&lt;">
                                 <VBox.margin>
                                     <Insets right="5.0" top="5.0"/>
                                 </VBox.margin>

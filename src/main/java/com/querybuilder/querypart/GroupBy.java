@@ -6,9 +6,15 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.GroupByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.querybuilder.utils.Constants.ALL_FIELDS;
 import static com.querybuilder.utils.Constants.GROUP_DEFAULT_VALUE;
 import static com.querybuilder.utils.Utils.*;
 
@@ -53,7 +59,7 @@ public class GroupBy extends AbstractQueryPart {
         groupBy.getGroupByExpressions().forEach(x -> {
             for (TreeItem<TableRow> ddd : groupFieldsTree.getRoot().getChildren()) {
                 if (ddd.getValue().getName().equals(x.toString())) {
-                    makeSelect(ddd, groupFieldsTree, groupTableResults, null);
+                    makeSelect(groupFieldsTree, groupTableResults, ddd, null);
                     return;
                 }
             }
@@ -64,26 +70,56 @@ public class GroupBy extends AbstractQueryPart {
 
     @Override
     public void save(PlainSelect pSelect) {
+        if (groupTableResults.getItems().isEmpty()) {
+            pSelect.setGroupByElement(null);
+            return;
+        }
 
+        List<Expression> expressions = new ArrayList<>();
+        for (TableRow item : groupTableResults.getItems()) {
+            Column groupByItem = new Column(item.getName());
+            expressions.add(groupByItem);
+        }
+        for (TreeItem<TableRow> child : groupFieldsTree.getRoot().getChildren()) {
+            if (child.getValue().getName().equals(ALL_FIELDS)) {
+                break;
+            }
+            Column groupByItem = new Column(child.getValue().getName());
+            expressions.add(groupByItem);
+        }
+
+        GroupByElement groupByElement = new GroupByElement();
+        groupByElement.setGroupByExpressions(expressions);
+        pSelect.setGroupByElement(groupByElement);
     }
 
     @FXML
-    protected void selectGroup(ActionEvent event) {
+    private void selectGroup(ActionEvent event) {
         makeSelect(groupFieldsTree, groupTableResults);
     }
 
     @FXML
-    protected void deselectGroup(ActionEvent event) {
+    private void selectGroupAll(ActionEvent event) {
+        makeSelectAll(groupFieldsTree, groupTableResults);
+    }
+
+    @FXML
+    private void deselectGroup(ActionEvent event) {
         makeDeselect(groupTableResults, groupFieldsTree);
     }
 
     @FXML
-    protected void selectAggregate(ActionEvent event) {
+    private void deselectGroupAll(ActionEvent event) {
+        makeDeselectAll(groupTableResults, groupFieldsTree);
+    }
+
+    @FXML
+    private void selectAggregate(ActionEvent event) {
         makeSelect(groupFieldsTree, groupTableAggregates, GROUP_DEFAULT_VALUE);
     }
 
     @FXML
-    protected void deselectAggregate(ActionEvent event) {
+    private void deselectAggregate(ActionEvent event) {
         makeDeselect(groupTableAggregates, groupFieldsTree);
     }
 }

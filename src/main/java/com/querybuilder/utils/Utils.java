@@ -36,8 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.querybuilder.utils.Constants.CTE_ROOT;
-import static com.querybuilder.utils.Constants.DATABASE_TABLE_ROOT;
+import static com.querybuilder.utils.Constants.*;
 
 public class Utils {
 
@@ -193,19 +192,52 @@ public class Utils {
         });
     }
 
-    public static void makeDeselect(TableView<TableRow> groupTableResults, TreeTableView<TableRow> groupFieldsTree) {
-        TableRow selectedItem = groupTableResults.getSelectionModel().getSelectedItem();
-        if (groupTableResults.getId().equals("orderTableResults")
-                && groupTableResults.getSelectionModel().getSelectedCells().get(0).getColumn() == 1) {
+    // DESELECT
+
+    public static void makeDeselectAll(TableView<TableRow> resultsTable, TreeTableView<TableRow> fieldsTree) {
+        for (TableRow item : resultsTable.getItems()) {
+            TreeItem<TableRow> treeItem = new TreeItem<>(item);
+            addElementBeforeTree(fieldsTree.getRoot().getChildren(), treeItem);
+        }
+        resultsTable.getItems().clear();
+    }
+
+    public static void makeDeselect(TableView<TableRow> resultsTable, TreeTableView<TableRow> fieldsTree, TableRow item) {
+        if (item == null) {
+            item = resultsTable.getSelectionModel().getSelectedItem();
+        }
+        if (resultsTable.getId().equals("orderTableResults")
+                && resultsTable.getSelectionModel().getSelectedCells().get(0).getColumn() == 1) {
             return;
         }
-        TableRow tableRow = new TableRow(selectedItem.getName());
+        TableRow tableRow = new TableRow(item.getName());
         if (tableRow.isNotSelectable()) {
             return;
         }
         TreeItem<TableRow> treeItem = new TreeItem<>(tableRow);
-        addElementBeforeTree(groupFieldsTree.getRoot().getChildren(), treeItem);
-        groupTableResults.getItems().remove(selectedItem);
+        addElementBeforeTree(fieldsTree.getRoot().getChildren(), treeItem);
+        resultsTable.getItems().remove(item);
+    }
+
+    public static void makeDeselect(TableView<TableRow> resultsTable, TreeTableView<TableRow> fieldsTree) {
+        makeDeselect(resultsTable, fieldsTree, null);
+    }
+
+    // SELECT
+
+    public static void makeSelectAll(TreeTableView<TableRow> fieldsTree, TableView<TableRow> resultsTable) {
+        List<TreeItem<TableRow>> deleteItems = new ArrayList<>();
+        for (TreeItem<TableRow> item : fieldsTree.getRoot().getChildren()) {
+            if (item.getValue().getName().equals(ALL_FIELDS)) {
+                break;
+            }
+            deleteItems.add(item);
+            TableRow tableRow = TableRow.tableRowFromValue(item.getValue());
+            resultsTable.getItems().add(tableRow);
+        }
+        for (TreeItem<TableRow> item : deleteItems) {
+            fieldsTree.getRoot().getChildren().remove(item);
+        }
     }
 
     public static void makeSelect(TreeTableView<TableRow> fieldsTree, TableView<TableRow> resultsTable) {
@@ -214,20 +246,22 @@ public class Utils {
 
     public static void makeSelect(TreeTableView<TableRow> fieldsTree,
                                   TableView<TableRow> resultsTable, String defaultValue) {
-        makeSelect(null, fieldsTree, resultsTable, defaultValue);
+        makeSelect(fieldsTree, resultsTable, null, defaultValue);
     }
 
-    public static void makeSelect(TreeItem<TableRow> selectedItem, TreeTableView<TableRow> fieldsTree,
-                                  TableView<TableRow> resultsTable, String defaultValue) {
-        if (selectedItem == null) {
-            selectedItem = fieldsTree.getSelectionModel().getSelectedItem();
+    public static void makeSelect(TreeTableView<TableRow> fieldsTree,
+                                  TableView<TableRow> resultsTable,
+                                  TreeItem<TableRow> item,
+                                  String defaultValue) {
+        if (item == null) {
+            item = fieldsTree.getSelectionModel().getSelectedItem();
         }
 
-        if (selectedItem.getChildren().size() > 0) {
+        if (item.getChildren().size() > 0) {
             return;
         }
-        String name = selectedItem.getValue().getName();
-        TreeItem<TableRow> parent = selectedItem.getParent();
+        String name = item.getValue().getName();
+        TreeItem<TableRow> parent = item.getParent();
         if (parent != null) {
             String parentName = parent.getValue().getName();
             if (!parentName.equals(DATABASE_TABLE_ROOT)) {
@@ -239,7 +273,7 @@ public class Utils {
             tableRow.setComboBoxValue(defaultValue);
         }
         resultsTable.getItems().add(tableRow);
-        fieldsTree.getRoot().getChildren().remove(selectedItem);
+        fieldsTree.getRoot().getChildren().remove(item);
     }
 
     public static void setTreeSelectHandler(TreeTableView<TableRow> fieldsTree, TableView<TableRow> resultsTable) {
