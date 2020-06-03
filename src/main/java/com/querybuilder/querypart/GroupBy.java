@@ -7,11 +7,16 @@ import javafx.scene.control.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.GroupByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.querybuilder.utils.Constants.ALL_FIELDS;
@@ -70,11 +75,31 @@ public class GroupBy extends AbstractQueryPart {
 
     @Override
     public void save(PlainSelect pSelect) {
-        if (groupTableResults.getItems().isEmpty()) {
+        if (groupTableResults.getItems().isEmpty() && groupTableAggregates.getItems().isEmpty()) {
             pSelect.setGroupByElement(null);
             return;
         }
+        saveGroupBy(pSelect);
+        saveAggregates(pSelect);
+    }
 
+    private void saveAggregates(PlainSelect pSelect) {
+        List<SelectItem> items = new ArrayList<>();
+        for (TableRow x : groupTableAggregates.getItems()) {
+            SelectExpressionItem sItem = new SelectExpressionItem();
+            Function expression = new Function();
+            expression.setName(x.getComboBoxValue());
+            ExpressionList list = new ExpressionList();
+            Column col = new Column(x.getName());
+            list.setExpressions(Collections.singletonList(col));
+            expression.setParameters(list);
+            sItem.setExpression(expression);
+            items.add(sItem);
+        }
+        pSelect.setSelectItems(items);
+    }
+
+    private void saveGroupBy(PlainSelect pSelect) {
         List<Expression> expressions = new ArrayList<>();
         for (TableRow item : groupTableResults.getItems()) {
             Column groupByItem = new Column(item.getName());
