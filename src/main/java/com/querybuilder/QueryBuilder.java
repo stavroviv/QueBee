@@ -48,8 +48,8 @@ public class QueryBuilder {
             } catch (JSQLParserException exception) {
                 JOptionPane.showMessageDialog(
                         null,
-                        "Cannot parse query\n" + exception.getCause().getMessage(),
-                        "Error",
+                        getMessage(exception),
+                        "Parse query error",
                         JOptionPane.ERROR_MESSAGE
                 );
                 return;
@@ -63,6 +63,27 @@ public class QueryBuilder {
         }
 
         buildForm(action, statement);
+    }
+
+    private String getMessage(JSQLParserException exception) {
+        String message = exception.getCause().getMessage();
+        String[] split = message.split("\n");
+        StringBuilder result = new StringBuilder();
+        int i = 0;
+        boolean found = false;
+        for (String s : split) {
+            result.append(s.trim());
+            if (s.contains("Was expect") || i % 7 == 1) {
+                result.append("\n");
+                found = true;
+            } else {
+                result.append(" ");
+            }
+            if (found) {
+                i++;
+            }
+        }
+        return result.toString();
     }
 
     private void buildForm(MainAction action, Statement statement) {

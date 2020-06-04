@@ -239,7 +239,7 @@ public class MainController implements Subscriber {
             unionAliasesController.setUnionColumns(new HashMap<>());
             // таблица Alias меняется только при переключении CTE
             try {
-                unionAliasesController.loadTodo(selectBody);
+                unionAliasesController.loadAliases(selectBody);
                 CTEPart.load(this);
             } catch (Exception e) {
                 e.printStackTrace();

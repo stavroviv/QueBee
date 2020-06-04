@@ -5,6 +5,8 @@ import com.querybuilder.domain.AliasRow;
 import com.querybuilder.domain.TableRow;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -14,20 +16,21 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.querybuilder.utils.Utils.getEmptySelect;
-import static com.querybuilder.utils.Utils.showMessage;
+import static com.querybuilder.utils.Utils.*;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class UnionAliases extends AbstractQueryPart {
     private int curMaxUnion; // индекс максимального объединения, нумерация начинается с 0
-    private Map<String, TableColumn> unionColumns;
+    private Map<String, TableColumn<AliasRow, String>> unionColumns;
 
     @FXML
     private TableView<AliasRow> aliasTable;
@@ -48,6 +51,8 @@ public class UnionAliases extends AbstractQueryPart {
 
         aliasFieldColumn.setCellValueFactory(new PropertyValueFactory<>("alias"));
         aliasFieldColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        aliasFieldColumn.setEditable(true);
+        // ввод данных по кнопке Enter - весьма странно что переход в другую ячейку это не ввод
         aliasFieldColumn.setOnEditCommit((TableColumn.CellEditEvent<AliasRow, String> event) -> {
             TablePosition<AliasRow, String> pos = event.getTablePosition();
             String newFullName = event.getNewValue();
@@ -59,7 +64,6 @@ public class UnionAliases extends AbstractQueryPart {
         unionTableNameColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
         unionTableDistinctColumn.setCellFactory(tc -> new CheckBoxTableCell<>());
         unionTableDistinctColumn.setCellValueFactory(data -> new SimpleBooleanProperty(data.getValue().isDistinct()));
-
     }
 
     @Override
@@ -69,10 +73,20 @@ public class UnionAliases extends AbstractQueryPart {
 
     @Override
     public void save(PlainSelect pSelect) {
-
+        List<SelectItem> selectItems = pSelect.getSelectItems();
+        int i = 0;
+        for (SelectItem selectItem : selectItems) {
+            if (selectItem instanceof SelectExpressionItem) {
+                AliasRow aliasRow = aliasTable.getItems().get(i);
+                Alias alias = new Alias(aliasRow.getAlias(), true);
+                ((SelectExpressionItem) selectItem).setAlias(alias);
+            }
+            i++;
+        }
+        pSelect.setSelectItems(selectItems);
     }
 
-    public void loadTodo(SelectBody selectBody) {
+    public void loadAliases(SelectBody selectBody) {
 
         aliasTable.getItems().clear();
         int size = aliasTable.getColumns().size();
@@ -91,7 +105,7 @@ public class UnionAliases extends AbstractQueryPart {
                         showMessage("Error: different number of fields in union queries");
                         throw new RuntimeException("Разное количество полей в объединяемых запросах");
                     }
-                    for (Object x : pSelect.getSelectItems()) {
+                    for (SelectItem x : pSelect.getSelectItems()) {
                         SelectExpressionItem select = (SelectExpressionItem) x;
                         Alias alias = select.getAlias();
                         String strAlias = alias != null ? select.getAlias().getName() : select.getExpression().toString();
@@ -116,13 +130,27 @@ public class UnionAliases extends AbstractQueryPart {
         if (selectItems == null) {
             return;
         }
-        for (Object x : selectItems) {
-            SelectExpressionItem select = (SelectExpressionItem) x;
+        for (SelectItem sItem : selectItems) {
+            SelectExpressionItem select = (SelectExpressionItem) sItem;
             Alias alias = select.getAlias();
-            String strAlias = alias != null ? select.getAlias().getName() : select.getExpression().toString();
-            AliasRow aliasRow = new AliasRow(select.toString(), strAlias);
-            aliasRow.getValues().add(strAlias);
+            Expression expression = select.getExpression();
+
+            String expr = expression.toString();
+            if (expression instanceof Column) {
+                expr = ((Column) expression).getColumnName();
+            }
+            String strAlias = alias != null ? select.getAlias().getName() : expr;
+
+            AliasRow aliasRow = new AliasRow(expression.toString(), strAlias);
+            aliasRow.getValues().add(getNameFromColumn((Column) expression));
             aliasTable.getItems().add(aliasRow);
+        }
+
+        ObservableList<TableRow> items = mainController.getTableFieldsController().getFieldTable().getItems();
+        int i = 0;
+        for (TableRow item : items) {
+            aliasTable.getItems().get(i).setId(item.getId());
+            i++;
         }
     }
 
@@ -250,4 +278,26 @@ public class UnionAliases extends AbstractQueryPart {
         return tIndex;
     }
 
+    public void applyChanges(ListChangeListener.Change<? extends TableRow> change) {
+        if (change.wasAdded()) {
+            change.getAddedSubList().forEach(x -> {
+                String name = x.getName();
+                AliasRow aliasRow = new AliasRow(name, name.split("\\.")[1]);
+                aliasRow.getValues().add(name);
+                aliasRow.setId(x.getId());
+                aliasTable.getItems().add(aliasRow);
+            });
+        } else if (change.wasRemoved()) {
+            change.getRemoved().forEach(x -> {
+                AliasRow deleted = null;
+                for (AliasRow item : aliasTable.getItems()) {
+                    if (item.getId() == x.getId()) {
+                        deleted = item;
+                        break;
+                    }
+                }
+                aliasTable.getItems().remove(deleted);
+            });
+        }
+    }
 }

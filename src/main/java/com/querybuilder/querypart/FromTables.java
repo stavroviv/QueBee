@@ -133,6 +133,7 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
                 selectedFieldTrees.add(mainController.getSelectedGroupFieldsTree());
                 selectedFieldTrees.add(mainController.getSelectedOrderFieldsTree());
                 applyChange(selectedFieldTrees, selectedFieldsTree -> selectedFieldsTree.applyChangesString(change));
+               // ???? mainController.getUnionAliasesController().applyChanges(change);
             }
         });
     }
@@ -267,7 +268,7 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
             return;
         }
 
-        for (Object selectField : pSelect.getSelectItems()) {
+        for (SelectItem selectField : pSelect.getSelectItems()) {
             if (selectField instanceof SelectExpressionItem) {
 
                 // GROUPING
@@ -282,6 +283,9 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
                     mainController.getGroupingController().loadAggregate(newField, function);
                     fieldTable.getItems().add(newField);
 
+                } else if (expression instanceof Column) {
+                    Column column = (Column) expression;
+                    fieldTable.getItems().add(new TableRow(getNameFromColumn(column)));
                 } else {
                     fieldTable.getItems().add(new TableRow(selectField.toString()));
                 }

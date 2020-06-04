@@ -73,14 +73,10 @@ public class Conditions extends AbstractQueryPart {
             return property;
         });
 
-        conditionTableResultsCondition.setCellValueFactory(
-                column -> new ReadOnlyObjectWrapper<>(column.getValue())
-        );
-        conditionTableResultsCondition.setCellFactory(
-                column -> new ConditionCell(
-                        conditionTableResults, mainController.getTableFieldsController().getTablesView()
-                )
-        );
+        conditionTableResultsCondition.setCellValueFactory(column -> new ReadOnlyObjectWrapper<>(column.getValue()));
+        conditionTableResultsCondition.setCellFactory(column -> new ConditionCell(
+                conditionTableResults, mainController.getTableFieldsController().getTablesView()
+        ));
 
         setListeners();
         setCellFactory(conditionsTreeTableColumn);

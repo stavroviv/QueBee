@@ -29,6 +29,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.util.ArrayList;
@@ -160,6 +161,10 @@ public class Utils {
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
+    }
+
+    public static String getNameFromColumn(Column column) {
+        return column.getTable().getName() + "." + column.getColumnName();
     }
 
     public static void setCellSelectionEnabled(TableView<TableRow> table) {

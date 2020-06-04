@@ -10,6 +10,7 @@ public class AliasRow {
     private String name;
     private String alias;
     private List<String> values;
+    private long id;
 
     public AliasRow(String name, String alias) {
         this.name = name;
