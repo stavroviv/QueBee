@@ -104,6 +104,7 @@ public class QueryBuilder {
             IdeFrame ideFrame = WindowManager.getInstance().getIdeFrame(action.getProject());
             frame.setLocationRelativeTo(ideFrame.getComponent());
             frame.setVisible(true);
+            action.getEvent().getPresentation().setEnabled(true);
         });
     }
 

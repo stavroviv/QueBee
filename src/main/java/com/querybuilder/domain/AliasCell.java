@@ -8,6 +8,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SetOperationList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,10 +107,18 @@ public class AliasCell extends TableCell<AliasRow, String> {
         aliasTableContextColumn.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue()));
 
         List<String> items = new ArrayList<>();
-        if (column == controller.getUnionTabPane().getSelectionModel().getSelectedIndex()) {
-            controller.getTableFieldsController().getFieldTable().getItems().forEach(x1 -> items.add(x1.getName()));
+        int selectedIndex = controller.getUnionTabPane().getSelectionModel().getSelectedIndex();
+        if (column == selectedIndex || selectedIndex == -1) {
+            controller.getTableFieldsController().getFieldTable().getItems().forEach(tableRow ->
+                    items.add(tableRow.getName())
+            );
         } else {
             // get from query
+            SetOperationList fullSelectBody = (SetOperationList) controller.getFullSelectBody();
+            PlainSelect selectBody = (PlainSelect) fullSelectBody.getSelects().get(column);
+            selectBody.getSelectItems().forEach(tableRow ->
+                    items.add(tableRow.toString())
+            );
         }
 
         aliasTableContext.getItems().addAll(items);

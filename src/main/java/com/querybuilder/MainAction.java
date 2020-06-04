@@ -30,6 +30,7 @@ public class MainAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent event) {
+        event.getPresentation().setEnabled(false);
         this.editor = event.getRequiredData(CommonDataKeys.EDITOR);
         this.project = event.getRequiredData(CommonDataKeys.PROJECT);
         this.event = event;
