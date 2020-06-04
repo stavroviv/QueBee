@@ -1,5 +1,6 @@
 package com.querybuilder.domain;
 
+import com.querybuilder.controllers.MainController;
 import com.querybuilder.utils.Utils;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.geometry.Point2D;
@@ -8,16 +9,16 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class AliasCell extends TableCell<AliasRow, String> {
-    private TableColumn<AliasRow, String> aliasRow;
-    private List<String> items;
+import static com.querybuilder.utils.Utils.doubleClick;
 
-    public AliasCell(TableColumn<AliasRow, String> aliasRow, int column, List<String> items) {
-        this.aliasRow = aliasRow;
-        this.items = items;
-        initConditionTableForPopup();
+public class AliasCell extends TableCell<AliasRow, String> {
+    private MainController controller;
+
+    public AliasCell(TableColumn<AliasRow, String> aliasRow, int column, MainController controller) {
+        this.controller = controller;
         aliasRow.setOnEditCommit(t -> {
             int row = t.getTablePosition().getRow();
             AliasRow currentRow = t.getTableView().getItems().get(row);
@@ -69,7 +70,8 @@ public class AliasCell extends TableCell<AliasRow, String> {
         final Point2D nodeCoord = cell.localToScene(0.0, 0.0);
         final double clickX = Math.round(windowCoord.getX() + sceneCoord.getX() + nodeCoord.getX());
         final double clickY = Math.round(windowCoord.getY() + sceneCoord.getY() + nodeCoord.getY());
-        Utils.setDefaultSkin(aliasPopup, aliasTableContext, cell);
+
+        Utils.setDefaultSkin(aliasPopup, getAliasTable(), cell);
         aliasPopup.show(cell, clickX, clickY + cell.getHeight());
     }
 
@@ -88,43 +90,32 @@ public class AliasCell extends TableCell<AliasRow, String> {
             setGraphic(null);
             return;
         }
-        setAliasGraphic(item, empty, this);
+        Label textField = new Label(item);
+        this.setGraphic(textField);
     }
 
-    private void setAliasGraphic(String item, boolean empty, TableCell<AliasRow, String> aliasRowStringTableCell) {
-        if (aliasRowStringTableCell.isEditing()) {
-            TextField textField = new TextField(empty ? null : item);
-            aliasRowStringTableCell.setGraphic(textField);
-            textField.setOnMouseClicked(event -> {
-                System.out.println(event);
-            });
-        } else {
-            Label textField = new Label(empty ? null : item);
-            aliasRowStringTableCell.setGraphic(textField);
-        }
-    }
-
-    private TableView<String> aliasTableContext;
-    private TableColumn<String, String> aliasTableContextColumn;
-
-    private void initConditionTableForPopup() {
-        aliasTableContext = new TableView<>();
+    private TableView<String> getAliasTable() {
+        TableView<String> aliasTableContext = new TableView<>();
         aliasTableContext.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        aliasTableContextColumn = new TableColumn<>();
+        TableColumn<String, String> aliasTableContextColumn = new TableColumn<>();
         aliasTableContext.getColumns().add(aliasTableContextColumn);
         aliasTableContextColumn.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue()));
 
+        List<String> items = new ArrayList<>();
+        controller.getTableFieldsController().getFieldTable().getItems().forEach(x1 -> items.add(x1.getName()));
         aliasTableContext.getItems().addAll(items);
         aliasTableContext.getSelectionModel().select(0);
 
         Utils.setEmptyHeader(aliasTableContext);
 
         aliasTableContext.setOnMousePressed(e -> {
-            if (e.getClickCount() == 2 && e.isPrimaryButtonDown()) {
-                String selectedItem = aliasTableContext.getSelectionModel().getSelectedItem();
-                commitEdit(selectedItem);
-                aliasPopup.hide();
+            if (!doubleClick(e)) {
+                return;
             }
+            String selectedItem = aliasTableContext.getSelectionModel().getSelectedItem();
+            commitEdit(selectedItem);
+            aliasPopup.hide();
         });
+        return aliasTableContext;
     }
 }

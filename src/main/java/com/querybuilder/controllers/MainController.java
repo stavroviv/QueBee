@@ -17,7 +17,6 @@ import lombok.Data;
 import net.sf.jsqlparser.statement.select.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -85,14 +84,14 @@ public class MainController implements Subscriber {
         Select sQuery = (Select) userData.get("sQuery");
         if (this.sQuery != null) {
             this.sQuery = sQuery;
-            reloadData();
+            loadQuery();
             return;
         }
 
         this.sQuery = sQuery;
 
         initDBTables();
-        reloadData();
+        loadQuery();
         setPagesListeners();
     }
 
@@ -176,7 +175,7 @@ public class MainController implements Subscriber {
             cteNumber = getCteTabId(cteTab.getId());
         }
 
-        if (sQuery.getWithItemsList() != null && sQuery.getWithItemsList().size() > 0) {
+        if (sQuery.getWithItemsList() != null && !sQuery.getWithItemsList().isEmpty()) {
             SelectBody selectBody;
             if (sQuery.getWithItemsList().size() == cteNumber) {
                 selectBody = sQuery.getSelectBody();
@@ -194,6 +193,7 @@ public class MainController implements Subscriber {
             }
         } else {
             SelectBody selectBody = sQuery.getSelectBody();
+            unionAliasesController.saveAliases(newSelectBody);
             if (selectBody instanceof SetOperationList) {
                 ((SetOperationList) selectBody).getSelects().set(unionNumber, newSelectBody);
             } else {
@@ -234,20 +234,9 @@ public class MainController implements Subscriber {
 
         if (cteChange || firstRun) {
             unionTabPane.getTabs().clear();
-            unionAliasesController.getUnionTable().getItems().clear();
-            unionAliasesController.setCurMaxUnion(0);
-            unionAliasesController.setUnionColumns(new HashMap<>());
-            // таблица Alias меняется только при переключении CTE
-            try {
-                unionAliasesController.loadAliases(selectBody);
-                CTEPart.load(this);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
         }
 
-        if (selectBody instanceof SetOperationList) { // UNION
+        if (selectBody instanceof SetOperationList) { // UNION CHANGE
             SetOperationList setOperationList = (SetOperationList) selectBody;
             if (cteNumberPrev != cteNumber || firstRun) {
                 for (int i = 1; i <= setOperationList.getSelects().size(); i++) {
@@ -258,10 +247,23 @@ public class MainController implements Subscriber {
             unionNumber = unionTabPane.getSelectionModel().getSelectedIndex();
             SelectBody body = setOperationList.getSelects().get(unionNumber == -1 ? 0 : unionNumber);
             loadSelectData((PlainSelect) body);
+            if (!firstRun) {
+                unionAliasesController.setAliasesIds();
+            }
         } else if (selectBody instanceof PlainSelect) { // ONE QUERY
             loadSelectData((PlainSelect) selectBody);
         } else if (selectBody == null) { // new empty query
             TreeHelpers.load(this);
+        }
+
+        if (cteChange || firstRun) {
+            try {
+                // таблица Alias меняется только при переключении CTE
+                unionAliasesController.loadAliases(selectBody);
+                CTEPart.load(this);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         cteNumberPrev = cteNumber;
@@ -284,7 +286,7 @@ public class MainController implements Subscriber {
         linksController.getLinkTable().refresh();
     }
 
-    private void reloadData() {
+    private void loadQuery() {
         unionTabPane.getTabs().clear();
         cteTabPane.getTabs().clear();
         queryCteTable.getItems().clear();

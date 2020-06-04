@@ -19,6 +19,8 @@ import lombok.EqualsAndHashCode;
 import net.engio.mbassy.listener.Handler;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.parser.CCJSqlParser;
+import net.sf.jsqlparser.parser.ParseException;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
@@ -133,7 +135,6 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
                 selectedFieldTrees.add(mainController.getSelectedGroupFieldsTree());
                 selectedFieldTrees.add(mainController.getSelectedOrderFieldsTree());
                 applyChange(selectedFieldTrees, selectedFieldsTree -> selectedFieldsTree.applyChangesString(change));
-               // ???? mainController.getUnionAliasesController().applyChanges(change);
             }
         });
     }
@@ -327,8 +328,16 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
             if (mainController.getGroupingController().containAggregate(item)) {
                 return;
             }
+
+            String name = item.getName();
+            Expression expression = null;
+            try {
+                expression = new CCJSqlParser(name).Expression();
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
             SelectExpressionItem sItem = new SelectExpressionItem();
-            sItem.setExpression(new Column(item.getName()));
+            sItem.setExpression(expression);
             items.add(sItem);
         });
         selectBody.setSelectItems(items);
@@ -363,14 +372,15 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
     }
 
     public void addFieldRow(String name) {
-        fieldTable.getItems().add(new TableRow(name));
+        TableRow newField = new TableRow(name);
+        fieldTable.getItems().add(newField);
+        mainController.getUnionAliasesController().addAlias(newField);
     }
 
     @FXML
     public void deleteTableFromSelected() {
         int selectedItem = tablesView.getSelectionModel().getSelectedIndex();
         tablesView.getRoot().getChildren().remove(selectedItem);
-//        refreshLinkTable();
     }
 
     @FXML
@@ -380,12 +390,12 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
         Utils.openForm("/forms/selected-field.fxml", "Custom expression", data);
     }
 
-
     @FXML
     public void deleteFieldRow() {
         int selectedItem = fieldTable.getSelectionModel().getSelectedIndex();
-        fieldTable.getItems().remove(selectedItem);
-//        getSelectBody().getSelectItems().remove(selectedItem);
+        TableRow tableRow = fieldTable.getItems().get(selectedItem);
+        fieldTable.getItems().remove(tableRow);
+        mainController.getUnionAliasesController().deleteAlias(tableRow);
     }
 
     @FXML
