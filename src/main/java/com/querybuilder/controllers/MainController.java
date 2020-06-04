@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.querybuilder.utils.Utils.activateNewTab;
 import static com.querybuilder.utils.Utils.getEmptySelect;
 
 @Data
@@ -240,7 +241,7 @@ public class MainController implements Subscriber {
             SetOperationList setOperationList = (SetOperationList) selectBody;
             if (cteNumberPrev != cteNumber || firstRun) {
                 for (int i = 1; i <= setOperationList.getSelects().size(); i++) {
-                    unionAliasesController.addUnion("Query " + i, i - 1);
+                    unionAliasesController.addUnionTabPane("Query " + i, i - 1);
                 }
                 unionAliasesController.setCurMaxUnion(setOperationList.getSelects().size() - 1);
             }
@@ -401,6 +402,7 @@ public class MainController implements Subscriber {
     @FXML
     private Tab tableAndFieldsTab;
 
+    @FXML
     public void addCTEClick(ActionEvent actionEvent) {
         if (cteTabPane.getTabs().size() == 0) {
             addCteTabPane(1);
@@ -429,7 +431,7 @@ public class MainController implements Subscriber {
         sQuery.setWithItemsList(newItemsList);
         sQuery.setSelectBody(getEmptySelect());
 
-        activateNewTab(newTab);
+        activateNewTab(newTab, cteTabPane, this);
     }
 
     private void addCte(List<WithItem> newItemsList, String lastQuery) {
@@ -437,13 +439,6 @@ public class MainController implements Subscriber {
         wItem.setName(lastQuery);
         wItem.setSelectBody(sQuery.getSelectBody());
         newItemsList.add(wItem);
-    }
-
-    private void activateNewTab(Tab newTab) {
-        SingleSelectionModel<Tab> selectionModel = cteTabPane.getSelectionModel();
-        selectionModel.select(newTab);
-        SingleSelectionModel<Tab> selModel = mainTabPane.getSelectionModel();
-        selModel.select(tableAndFieldsTab);
     }
 
     private Tab addCteTabPane(int curMaxCTE) {

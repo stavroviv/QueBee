@@ -210,13 +210,15 @@ public class UnionAliases extends AbstractQueryPart {
 
         String unionName = "Query " + (curMaxUnion + 1);
         addUnionColumn(unionName, curMaxUnion);
-        addUnion(unionName, curMaxUnion);
+        Tab tab = addUnionTabPane(unionName, curMaxUnion);
+        activateNewTab(tab, mainController.getUnionTabPane(), mainController);
     }
 
     private void addFirstUnion() {
-        addUnion("Query 1", 0);
-        addUnion("Query 2", 1);
+        addUnionTabPane("Query 1", 0);
+        Tab tab = addUnionTabPane("Query 2", 1);
         addUnionColumn("Query 2", curMaxUnion);
+        activateNewTab(tab, mainController.getUnionTabPane(), mainController);
     }
 
     private void addNewUnion() {
@@ -253,10 +255,11 @@ public class UnionAliases extends AbstractQueryPart {
         }
     }
 
-    public void addUnion(String unionName, int curUnion) {
+    public Tab addUnionTabPane(String unionName, int curUnion) {
         Tab tab = new Tab(unionName);
         tab.setId(unionName);
         mainController.getUnionTabPane().getTabs().add(tab);
+        return tab;
     }
 
     @FXML

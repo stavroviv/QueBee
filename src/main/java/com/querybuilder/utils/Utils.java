@@ -298,4 +298,11 @@ public class Utils {
             }
         });
     }
+
+    public static void activateNewTab(Tab newTab, TabPane tabPane, MainController controller) {
+        SingleSelectionModel<Tab> selectionModel = tabPane.getSelectionModel();
+        selectionModel.select(newTab);
+        SingleSelectionModel<Tab> selModel = controller.getMainTabPane().getSelectionModel();
+        selModel.select(controller.getTableAndFieldsTab());
+    }
 }

@@ -16,9 +16,12 @@ import static com.querybuilder.utils.Utils.doubleClick;
 
 public class AliasCell extends TableCell<AliasRow, String> {
     private MainController controller;
+    private int column;
 
     public AliasCell(TableColumn<AliasRow, String> aliasRow, int column, MainController controller) {
         this.controller = controller;
+        this.column = column;
+
         aliasRow.setOnEditCommit(t -> {
             int row = t.getTablePosition().getRow();
             AliasRow currentRow = t.getTableView().getItems().get(row);
@@ -102,7 +105,12 @@ public class AliasCell extends TableCell<AliasRow, String> {
         aliasTableContextColumn.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue()));
 
         List<String> items = new ArrayList<>();
-        controller.getTableFieldsController().getFieldTable().getItems().forEach(x1 -> items.add(x1.getName()));
+        if (column == controller.getUnionTabPane().getSelectionModel().getSelectedIndex()) {
+            controller.getTableFieldsController().getFieldTable().getItems().forEach(x1 -> items.add(x1.getName()));
+        } else {
+            // get from query
+        }
+
         aliasTableContext.getItems().addAll(items);
         aliasTableContext.getSelectionModel().select(0);
 
