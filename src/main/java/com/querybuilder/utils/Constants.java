@@ -8,4 +8,5 @@ public class Constants {
     public static final String GROUP_DEFAULT_VALUE = "SUM";
     public static final String EXPRESSIONS = "[>=<=<>]+";
     public static final String CTE_ROOT = "CTE";
+    public static final String EMPTY_UNION_VALUE = "<Absent>";
 }

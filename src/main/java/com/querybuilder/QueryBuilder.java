@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.querybuilder.utils.Utils.getScene;
+import static com.querybuilder.utils.Utils.showErrorMessage;
 
 @Data
 public class QueryBuilder {
@@ -46,12 +47,7 @@ public class QueryBuilder {
             try {
                 statement = CCJSqlParserUtil.parse(text);
             } catch (JSQLParserException exception) {
-                JOptionPane.showMessageDialog(
-                        null,
-                        getMessage(exception),
-                        "Parse query error",
-                        JOptionPane.ERROR_MESSAGE
-                );
+                showErrorMessage(getMessage(exception));
                 action.getEvent().getPresentation().setEnabled(true);
                 return;
             }
@@ -88,24 +84,28 @@ public class QueryBuilder {
     }
 
     private void buildForm(MainAction action, Statement statement) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("sQuery", statement);
+        data.put("queryBuilder", this);
+
         Platform.setImplicitExit(false);
         Platform.runLater(() -> {
-            Map<String, Object> data = new HashMap<>();
-            data.put("sQuery", statement);
-            data.put("queryBuilder", this);
+            try {
+                JFXPanel fxPanel = new JFXPanel();
+                fxPanel.setScene(getScene("/forms/main-form.fxml", data));
+                frame = new JFrame("Query builder");
+                frame.setContentPane(fxPanel);
+                frame.pack();
+                frame.setSize(900, 650);
 
-            JFXPanel fxPanel = new JFXPanel();
-            fxPanel.setScene(getScene("/forms/main-form.fxml", data));
-
-            frame = new JFrame("Query builder");
-            frame.setContentPane(fxPanel);
-            frame.pack();
-            frame.setSize(900, 650);
-
-            IdeFrame ideFrame = WindowManager.getInstance().getIdeFrame(action.getProject());
-            frame.setLocationRelativeTo(ideFrame.getComponent());
-            frame.setVisible(true);
-            action.getEvent().getPresentation().setEnabled(true);
+                IdeFrame ideFrame = WindowManager.getInstance().getIdeFrame(action.getProject());
+                frame.setLocationRelativeTo(ideFrame.getComponent());
+                frame.setVisible(true);
+            } catch (Exception e) {
+                showErrorMessage(e.getMessage());
+            } finally {
+                action.getEvent().getPresentation().setEnabled(true);
+            }
         });
     }
 

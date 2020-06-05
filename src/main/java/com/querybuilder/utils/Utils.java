@@ -1,16 +1,5 @@
 package com.querybuilder.utils;
 
-import com.intellij.ide.DataManager;
-import com.intellij.openapi.actionSystem.DataConstants;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.MessageType;
-import com.intellij.openapi.ui.popup.Balloon;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
-import com.intellij.openapi.wm.IdeFrame;
-import com.intellij.openapi.wm.WindowManager;
-import com.intellij.ui.awt.RelativePoint;
 import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.eventbus.Subscriber;
@@ -21,6 +10,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -32,6 +22,7 @@ import javafx.stage.Stage;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -46,18 +37,17 @@ public class Utils {
         return new PlainSelect();
     }
 
-    public static void showMessage(String message) {
-        DataContext dataContext = DataManager.getInstance().getDataContext();
-        Project project = (Project) dataContext.getData(DataConstants.PROJECT);
-        IdeFrame ideFrame = WindowManager.getInstance().getIdeFrame(project);
-        FileDocumentManager.getInstance().saveAllDocuments();
+    public static void showErrorMessage(String message, String header) {
+        JOptionPane.showMessageDialog(
+                null,
+                message,
+                header,
+                JOptionPane.ERROR_MESSAGE
+        );
+    }
 
-        String html = "<html><body>" + message + "</body></html>";
-        JBPopupFactory.getInstance()
-                .createHtmlTextBalloonBuilder(html, MessageType.INFO, null)
-                .setFadeoutTime(10_000)
-                .createBalloon()
-                .show(RelativePoint.getCenterOf(ideFrame.getStatusBar().getComponent()), Balloon.Position.above);
+    public static void showErrorMessage(String message) {
+        showErrorMessage(message, "Parse query error");
     }
 
     public static void setEmptyHeader(Control control) {
@@ -127,25 +117,25 @@ public class Utils {
         Stage stage = new Stage();
         stage.setTitle(title);
         stage.initModality(Modality.APPLICATION_MODAL);
-        stage.setScene(getScene(formName, userData));
+        try {
+            stage.setScene(getScene(formName, userData));
+        } catch (Exception e) {
+            showErrorMessage(e.getMessage());
+            return;
+        }
         stage.setOnCloseRequest((e) -> {
             System.out.println("sdfsdf");
         });
         stage.show();
     }
 
-    public static Scene getScene(String formName, Map<String, Object> userData) {
-        try {
-            FXMLLoader fxmlLoader = new FXMLLoader(Utils.class.getResource(formName));
-            FXMLLoader.setDefaultClassLoader(Utils.class.getClassLoader());
-            Parent root = fxmlLoader.load();
-            Subscriber controller = fxmlLoader.getController();
-            controller.initData(userData);
-            return new Scene(root);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+    public static Scene getScene(String formName, Map<String, Object> userData) throws Exception {
+        FXMLLoader fxmlLoader = new FXMLLoader(Utils.class.getResource(formName));
+        FXMLLoader.setDefaultClassLoader(Utils.class.getClassLoader());
+        Parent root = fxmlLoader.load();
+        Subscriber controller = fxmlLoader.getController();
+        controller.initData(userData);
+        return new Scene(root);
     }
 
     public static boolean doubleClick(MouseEvent e) {
@@ -215,8 +205,10 @@ public class Utils {
         if (item == null) {
             item = resultsTable.getSelectionModel().getSelectedItem();
         }
+
+        ObservableList<TablePosition> selectedCells = resultsTable.getSelectionModel().getSelectedCells();
         if (notSelectColumns.contains(resultsTable.getId())
-                && resultsTable.getSelectionModel().getSelectedCells().get(0).getColumn() == 1) {
+                && !selectedCells.isEmpty() && selectedCells.get(0).getColumn() == 1) {
             return;
         }
         TableRow tableRow = new TableRow(item.getName());

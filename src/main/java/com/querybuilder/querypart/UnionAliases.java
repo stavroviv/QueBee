@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.querybuilder.utils.Constants.EMPTY_UNION_VALUE;
 import static com.querybuilder.utils.Utils.*;
 
 @Data
@@ -127,8 +128,7 @@ public class UnionAliases extends AbstractQueryPart {
                 } else {
                     int j = 0;
                     if (pSelect.getSelectItems().size() > aliasTable.getItems().size()) {
-                        showMessage("Error: different number of fields in union queries");
-                        throw new RuntimeException("Разное количество полей в объединяемых запросах");
+                        throw new RuntimeException("Different number of fields in union queries");
                     }
                     for (SelectItem x : pSelect.getSelectItems()) {
                         SelectExpressionItem select = (SelectExpressionItem) x;
@@ -189,7 +189,9 @@ public class UnionAliases extends AbstractQueryPart {
     public void addUnionColumn(String unionName) {
         TableColumn<AliasRow, String> newColumn = new TableColumn<>(unionName);
         newColumn.setEditable(true);
-
+        for (AliasRow item : aliasTable.getItems()) {
+            item.getValues().put(unionName, EMPTY_UNION_VALUE);
+        }
         newColumn.setCellValueFactory(data -> {
             Map<String, String> values = data.getValue().getValues();
             String initialValue = values.get(unionName);
@@ -327,7 +329,9 @@ public class UnionAliases extends AbstractQueryPart {
             break;
         }
         if (!exists) {
-            aliasRow.getValues().put(curUnion, name);
+            for (String column : unionColumns.keySet()) {
+                aliasRow.getValues().put(column, column.equals(curUnion) ? name : EMPTY_UNION_VALUE);
+            }
             if (rename) {
                 aliasRow.setAlias(aliasRow.getAlias() + getCount(aliasRow.getAlias()));
             }

@@ -3,6 +3,7 @@ package com.querybuilder.domain;
 import com.querybuilder.controllers.MainController;
 import com.querybuilder.utils.Utils;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -14,6 +15,7 @@ import net.sf.jsqlparser.statement.select.SetOperationList;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.querybuilder.utils.Constants.EMPTY_UNION_VALUE;
 import static com.querybuilder.utils.Utils.doubleClick;
 import static com.querybuilder.utils.Utils.getTabIndex;
 
@@ -45,8 +47,11 @@ public class AliasCell extends TableCell<AliasRow, String> {
         pane.setMaxHeight(10);
 
         TextField textField = new TextField(getItem());
+        textField.setEditable(false);
         textField.prefWidthProperty().bind(pane.widthProperty());
-
+        if (getItem().equals(EMPTY_UNION_VALUE)) {
+            textField.setText("");
+        }
         pane.getChildren().add(textField);
 
         Button leftPart = new Button("...");
@@ -56,6 +61,12 @@ public class AliasCell extends TableCell<AliasRow, String> {
 
         Button clearButton = new Button("x");
         clearButton.setAlignment(Pos.CENTER_RIGHT);
+        clearButton.setOnMouseClicked(event -> {
+            commitEdit(EMPTY_UNION_VALUE);
+            if (aliasPopup != null) {
+                aliasPopup.hide();
+            }
+        });
         pane.getChildren().add(clearButton);
 
         setGraphic(pane);
@@ -135,6 +146,10 @@ public class AliasCell extends TableCell<AliasRow, String> {
             String selectedItem = aliasTableContext.getSelectionModel().getSelectedItem();
             commitEdit(selectedItem);
             aliasPopup.hide();
+            ObservableList<AliasRow> aliasItems = controller.getUnionAliasesController().getAliasTable().getItems();
+            for (AliasRow item : aliasItems) {
+
+            }
         });
         return aliasTableContext;
     }

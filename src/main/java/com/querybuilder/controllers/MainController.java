@@ -254,13 +254,9 @@ public class MainController implements Subscriber {
         }
 
         if (cteChange || firstRun) {
-            try {
-                // таблица Alias меняется только при переключении CTE
-                unionAliasesController.loadAliases(selectBody);
-                CTEPart.load(this);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            // таблица Alias меняется только при переключении CTE
+            unionAliasesController.loadAliases(selectBody);
+            CTEPart.load(this);
         }
 
         cteNumberPrev = cteNumber;
