@@ -19,6 +19,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -37,17 +38,45 @@ public class Utils {
         return new PlainSelect();
     }
 
-    public static void showErrorMessage(String message, String header) {
+    public static void showErrorMessage(Exception exception, String header) {
+        exception.printStackTrace();
         JOptionPane.showMessageDialog(
                 null,
-                message,
+                getMessage(exception),
                 header,
                 JOptionPane.ERROR_MESSAGE
         );
     }
 
-    public static void showErrorMessage(String message) {
-        showErrorMessage(message, "Parse query error");
+    public static void showErrorMessage(Exception exception) {
+        showErrorMessage(exception, "Parse query error");
+    }
+
+    private static String getMessage(Exception exception) {
+        String message = exception.getCause().getMessage();
+        StringBuilder result = new StringBuilder();
+        if (exception instanceof JSQLParserException) {
+            String[] split = message.split("\n");
+
+            int i = 0;
+            boolean found = false;
+            for (String s : split) {
+                result.append(s.trim());
+                if (s.contains("Was expect") || i % 7 == 1) {
+                    result.append("\n");
+                    found = true;
+                } else {
+                    result.append(" ");
+                }
+                if (found) {
+                    i++;
+                }
+            }
+        } else {
+            result.append(message);
+        }
+
+        return result.toString();
     }
 
     public static void setEmptyHeader(Control control) {
@@ -120,7 +149,7 @@ public class Utils {
         try {
             stage.setScene(getScene(formName, userData));
         } catch (Exception e) {
-            showErrorMessage(e.getMessage());
+            showErrorMessage(e);
             return;
         }
         stage.setOnCloseRequest((e) -> {

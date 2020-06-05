@@ -16,6 +16,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.CCJSqlParser;
+import net.sf.jsqlparser.parser.ParseException;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.*;
 
@@ -87,24 +89,82 @@ public class UnionAliases extends AbstractQueryPart {
         // custom save
     }
 
-    public void saveAliases(PlainSelect pSelect) {
-        List<SelectItem> selectItems = pSelect.getSelectItems();
-        int i = 0;
-        for (SelectItem selectItem : selectItems) {
-            if (selectItem instanceof SelectExpressionItem) {
-                Expression expression = ((SelectExpressionItem) selectItem).getExpression();
-                if (expression instanceof Column) {
-                    Column column = (Column) expression;
-                    AliasRow aliasRow = aliasTable.getItems().get(i);
-                    if (!column.getColumnName().equals(aliasRow.getAlias())) {
-                        Alias alias = new Alias(aliasRow.getAlias(), true);
-                        ((SelectExpressionItem) selectItem).setAlias(alias);
+    public void saveAliases() {
+        Select sQuery = mainController.getSQuery();
+        SelectBody selectBody = sQuery.getSelectBody();
+        if (selectBody instanceof SetOperationList) {
+
+            int index = 0;
+            for (String union : unionColumns.keySet()) {
+                List<SelectItem> items = new ArrayList<>();
+                for (AliasRow item : aliasTable.getItems()) {
+
+                    String name = item.getValues().get(union);//get first ket from unionColumns
+                    if (name == null) {
+                        continue;
                     }
+                    Expression expression = null;
+                    try {
+                        expression = new CCJSqlParser(name).Expression();
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    SelectExpressionItem sItem = new SelectExpressionItem();
+                    if (index == 0 && !name.equals(item.getAlias())) {
+                        Alias alias = new Alias(item.getAlias(), true);
+                        sItem.setAlias(alias);
+                    }
+                    sItem.setExpression(expression);
+                    items.add(sItem);
                 }
+                if (!items.isEmpty()) {
+                    List<SelectBody> selects = ((SetOperationList) selectBody).getSelects();
+                    PlainSelect sb = (PlainSelect) selects.get(index);
+                    sb.setSelectItems(items);
+                }
+
+                index++;
+                //   selects.set(unionNumber, newSelectBody);
+//                ((PlainSelect) selectBody).setSelectItems(items);
             }
-            i++;
+        } else {
+            List<SelectItem> items = new ArrayList<>();
+            for (AliasRow item : aliasTable.getItems()) {
+                String name = item.getValues().get(FIRST_COLUMN);//get first ket from unionColumns
+                Expression expression = null;
+                try {
+                    expression = new CCJSqlParser(name).Expression();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                SelectExpressionItem sItem = new SelectExpressionItem();
+                if (!name.equals(item.getAlias())) {
+                    Alias alias = new Alias(item.getAlias(), true);
+                    sItem.setAlias(alias);
+                }
+                sItem.setExpression(expression);
+                items.add(sItem);
+            }
+            ((PlainSelect) selectBody).setSelectItems(items);
+
         }
-        pSelect.setSelectItems(selectItems);
+//        List<SelectItem> selectItems = pSelect.getSelectItems();
+//        int i = 0;
+//        for (SelectItem selectItem : selectItems) {
+//            if (selectItem instanceof SelectExpressionItem) {
+//                Expression expression = ((SelectExpressionItem) selectItem).getExpression();
+//                if (expression instanceof Column) {
+//                    Column column = (Column) expression;
+//                    AliasRow aliasRow = aliasTable.getItems().get(i);
+//                    if (!column.getColumnName().equals(aliasRow.getAlias())) {
+//                        Alias alias = new Alias(aliasRow.getAlias(), true);
+//                        ((SelectExpressionItem) selectItem).setAlias(alias);
+//                    }
+//                }
+//            }
+//            i++;
+//        }
+//        pSelect.setSelectItems(selectItems);
     }
 
     public void loadAliases(SelectBody selectBody) {

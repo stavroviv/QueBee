@@ -191,14 +191,14 @@ public class MainController implements Subscriber {
                     sQuery.getWithItemsList().get(cteNumber).setSelectBody(newSelectBody);
                 }
             }
-        } else {
+        } else { // ONE QUERY
             SelectBody selectBody = sQuery.getSelectBody();
-            unionAliasesController.saveAliases(newSelectBody);
             if (selectBody instanceof SetOperationList) {
                 ((SetOperationList) selectBody).getSelects().set(unionNumber, newSelectBody);
             } else {
                 sQuery.setSelectBody(newSelectBody);
             }
+            //  unionAliasesController.saveAliases();
         }
     }
 
