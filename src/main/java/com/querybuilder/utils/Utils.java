@@ -39,13 +39,13 @@ public class Utils {
     }
 
     public static void showErrorMessage(Exception exception, String header) {
-        exception.printStackTrace();
         JOptionPane.showMessageDialog(
                 null,
                 getMessage(exception),
                 header,
                 JOptionPane.ERROR_MESSAGE
         );
+        exception.printStackTrace();
     }
 
     public static void showErrorMessage(Exception exception) {
@@ -53,9 +53,9 @@ public class Utils {
     }
 
     private static String getMessage(Exception exception) {
-        String message = exception.getCause().getMessage();
         StringBuilder result = new StringBuilder();
         if (exception instanceof JSQLParserException) {
+            String message = exception.getCause().getMessage();
             String[] split = message.split("\n");
 
             int i = 0;
@@ -73,7 +73,7 @@ public class Utils {
                 }
             }
         } else {
-            result.append(message);
+            result.append(exception.getMessage());
         }
 
         return result.toString();

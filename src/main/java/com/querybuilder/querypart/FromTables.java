@@ -224,7 +224,9 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
         TreeHelpers.load(mainController);
     }
 
-    private void loadFromTables(PlainSelect pSelect) {
+    public TreeTableView<TableRow> loadFromTables(PlainSelect pSelect) {
+        TreeTableView<TableRow> tablesView = new TreeTableView<>();
+        tablesView.setRoot(new TreeItem<>());
         FromItem fromItem = pSelect.getFromItem();
         Table table = null;
         if (fromItem instanceof Table) {
@@ -233,7 +235,7 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
         }
         List<Join> joins = pSelect.getJoins();
         if (joins == null || table == null) {
-            return;
+            return tablesView;
         }
 
         for (Join join : joins) {
@@ -262,11 +264,13 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
                 });
             }
         }
+        return tablesView;
     }
 
-    public void loadSelectedItems(PlainSelect pSelect) {
+    public TableView<TableRow> loadSelectedItems(PlainSelect pSelect) {
+        TableView<TableRow> fieldTable = new TableView<>();
         if (pSelect.getSelectItems() == null) {
-            return;
+            return fieldTable;
         }
 
         for (SelectItem selectField : pSelect.getSelectItems()) {
@@ -295,6 +299,7 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
                 fieldTable.getItems().add(new TableRow(selectField.toString()));
             }
         }
+        return fieldTable;
     }
 
     @Override
@@ -374,7 +379,7 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
     public void addFieldRow(String name) {
         TableRow newField = new TableRow(name);
         fieldTable.getItems().add(newField);
-        mainController.getUnionAliasesController().addAlias(newField);
+        //  mainController.getUnionAliasesController().addAlias(newField);
     }
 
     @FXML

@@ -7,7 +7,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.CheckBoxTableCell;
@@ -43,8 +42,7 @@ public class Links extends AbstractQueryPart {
     private TableColumn<LinkElement, Boolean> linkTableCustom;
     @FXML
     private TableColumn<LinkElement, LinkElement> linkTableJoinCondition;
-    @FXML
-    private Tab linkTablesPane;
+
 
     @FXML
     protected void addLinkElement(ActionEvent event) {
@@ -96,10 +94,14 @@ public class Links extends AbstractQueryPart {
 
     @Override
     public void load(PlainSelect pSelect) {
-        linkTable.getItems().clear();
+
+    }
+
+    public TableView<LinkElement> loadLinks(PlainSelect pSelect) {
+        TableView<LinkElement> linkTable = new TableView<>();
         List<Join> joins = pSelect.getJoins();
         if (joins == null) {
-            return;
+            return linkTable;
         }
 
         Table fromItem = (Table) pSelect.getFromItem();
@@ -107,7 +109,7 @@ public class Links extends AbstractQueryPart {
         for (Join join : joins) {
             FromItem rightItem = join.getRightItem();
             if (rightItem instanceof Table) {
-                addLinkRow(fromItem, join);
+                addLinkRow(linkTable, fromItem, join);
             } else if (rightItem instanceof SubSelect) {
 //                SubSelect sSelect = (SubSelect) rightItem;
 //                rightItemName = sSelect.getAlias().getName();
@@ -129,7 +131,7 @@ public class Links extends AbstractQueryPart {
 
             }
         }
-
+        return linkTable;
     }
 
     @Override
@@ -188,7 +190,7 @@ public class Links extends AbstractQueryPart {
         return ((PlainSelect) select.getSelectBody()).getWhere();
     }
 
-    private void addLinkRow(Table table, Join join) {
+    private void addLinkRow(TableView<LinkElement> linkTable, Table table, Join join) {
         if (join.getOnExpression() == null) {
             return;
         }

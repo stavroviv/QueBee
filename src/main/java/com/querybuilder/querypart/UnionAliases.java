@@ -359,7 +359,7 @@ public class UnionAliases extends AbstractQueryPart {
         unionTabPane.getTabs().remove(delIndex);
         if (selectedIndex == delIndex) {
             unionTabPane.getSelectionModel().select(delIndex - 1);
-            mainController.loadCurrentQuery(false);
+         //   mainController.loadCurrentQuery(false);
         }
 
         mainController.setNotChangeUnion(false);

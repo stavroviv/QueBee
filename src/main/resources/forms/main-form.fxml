@@ -20,8 +20,8 @@
                          AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
                          AnchorPane.topAnchor="0.0">
                     <tabs>
-                        <Tab text="Untitled Tab"/>
-                        <Tab text="Untitled Tab"/>
+                        <Tab id="CTE_0" text="Untitled Tab"/>
+                        <Tab id="CTE_1" text="Untitled Tab"/>
                     </tabs>
                     <padding>
                         <Insets top="28.0"/>
@@ -33,8 +33,8 @@
                          AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="29.0"
                          AnchorPane.topAnchor="0.0">
                     <tabs>
-                        <Tab text="Untitled Tab"/>
-                        <Tab text="Untitled Tab"/>
+                        <Tab id="UNION_0" text="Untitled Tab"/>
+                        <Tab id="UNION_1" text="Untitled Tab"/>
                     </tabs>
                     <padding>
                         <Insets top="28.0"/>
@@ -189,9 +189,8 @@
                         <Insets bottom="5.0"/>
                     </HBox.margin>
                 </Button>
-                <Button alignment="CENTER" cancelButton="true" minHeight="25.0" minWidth="80.0"
-                        mnemonicParsing="false" onAction="#cancelClick" prefHeight="25.0" prefWidth="80.0" text="Cancel"
-                        HBox.hgrow="ALWAYS">
+                <Button alignment="CENTER" cancelButton="true" minHeight="25.0" minWidth="80.0" mnemonicParsing="false"
+                        onAction="#cancelClick" prefHeight="25.0" prefWidth="80.0" text="Cancel" HBox.hgrow="ALWAYS">
                     <HBox.margin>
                         <Insets bottom="5.0" left="5.0"/>
                     </HBox.margin>
