@@ -33,6 +33,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -191,9 +192,10 @@ public class Utils {
 
     public static void setResultsTableSelectHandler(TableView<TableRow> groupTableResults, TreeTableView<TableRow> groupFieldsTree) {
         groupTableResults.setOnMousePressed(e -> {
-            if (doubleClick(e)) {
-                makeDeselect(groupTableResults, groupFieldsTree);
+            if (!doubleClick(e)) {
+                return;
             }
+            makeDeselect(groupTableResults, groupFieldsTree);
         });
     }
 
@@ -207,11 +209,13 @@ public class Utils {
         resultsTable.getItems().clear();
     }
 
+    private static final List<String> notSelectColumns = Arrays.asList("groupTableAggregates", "orderTableResults");
+
     public static void makeDeselect(TableView<TableRow> resultsTable, TreeTableView<TableRow> fieldsTree, TableRow item) {
         if (item == null) {
             item = resultsTable.getSelectionModel().getSelectedItem();
         }
-        if (resultsTable.getId().equals("groupTableAggregates")
+        if (notSelectColumns.contains(resultsTable.getId())
                 && resultsTable.getSelectionModel().getSelectedCells().get(0).getColumn() == 1) {
             return;
         }
@@ -304,5 +308,16 @@ public class Utils {
         selectionModel.select(newTab);
         SingleSelectionModel<Tab> selModel = controller.getMainTabPane().getSelectionModel();
         selModel.select(controller.getTableAndFieldsTab());
+    }
+
+    public static int getTabIndex(MainController mainController, String unionTabId) {
+        int tIndex = 0;
+        for (Tab tPane : mainController.getUnionTabPane().getTabs()) {
+            if (tPane.getId().equals(unionTabId)) {
+                break;
+            }
+            tIndex++;
+        }
+        return tIndex;
     }
 }

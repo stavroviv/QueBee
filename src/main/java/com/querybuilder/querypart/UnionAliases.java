@@ -29,7 +29,10 @@ import static com.querybuilder.utils.Utils.*;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class UnionAliases extends AbstractQueryPart {
-    private int curMaxUnion; // индекс максимального объединения, нумерация начинается с 0
+    private static final String FIRST_COLUMN = "Query 1";
+    private static final String SECOND_COLUMN = "Query 2";
+
+    private int curMaxUnion; // индекс максимального объединения, нумерация начинается с 1
     private Map<String, TableColumn<AliasRow, String>> unionColumns;
 
     @FXML
@@ -46,12 +49,12 @@ public class UnionAliases extends AbstractQueryPart {
     @FXML
     @Override
     public void initialize() {
-
         aliasTable.getSelectionModel().cellSelectionEnabledProperty().set(true);
 
         aliasFieldColumn.setCellValueFactory(new PropertyValueFactory<>("alias"));
         aliasFieldColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         aliasFieldColumn.setEditable(true);
+
         // ввод данных по кнопке Enter - весьма странно что переход в другую ячейку это не ввод
         aliasFieldColumn.setOnEditCommit((TableColumn.CellEditEvent<AliasRow, String> event) -> {
             TablePosition<AliasRow, String> pos = event.getTablePosition();
@@ -69,6 +72,13 @@ public class UnionAliases extends AbstractQueryPart {
     @Override
     public void load(PlainSelect pSelect) {
         // custom load
+    }
+
+    public void loadUnionTabPanes(SetOperationList setOperationList) {
+        for (int i = 1; i <= setOperationList.getSelects().size(); i++) {
+            addUnionTabPane("Query " + i);
+        }
+        curMaxUnion = setOperationList.getSelects().size();
     }
 
     @Override
@@ -98,17 +108,19 @@ public class UnionAliases extends AbstractQueryPart {
 
     public void loadAliases(SelectBody selectBody) {
         unionTable.getItems().clear();
-        curMaxUnion = 0;
         unionColumns = new HashMap<>();
         aliasTable.getItems().clear();
+        curMaxUnion = 1;
 
         int size = aliasTable.getColumns().size();
         aliasTable.getColumns().remove(1, size);
         if (selectBody instanceof SetOperationList) { // UNION
             SetOperationList setOperationList = (SetOperationList) selectBody;
+            curMaxUnion = setOperationList.getSelects().size();
             int i = 1;
             for (SelectBody sBody : setOperationList.getSelects()) {
-                addUnionColumn("Query " + i, i - 1);
+                String unionName = "Query " + i;
+                addUnionColumn(unionName);
                 PlainSelect pSelect = (PlainSelect) sBody;
                 if (i == 1) {
                     addAliasFirstColumn(pSelect);
@@ -123,14 +135,14 @@ public class UnionAliases extends AbstractQueryPart {
                         Alias alias = select.getAlias();
                         String strAlias = alias != null ? select.getAlias().getName() : select.getExpression().toString();
                         AliasRow aliasEl = aliasTable.getItems().get(j);
-                        aliasEl.getValues().add(strAlias);
+                        aliasEl.getValues().put(unionName, strAlias);
                         j++;
                     }
                 }
                 i++;
             }
         } else if (selectBody instanceof PlainSelect || selectBody == null) { // ONE QUERY
-            addUnionColumn("Query 1", 0);
+            addUnionColumn(FIRST_COLUMN);
             PlainSelect pSelect = (PlainSelect) selectBody;
             if (selectBody != null) {
                 addAliasFirstColumn(pSelect);
@@ -155,7 +167,7 @@ public class UnionAliases extends AbstractQueryPart {
             String strAlias = alias != null ? select.getAlias().getName() : expr;
 
             AliasRow aliasRow = new AliasRow(expression.toString(), strAlias);
-            aliasRow.getValues().add(getNameFromColumn((Column) expression));
+            aliasRow.getValues().put(FIRST_COLUMN, getNameFromColumn((Column) expression));
             aliasTable.getItems().add(aliasRow);
         }
 
@@ -163,6 +175,9 @@ public class UnionAliases extends AbstractQueryPart {
     }
 
     public void setAliasesIds() {
+        if (aliasTable.getItems().isEmpty()) {
+            return;
+        }
         ObservableList<TableRow> items = mainController.getTableFieldsController().getFieldTable().getItems();
         int i = 0;
         for (TableRow item : items) {
@@ -171,20 +186,17 @@ public class UnionAliases extends AbstractQueryPart {
         }
     }
 
-    public void addUnionColumn(String unionName, int i) {
+    public void addUnionColumn(String unionName) {
         TableColumn<AliasRow, String> newColumn = new TableColumn<>(unionName);
         newColumn.setEditable(true);
 
         newColumn.setCellValueFactory(data -> {
-            List<String> values = data.getValue().getValues();
-            if (values.size() <= i) {
-                return null;
-            }
-            String initialValue = values.get(i);
+            Map<String, String> values = data.getValue().getValues();
+            String initialValue = values.get(unionName);
             return new SimpleStringProperty(initialValue);
         });
 
-        newColumn.setCellFactory(x -> new AliasCell(x, i, mainController));
+        newColumn.setCellFactory(x -> new AliasCell(x, unionName, mainController));
 
         aliasTable.getSelectionModel().selectedIndexProperty().addListener((num) -> {
             TablePosition focusedCell = aliasTable.getFocusModel().getFocusedCell();
@@ -198,26 +210,24 @@ public class UnionAliases extends AbstractQueryPart {
 
     @FXML
     protected void addUnionQuery(ActionEvent event) {
-        curMaxUnion++;
-        aliasTable.getItems().forEach(x -> x.getValues().add(""));
-
         addNewUnion();
 
-        if (curMaxUnion == 1) {
+        if (mainController.getUnionTabPane().getTabs().isEmpty()) {
             addFirstUnion();
             return;
         }
 
-        String unionName = "Query " + (curMaxUnion + 1);
-        addUnionColumn(unionName, curMaxUnion);
-        Tab tab = addUnionTabPane(unionName, curMaxUnion);
+        curMaxUnion++;
+        String unionName = "Query " + curMaxUnion;
+        addUnionColumn(unionName);
+        Tab tab = addUnionTabPane(unionName);
         activateNewTab(tab, mainController.getUnionTabPane(), mainController);
     }
 
     private void addFirstUnion() {
-        addUnionTabPane("Query 1", 0);
-        Tab tab = addUnionTabPane("Query 2", 1);
-        addUnionColumn("Query 2", curMaxUnion);
+        addUnionTabPane(FIRST_COLUMN);
+        Tab tab = addUnionTabPane(SECOND_COLUMN);
+        addUnionColumn(SECOND_COLUMN);
         activateNewTab(tab, mainController.getUnionTabPane(), mainController);
     }
 
@@ -255,7 +265,7 @@ public class UnionAliases extends AbstractQueryPart {
         }
     }
 
-    public Tab addUnionTabPane(String unionName, int curUnion) {
+    public Tab addUnionTabPane(String unionName) {
         Tab tab = new Tab(unionName);
         tab.setId(unionName);
         mainController.getUnionTabPane().getTabs().add(tab);
@@ -276,8 +286,12 @@ public class UnionAliases extends AbstractQueryPart {
         String name = selectedItem.getName();
         aliasTable.getColumns().remove(unionColumns.get(name));
         unionTable.getItems().remove(selectedItem);
+        unionColumns.remove(name);
+        for (AliasRow item : aliasTable.getItems()) {
+            item.getValues().remove(name);
+        }
 
-        int delIndex = getTabIndex(name);
+        int delIndex = getTabIndex(mainController, name);
         SelectBody currentSelectBody = mainController.getSQuery().getSelectBody();
         ((SetOperationList) currentSelectBody).getSelects().remove(delIndex);
         unionTabPane.getTabs().remove(delIndex);
@@ -289,48 +303,31 @@ public class UnionAliases extends AbstractQueryPart {
         mainController.setNotChangeUnion(false);
     }
 
-    public int getTabIndex(String unionTabId) {
-        int tIndex = 0;
-        for (Tab tPane : mainController.getUnionTabPane().getTabs()) {
-            if (tPane.getId().equals(unionTabId)) {
-                break;
-            }
-            tIndex++;
-        }
-        return tIndex;
-    }
-
     public void addAlias(TableRow newField) {
         String name = newField.getName();
         String alias = name.split("\\.")[1];// TODO переделать на парсер выражений
         AliasRow aliasRow = new AliasRow(name, alias);
         aliasRow.setId(newField.getId());
 
-        int size = mainController.getUnionTabPane().getTabs().size();
-        if (size == 0) {
-            size = 1;
-        }
-        for (int i = 0; i < size; i++) {
-            aliasRow.getValues().add("");
-        }
+        SingleSelectionModel<Tab> currentTab = mainController.getUnionTabPane().getSelectionModel();
+        String curUnion = currentTab.getSelectedItem() == null ? FIRST_COLUMN : currentTab.getSelectedItem().getId();
 
-        int selectedIndex = mainController.getUnionTabPane().getSelectionModel().getSelectedIndex();
-        int index = Math.max(selectedIndex, 0);
         boolean exists = false;
         boolean rename = false;
         for (AliasRow item : aliasTable.getItems()) {
-            if (item.getAlias().equals(alias)) {
-                if (!item.getValues().get(index).isEmpty()) {
-                    rename = true;
-                    break;
-                }
-                item.getValues().set(index, name);
-                exists = true;
+            if (!item.getAlias().equals(alias)) {
+                continue;
+            }
+            if (item.getValues().get(curUnion) != null) {
+                rename = true;
                 break;
             }
+            item.getValues().put(curUnion, name);
+            exists = true;
+            break;
         }
         if (!exists) {
-            aliasRow.getValues().set(index, name);
+            aliasRow.getValues().put(curUnion, name);
             if (rename) {
                 aliasRow.setAlias(aliasRow.getAlias() + getCount(aliasRow.getAlias()));
             }

@@ -35,11 +35,19 @@ public class OrderBy extends AbstractQueryPart {
 
     @Override
     public void initialize() {
+        setListeners();
+        setCellsFactories();
+    }
+
+    private void setListeners() {
         setTreeSelectHandler(orderFieldsTree, orderTableResults, ORDER_DEFAULT_VALUE);
+        setResultsTableSelectHandler(orderTableResults, orderFieldsTree);
+    }
+
+    private void setCellsFactories() {
         setStringColumnFactory(orderTableResultsFieldColumn);
 
         setComboBoxColumnFactory(orderTableResultsSortingColumn, ORDER_DEFAULT_VALUE, "Descending");
-        setResultsTableSelectHandler(orderTableResults, orderFieldsTree);
 
         ReadOnlyIntegerProperty selectedIndex = orderTableResults.getSelectionModel().selectedIndexProperty();
         orderUpButton.disableProperty().bind(selectedIndex.lessThanOrEqualTo(0));

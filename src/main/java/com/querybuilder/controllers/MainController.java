@@ -20,8 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.querybuilder.utils.Utils.activateNewTab;
-import static com.querybuilder.utils.Utils.getEmptySelect;
+import static com.querybuilder.utils.Utils.*;
 
 @Data
 public class MainController implements Subscriber {
@@ -96,7 +95,7 @@ public class MainController implements Subscriber {
         setPagesListeners();
     }
 
-    //<editor-fold defaultstate="collapsed" desc="FILL SHOW AUERY">
+    //<editor-fold desc="FILL SHOW QUERY">
 
     private boolean notChangeUnion;
 
@@ -165,7 +164,7 @@ public class MainController implements Subscriber {
             int selectedIndex = unionTabPane.getSelectionModel().getSelectedIndex();
             unionNumber = (selectedIndex == -1 ? 0 : selectedIndex);
         } else {
-            unionNumber = unionAliasesController.getTabIndex(unionTab.getId());
+            unionNumber = getTabIndex(this, unionTab.getId());
         }
 
         int cteNumber;
@@ -237,13 +236,10 @@ public class MainController implements Subscriber {
             unionTabPane.getTabs().clear();
         }
 
-        if (selectBody instanceof SetOperationList) { // UNION CHANGE
+        if (selectBody instanceof SetOperationList) { // UNIONS LOAD
             SetOperationList setOperationList = (SetOperationList) selectBody;
             if (cteNumberPrev != cteNumber || firstRun) {
-                for (int i = 1; i <= setOperationList.getSelects().size(); i++) {
-                    unionAliasesController.addUnionTabPane("Query " + i, i - 1);
-                }
-                unionAliasesController.setCurMaxUnion(setOperationList.getSelects().size() - 1);
+                unionAliasesController.loadUnionTabPanes(setOperationList);
             }
             unionNumber = unionTabPane.getSelectionModel().getSelectedIndex();
             SelectBody body = setOperationList.getSelects().get(unionNumber == -1 ? 0 : unionNumber);
@@ -270,6 +266,7 @@ public class MainController implements Subscriber {
         cteNumberPrev = cteNumber;
     }
 
+
     private void initDBTables() {
         DBStructure db = new DBStructureImpl();
         DBTables dbStructure = db.getDBStructure(queryBuilder.getConsole());
@@ -291,7 +288,7 @@ public class MainController implements Subscriber {
         unionTabPane.getTabs().clear();
         cteTabPane.getTabs().clear();
         queryCteTable.getItems().clear();
-        unionAliasesController.setCurMaxUnion(0);
+        //unionAliasesController.setCurMaxUnion(1);
         curMaxCTE = 1;
 
         // one query
@@ -370,30 +367,32 @@ public class MainController implements Subscriber {
     }
 
     @FXML
-    public void onDBTableChange() {
-//        System.out.println("234");
-    }
-
-    @FXML
     public void cancelClick(ActionEvent actionEvent) {
         queryBuilder.closeForm();
     }
 
-    public void insertResult(String result, TableRow item, SubSelect subSelect) {
-//        item.setQuery(result);
-//        PlainSelect selectBody = getSelectBody();
-//        if (selectBody.getFromItem().getAlias() != null && selectBody.getFromItem().getAlias().getName().equals(item.getName())) {
-//            selectBody.setFromItem(subSelect);
-//        } else {
-//            selectBody.getJoins().forEach((x) -> {
-//                if (x.getRightItem().getAlias() != null && x.getRightItem().getAlias().getName().equals(item.getName())) {
-//                    x.setRightItem(subSelect);
-//                }
-//            });
-//        }
-//        System.out.println(selectBody);
+    @FXML
+    public void onDBTableChange() {
+//        System.out.println("234");
     }
 
+
+    //    public void insertResult(String result, TableRow item, SubSelect subSelect) {
+////        item.setQuery(result);
+////        PlainSelect selectBody = getSelectBody();
+////        if (selectBody.getFromItem().getAlias() != null && selectBody.getFromItem().getAlias().getName().equals(item.getName())) {
+////            selectBody.setFromItem(subSelect);
+////        } else {
+////            selectBody.getJoins().forEach((x) -> {
+////                if (x.getRightItem().getAlias() != null && x.getRightItem().getAlias().getName().equals(item.getName())) {
+////                    x.setRightItem(subSelect);
+////                }
+////            });
+////        }
+////        System.out.println(selectBody);
+//    }
+//
+    @FXML
     public void removeCTEClick(ActionEvent actionEvent) {
     }
 

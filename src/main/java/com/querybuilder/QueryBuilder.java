@@ -52,6 +52,7 @@ public class QueryBuilder {
                         "Parse query error",
                         JOptionPane.ERROR_MESSAGE
                 );
+                action.getEvent().getPresentation().setEnabled(true);
                 return;
             }
         } else {
@@ -121,12 +122,12 @@ public class QueryBuilder {
     }
 
     public void closeForm(String result) {
-        if (mainForm) {
-            mainAction.insertResult(result);
-        } else {
-            SubSelect subSelect = castResultToSubSelect(item.getName());
-            parentController.insertResult(result, item, subSelect);
-        }
+        //  if (mainForm) {
+        mainAction.insertResult(result);
+        // } else {
+        //   SubSelect subSelect = castResultToSubSelect(item.getName());
+//            parentController.insertResult(result, item, subSelect);
+        // }
         closeForm();
     }
 

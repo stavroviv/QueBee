@@ -15,19 +15,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.querybuilder.utils.Utils.doubleClick;
+import static com.querybuilder.utils.Utils.getTabIndex;
 
 public class AliasCell extends TableCell<AliasRow, String> {
     private MainController controller;
-    private int column;
+    private String columnName;
 
-    public AliasCell(TableColumn<AliasRow, String> aliasRow, int column, MainController controller) {
+    public AliasCell(TableColumn<AliasRow, String> aliasRow, String columnName, MainController controller) {
         this.controller = controller;
-        this.column = column;
+        this.columnName = columnName;
 
         aliasRow.setOnEditCommit(t -> {
             int row = t.getTablePosition().getRow();
             AliasRow currentRow = t.getTableView().getItems().get(row);
-            currentRow.getValues().set(column, t.getNewValue());
+            currentRow.getValues().put(columnName, t.getNewValue());
         });
     }
 
@@ -107,15 +108,16 @@ public class AliasCell extends TableCell<AliasRow, String> {
         aliasTableContextColumn.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue()));
 
         List<String> items = new ArrayList<>();
-        int selectedIndex = controller.getUnionTabPane().getSelectionModel().getSelectedIndex();
-        if (column == selectedIndex || selectedIndex == -1) {
+
+        TabPane unionTabPane = controller.getUnionTabPane();
+        if (!unionTabPane.getTabs().isEmpty() && columnName.equals(unionTabPane.getSelectionModel().getSelectedItem().getId())) {
             controller.getTableFieldsController().getFieldTable().getItems().forEach(tableRow ->
                     items.add(tableRow.getName())
             );
         } else {
             // get from query
             SetOperationList fullSelectBody = (SetOperationList) controller.getFullSelectBody();
-            PlainSelect selectBody = (PlainSelect) fullSelectBody.getSelects().get(column);
+            PlainSelect selectBody = (PlainSelect) fullSelectBody.getSelects().get(getTabIndex(controller, columnName));
             selectBody.getSelectItems().forEach(tableRow ->
                     items.add(tableRow.toString())
             );
