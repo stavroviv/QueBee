@@ -37,6 +37,9 @@ public class QueryBuilder {
 
     private JdbcConsole console;
 
+    public QueryBuilder() {
+    }
+
     public QueryBuilder(MainAction action, boolean mainForm) {
         this.mainForm = mainForm;
         this.console = JdbcConsole.findConsole(action.getEvent());
