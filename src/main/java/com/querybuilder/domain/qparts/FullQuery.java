@@ -1,5 +1,6 @@
 package com.querybuilder.domain.qparts;
 
+import com.querybuilder.domain.AliasRow;
 import lombok.Data;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
@@ -45,7 +46,6 @@ public class FullQuery {
             select.setWithItemsList(withItems);
         }
 
-        System.out.println(select.toString());
         return select;
     }
 
@@ -59,17 +59,18 @@ public class FullQuery {
         List<SetOperation> ops = new ArrayList<>();
         List<Boolean> brackets = new ArrayList<>();
         List<SelectBody> selectBodies = new ArrayList<>();
-
+        boolean first = true;
         while (iterator.hasNext()) {
             union = iterator.next();
             if (oneCte.getUnionMap().size() == 1) {
-                return getPlainSelect(oneCte, union);
+                return getPlainSelect(oneCte, union, first);
             }
             brackets.add(false);
             UnionOp unionOp = new UnionOp();
             unionOp.setAll(true);
             ops.add(unionOp);
-            selectBodies.add(getPlainSelect(oneCte, union));
+            selectBodies.add(getPlainSelect(oneCte, union, first));
+            first = false;
         }
         ops.remove(ops.size() - 1);
         selectBody.setBracketsOpsAndSelects(brackets, selectBodies, ops);
@@ -77,18 +78,19 @@ public class FullQuery {
         return selectBody;
     }
 
-    private PlainSelect getPlainSelect(OneCte cte, String union) {
+    private PlainSelect getPlainSelect(OneCte cte, String union, boolean first) {
         PlainSelect select = new PlainSelect();
 
-        saveAliases(select, cte, union);
+        saveAliases(select, cte, union, first);
         saveFromTables(select, cte, union);
 
         return select;
     }
 
-    private static void saveAliases(PlainSelect select, OneCte cte, String union) {
+    private static void saveAliases(PlainSelect select, OneCte cte, String union, boolean first) {
         List<SelectItem> sItems = new ArrayList<>();
-        cte.getAliasTable().getItems().forEach(item -> {
+
+        for (AliasRow item : cte.getAliasTable().getItems()) {
             String name = item.getValues().get(union);
             Expression expression = null;
             try {
@@ -97,13 +99,15 @@ public class FullQuery {
                 e.printStackTrace();
             }
             if (expression == null) { // FIXME
-                return;
+                continue;
             }
             SelectExpressionItem sItem = new SelectExpressionItem();
             sItem.setExpression(expression);
-            sItem.setAlias(new Alias(item.getAlias()));
+            if (first) {
+                sItem.setAlias(new Alias(item.getAlias()));
+            }
             sItems.add(sItem);
-        });
+        }
         select.setSelectItems(sItems);
     }
 

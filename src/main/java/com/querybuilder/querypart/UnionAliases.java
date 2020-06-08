@@ -18,6 +18,7 @@ import lombok.EqualsAndHashCode;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 
 import java.util.HashMap;
@@ -220,7 +221,11 @@ public class UnionAliases extends AbstractQueryPart {
 
             String expr = expression.toString();
             if (expression instanceof Column) {
-                expr = ((Column) expression).getColumnName();
+                Column column = (Column) expression;
+                expr = column.getColumnName();
+                if (column.getTable() == null && pSelect.getJoins() == null) {
+                    column.setTable((Table) pSelect.getFromItem());
+                }
             }
             String strAlias = alias != null ? select.getAlias().getName() : expr;
 

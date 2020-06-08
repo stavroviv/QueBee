@@ -7,7 +7,6 @@ import com.querybuilder.eventbus.Subscriber;
 import com.querybuilder.utils.Utils;
 import javafx.embed.swing.JFXPanel;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.Select;
@@ -26,24 +25,24 @@ public class QueryBuilderTest {
     }
 
     @NotNull
-    private Subscriber loadQuery(String text) throws Exception {
+    private MainController loadQuery(String text) throws Exception {
         Statement statement = CCJSqlParserUtil.parse(text);
 
         URL resource = Utils.class.getResource("/forms/main-form.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(resource);
         FXMLLoader.setDefaultClassLoader(Utils.class.getClassLoader());
+        fxmlLoader.load();
 
-        Parent root = fxmlLoader.load();
         Subscriber controller = fxmlLoader.getController();
         Map<String, Object> data = new HashMap<>();
         data.put("sQuery", statement);
         data.put("queryBuilder", new QueryBuilder());
         controller.initData(data);
-        return controller;
+        return (MainController) controller;
     }
 
     @Test
-    public void test1() throws Exception {
+    public void aliasesSave() throws Exception {
         String text = "SELECT crm_bonus_retail.bonus_retail_value AS bonus_retail_value, " +
                 "crm_bonus_retail.vendor_id AS vendor_id, " +
                 "crm_bonus_retail.bonus_retail_id AS bonus_retail_id, " +
@@ -56,13 +55,23 @@ public class QueryBuilderTest {
                 "crm_advance_payment.advance_payment_id " +
                 "FROM crm_access, crm_advance_payment";
 
-        ;
-        Subscriber controller = loadQuery(text);
-
-        FullQuery fullQuery = ((MainController) controller).getFullQuery();
+        FullQuery fullQuery = loadQuery(text).getFullQuery();
         Select query = fullQuery.getQuery();
 
         Assert.assertEquals(query.toString(), text);
     }
 
+    @Test
+    public void loadWithoutTableName() throws Exception {
+        String text = "SELECT bonus_retail_value AS bonus_retail_value, " +
+                "vendor_id AS vendor_id " +
+                "FROM crm_bonus_retail";
+
+        FullQuery fullQuery = loadQuery(text).getFullQuery();
+        Select query = fullQuery.getQuery();
+        String expected = "SELECT crm_bonus_retail.bonus_retail_value AS bonus_retail_value, " +
+                "crm_bonus_retail.vendor_id AS vendor_id " +
+                "FROM crm_bonus_retail";
+        Assert.assertEquals(expected, query.toString());
+    }
 }

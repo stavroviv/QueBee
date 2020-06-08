@@ -21,6 +21,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import javax.swing.*;
@@ -184,7 +185,8 @@ public class Utils {
     }
 
     public static String getNameFromColumn(Column column) {
-        return column.getTable().getName() + "." + column.getColumnName();
+        Table table = column.getTable();
+        return table.getName() + "." + column.getColumnName();
     }
 
     public static void setCellSelectionEnabled(TableView<TableRow> table) {
