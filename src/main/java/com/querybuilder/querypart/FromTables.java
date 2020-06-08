@@ -217,7 +217,6 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
         return treeItem;
     }
 
-    @Override
     public void load(PlainSelect pSelect) {
         loadFromTables(pSelect);
         loadSelectedItems(pSelect);
@@ -302,30 +301,29 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
         return fieldTable;
     }
 
-    @Override
     public void save(PlainSelect selectBody) {
-        saveFromTables(selectBody);
+//        saveFromTables(selectBody);
         saveSelectedFields(selectBody);
     }
 
-    public void saveFromTables(PlainSelect selectBody) {
-        if (!mainController.getLinksController().getLinkTable().getItems().isEmpty()) {
-            return;
-        }
-        List<Join> joins = new ArrayList<>();
-        tablesView.getRoot().getChildren().forEach(x -> {
-            String tableName = x.getValue().getName();
-            if (selectBody.getFromItem() == null) {
-                selectBody.setFromItem(new Table(tableName));
-            } else {
-                Join join = new Join();
-                join.setRightItem(new Table(tableName));
-                join.setSimple(true);
-                joins.add(join);
-            }
-        });
-        selectBody.setJoins(joins);
-    }
+//    public void saveFromTables(PlainSelect selectBody) {
+//        if (!mainController.getLinksController().getLinkTable().getItems().isEmpty()) {
+//            return;
+//        }
+//        List<Join> joins = new ArrayList<>();
+//        tablesView.getRoot().getChildren().forEach(x -> {
+//            String tableName = x.getValue().getName();
+//            if (selectBody.getFromItem() == null) {
+//                selectBody.setFromItem(new Table(tableName));
+//            } else {
+//                Join join = new Join();
+//                join.setRightItem(new Table(tableName));
+//                join.setSimple(true);
+//                joins.add(join);
+//            }
+//        });
+//        selectBody.setJoins(joins);
+//    }
 
     public void saveSelectedFields(PlainSelect selectBody) {
         List<SelectItem> items = new ArrayList<>();
@@ -379,7 +377,7 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
     public void addFieldRow(String name) {
         TableRow newField = new TableRow(name);
         fieldTable.getItems().add(newField);
-        //  mainController.getUnionAliasesController().addAlias(newField);
+        mainController.getUnionAliasesController().addAlias(newField);
     }
 
     @FXML
@@ -412,4 +410,5 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
     public void initData(Map<String, Object> data) {
 
     }
+
 }

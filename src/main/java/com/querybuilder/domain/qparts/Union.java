@@ -6,22 +6,27 @@ import com.querybuilder.domain.TableRow;
 import com.querybuilder.querypart.FromTables;
 import com.querybuilder.querypart.Links;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableView;
 import lombok.Data;
 
 @Data
 public class Union {
-    private TreeTableView<TableRow> tablesView;
-    private TableView<TableRow> fieldTable;
+    private TreeTableView<TableRow> tablesView = new TreeTableView<>();
+    private TableView<TableRow> fieldTable = new TableView<>();
 
-    private TableView<LinkElement> linkTable;
+    private TableView<LinkElement> linkTable = new TableView<>();
 
-    private TreeTableView<TableRow> groupFieldsTree;
-    private TableView<TableRow> groupTableResults;
-    private TableView<TableRow> groupTableAggregates;
+    private TreeTableView<TableRow> groupFieldsTree = new TreeTableView<>();
+    private TableView<TableRow> groupTableResults = new TableView<>();
+    private TableView<TableRow> groupTableAggregates = new TableView<>();
 
-    private TreeTableView<TableRow> conditionsTreeTable;
-    private TableView<ConditionElement> conditionTableResults;
+    private TreeTableView<TableRow> conditionsTreeTable = new TreeTableView<>();
+    private TableView<ConditionElement> conditionTableResults = new TableView<>();
+
+    public Union() {
+        tablesView.setRoot(new TreeItem<>());
+    }
 
     public void saveFrom(FromTables controller) {
         fieldTable.getItems().clear();

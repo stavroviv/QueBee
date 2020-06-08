@@ -5,7 +5,6 @@ import com.querybuilder.database.DBStructure;
 import com.querybuilder.database.DBStructureImpl;
 import com.querybuilder.domain.DBTables;
 import com.querybuilder.domain.SelectedFieldsTree;
-import com.querybuilder.domain.TableRow;
 import com.querybuilder.domain.qparts.FullQuery;
 import com.querybuilder.domain.qparts.OneCte;
 import com.querybuilder.domain.qparts.Union;
@@ -20,12 +19,12 @@ import lombok.Data;
 import net.sf.jsqlparser.statement.select.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.querybuilder.utils.Constants.CTE_0;
+import static com.querybuilder.utils.Constants.UNION_0;
 import static com.querybuilder.utils.Utils.activateNewTab;
-import static com.querybuilder.utils.Utils.getEmptySelect;
 
 @Data
 public class MainController implements Subscriber {
@@ -111,13 +110,14 @@ public class MainController implements Subscriber {
             if (oldTab == null || newTab == null) {
                 return;
             }
-            saveLoadPart(oldTab, null, newTab, null);
+            saveLoadPart(oldTab, null, newTab, null, true);
+            loadUnionPages(newTab);
         });
         unionTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
-            if (oldTab == null || newTab == null || notChangeUnion) {
+            if (oldTab == null || newTab == null) {
                 return;
             }
-            saveLoadPart(null, oldTab, null, newTab);
+            saveLoadPart(null, oldTab, null, newTab, false);
         });
 
         setUnionAndCTETabPaneVisibility();
@@ -131,6 +131,21 @@ public class MainController implements Subscriber {
                 setUnionAndCTETabPaneVisibility();
             }
         });
+    }
+
+    private String getCurrentUnion() {
+        Tab selectedItem = unionTabPane.getSelectionModel().getSelectedItem();
+        if (selectedItem == null) {
+            return UNION_0;
+        }
+        return selectedItem.getId();
+    }
+
+    private void loadUnionPages(Tab newTab) {
+        unionTabPane.getTabs().clear();
+        for (String union : fullQuery.getCteMap().get(newTab.getId()).getUnionMap().keySet()) {
+            unionAliasesController.addUnionTabPane(union, union);
+        }
     }
 
     private void setUnionAndCTETabPaneVisibility() {
@@ -151,63 +166,7 @@ public class MainController implements Subscriber {
         return anchor;
     }
 
-//    private void saveCurrentQuery(Tab cteTab, Tab unionTab) {
-//        PlainSelect selectBody = getEmptySelect();
-//        queryParts.forEach(part -> {
-//            try {
-//                part.save(selectBody);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        });
-//        processUnionsAndCTE(cteTab, unionTab, selectBody);
-//    }
-
-//    private void processUnionsAndCTE(Tab cteTab, Tab unionTab, PlainSelect newSelectBody) {
-//        int unionNumber;
-//        if (unionTab == null) {
-//            int selectedIndex = unionTabPane.getSelectionModel().getSelectedIndex();
-//            unionNumber = (selectedIndex == -1 ? 0 : selectedIndex);
-//        } else {
-//            unionNumber = getTabIndex(this, unionTab.getId());
-//        }
-//
-//        int cteNumber;
-//        if (cteTab == null) {
-//            int selectedIndex = cteTabPane.getSelectionModel().getSelectedIndex();
-//            cteNumber = (selectedIndex == -1 ? 0 : selectedIndex);
-//        } else {
-//            cteNumber = getCteTabId(cteTab.getId());
-//        }
-//
-//        if (sQuery.getWithItemsList() != null && !sQuery.getWithItemsList().isEmpty()) {
-//            SelectBody selectBody;
-//            if (sQuery.getWithItemsList().size() == cteNumber) {
-//                selectBody = sQuery.getSelectBody();
-//            } else {
-//                selectBody = sQuery.getWithItemsList().get(cteNumber).getSelectBody();
-//            }
-//            if (selectBody instanceof SetOperationList) {
-//                ((SetOperationList) selectBody).getSelects().set(unionNumber, newSelectBody);
-//            } else {
-//                if (sQuery.getWithItemsList().size() == cteNumber) {
-//                    sQuery.setSelectBody(newSelectBody);
-//                } else {
-//                    sQuery.getWithItemsList().get(cteNumber).setSelectBody(newSelectBody);
-//                }
-//            }
-//        } else { // ONE QUERY
-//            SelectBody selectBody = sQuery.getSelectBody();
-//            if (selectBody instanceof SetOperationList) {
-//                ((SetOperationList) selectBody).getSelects().set(unionNumber, newSelectBody);
-//            } else {
-//                sQuery.setSelectBody(newSelectBody);
-//            }
-//            //  unionAliasesController.saveAliases();
-//        }
-//    }
-
-    private int getCteTabId(String tabId) {
+    private int getCteTabIndex(String tabId) {
         int tIndex = 0;
         for (Tab tPane : cteTabPane.getTabs()) {
             if (tPane.getId().equals(tabId)) {
@@ -228,44 +187,6 @@ public class MainController implements Subscriber {
         }
         return selectBody;
     }
-
-//    public void loadCurrentQuery(boolean firstRun) {
-//        int cteNumber = cteTabPane.getSelectionModel().getSelectedIndex();
-//        int unionNumber;
-//        boolean cteChange = (cteNumberPrev != cteNumber);
-//
-//        clearTables(cteChange, firstRun);
-//        SelectBody selectBody = getFullSelectBody();
-//
-//        if (cteChange || firstRun) {
-//            unionTabPane.getTabs().clear();
-//        }
-//
-//        if (selectBody instanceof SetOperationList) { // UNIONS LOAD
-//            SetOperationList setOperationList = (SetOperationList) selectBody;
-//            if (cteNumberPrev != cteNumber || firstRun) {
-//                unionAliasesController.loadUnionTabPanes(setOperationList);
-//            }
-//            unionNumber = unionTabPane.getSelectionModel().getSelectedIndex();
-//            SelectBody body = setOperationList.getSelects().get(unionNumber == -1 ? 0 : unionNumber);
-//            loadSelectData((PlainSelect) body);
-//            if (!firstRun) {
-//                unionAliasesController.setAliasesIds();
-//            }
-//        } else if (selectBody instanceof PlainSelect) { // ONE QUERY
-//            loadSelectData((PlainSelect) selectBody);
-//        } else if (selectBody == null) { // new empty query
-//            TreeHelpers.load(this);
-//        }
-//
-//        if (cteChange || firstRun) {
-//            // таблица Alias меняется только при переключении CTE
-//            unionAliasesController.loadAliases(selectBody);
-//            CTEPart.load(this);
-//        }
-//
-//        cteNumberPrev = cteNumber;
-//    }
 
     private void initDBTables() {
         DBStructure db = new DBStructureImpl();
@@ -289,103 +210,88 @@ public class MainController implements Subscriber {
     private void firstLoadQuery() {
         unionTabPane.getTabs().clear();
         cteTabPane.getTabs().clear();
+        addCteTabPane(0, CTE_0);
+        unionAliasesController.addUnionTabPane(UNION_0, UNION_0);
+        queryCteTable.getItems().add(CTE_0);
 
         fullQuery = new FullQuery();
         List<WithItem> withItemsList = sQuery.getWithItemsList();
         int index = 0;
         if (withItemsList != null) {
             for (WithItem x : withItemsList) {
-                String cteName = x.getName();
-                Tab tab = new Tab(cteName);
-                tab.setId(cteName);
-                cteTabPane.getTabs().add(tab);
+                addCteTabPane(index, x.getName());
                 loadQueryPart("CTE_" + index, x.getSelectBody());
                 index++;
             }
         }
-
         loadQueryPart("CTE_" + index, sQuery.getSelectBody());
 
-        showFromBuilder(null, null);
-
-        // System.out.println(fullQuery);
-
-//        queryCteTable.getItems().clear();
-//        //unionAliasesController.setCurMaxUnion(1);
-//        curMaxCTE = 1;
-//
-//        // one query
-//        List<WithItem> withItemsList = sQuery.getWithItemsList();
-//        if (withItemsList == null) {
-//            loadCurrentQuery(true);
-//            queryCteTable.getItems().add("Query_1");
-//            return;
-//        }
-//
-//        // CTE
-//        for (WithItem x : withItemsList) {
-//            String cteName = x.getName();
-//            Tab tab = new Tab(cteName);
-//            tab.setId(cteName);
-//            cteTabPane.getTabs().add(tab);
-//            queryCteTable.getItems().add(cteName);
-//        }
-//
-//        curMaxCTE = withItemsList.size() + 1;
-//        String cteName = "Query_" + (withItemsList.size() + 1);
-//        addCteTabPane(withItemsList.size() + 1);
-//        queryCteTable.getItems().add(cteName);
-//
-//        cteTabPane.getSelectionModel().select(0);
-//        loadCurrentQuery(true);
+        showFromBuilder(null, null, true);
     }
 
-    private void saveLoadPart(Tab oldCte, Tab oldUnion, Tab newCte, Tab newUnion) {
-        saveToBuilder(oldCte, oldUnion);
-        showFromBuilder(newCte, newUnion);
+    private void saveLoadPart(Tab oldCte, Tab oldUnion, Tab newCte, Tab newUnion, boolean cteChange) {
+        if (!withoutSave) {
+            saveToBuilder(oldCte, oldUnion, cteChange);
+        }
+        showFromBuilder(newCte, newUnion, cteChange);
     }
 
-    private void saveToBuilder(Tab oldCte, Tab oldUnion) {
-        Union union = getCurrentUnion(oldCte, oldUnion);
+    private void saveToBuilder(Tab oldCte, Tab oldUnion, boolean cteChange) {
+        OneCte cte = getCurrentCte(oldCte);
+        if (cteChange) {
+            cte.saveAliasTable(unionAliasesController);
+        }
+        Union union = getCurrentUnion(cte, oldUnion, cteChange);
         union.saveFrom(tableFieldsController);
         union.saveLink(linksController);
     }
 
-    private void showFromBuilder(Tab newCte, Tab newUnion) {
-        Union union = getCurrentUnion(newCte, newUnion);
+    private void showFromBuilder(Tab newCte, Tab newUnion, boolean cteChange) {
+        OneCte cte = getCurrentCte(newCte);
+        if (cteChange) {
+            cte.showAliasTable(unionAliasesController);
+        }
+        Union union = getCurrentUnion(cte, newUnion, false);
         union.showFrom(tableFieldsController);
         union.showLinks(linksController);
     }
 
-    private Union getCurrentUnion(Tab newCte, Tab newUnion) {
-        String cteId = "CTE_0";
+    private OneCte getCurrentCte(Tab newCte) {
+        String cteId = CTE_0;
         if (newCte != null) {
             cteId = newCte.getId();
         }
-        String unionId = "UNION_0";
-        if (newUnion != null) {
+        return fullQuery.getCteMap().get(cteId);
+    }
+
+    private Union getCurrentUnion(OneCte oneCte, Tab newUnion, boolean cteChange) {
+        String unionId = UNION_0;
+        if (cteChange) {
+            unionId = getCurrentUnion();
+        } else if (newUnion != null) {
             unionId = newUnion.getId();
         }
 
-        OneCte cte_0 = fullQuery.getCteMap().get(cteId);
-        return cte_0.getUnionMap().get(unionId);
+        return oneCte.getUnionMap().get(unionId);
     }
 
-    private void loadQueryPart(String CteName, SelectBody selectBody) {
-        OneCte oneCte = new OneCte();
-        oneCte.setCteName(CteName);
+    private void loadQueryPart(String cteName, SelectBody selectBody) {
+        OneCte oneCte = loadCteData(cteName, selectBody);
 
         int index = 0;
-        Map<String, Union> unionMap = new HashMap<>();
+        Map<String, Union> unionMap = oneCte.getUnionMap();
+
         if (selectBody instanceof PlainSelect) {
-            unionMap.put("UNION_" + index, loadUnionData((PlainSelect) selectBody));
+            unionMap.put(UNION_0, loadUnionData((PlainSelect) selectBody));
         } else if (selectBody instanceof SetOperationList) {
             for (SelectBody union : ((SetOperationList) selectBody).getSelects()) {
                 String key = "UNION_" + index;
 
-                Tab tab = new Tab(key);
-                tab.setId(key);
-                unionTabPane.getTabs().add(tab);
+                if (index > 0) {
+                    Tab tab = new Tab(key);
+                    tab.setId(key);
+                    unionTabPane.getTabs().add(tab);
+                }
 
                 unionMap.put(key, loadUnionData((PlainSelect) union));
                 index++;
@@ -394,7 +300,16 @@ public class MainController implements Subscriber {
         }
         oneCte.setUnionMap(unionMap);
 
-        fullQuery.getCteMap().put(CteName, oneCte);
+        fullQuery.getCteMap().put(cteName, oneCte);
+    }
+
+    private OneCte loadCteData(String cteName, SelectBody selectBody) {
+        OneCte oneCte = new OneCte();
+        oneCte.setCteName(cteName);
+
+        oneCte.setAliasTable(unionAliasesController.loadAliases(selectBody));
+
+        return oneCte;
     }
 
     private Union loadUnionData(PlainSelect selectBody) {
@@ -409,72 +324,11 @@ public class MainController implements Subscriber {
 
     private int cteNumberPrev = -1;
 
-    private void loadSelectData(PlainSelect pSelect) {
-        queryParts.forEach(part -> {
-            try {
-                part.load(pSelect);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
-    private void clearIfNotNull(TreeTableView<TableRow> treeTable) {
-        if (treeTable.getRoot() != null && treeTable.getRoot().getChildren() != null) {
-            treeTable.getRoot().getChildren().clear();
-        }
-    }
-
-    private void clearTables(boolean cteChange, boolean firstRun) {
-        tableFieldsController.getFieldTable().getItems().clear();
-        tableFieldsController.getTablesView().getRoot().getChildren().clear();
-
-        if (!firstRun) {
-            clearIfNotNull(conditionsController.getConditionsTreeTable());
-            clearIfNotNull(groupingController.getGroupFieldsTree());
-            clearIfNotNull(orderController.getOrderFieldsTree());
-        }
-
-        conditionsController.getConditionTableResults().getItems().clear();
-        groupingController.getGroupTableResults().getItems().clear();
-        groupingController.getGroupTableAggregates().getItems().clear();
-        orderController.getOrderTableResults().getItems().clear();
-
-        if (cteChange) {
-            unionAliasesController.getUnionTable().getItems().clear();
-//            aliasTable.getItems().clear();
-        }
-    }
-
-
     @FXML
     public void okClick() {
-//        saveCurrentQuery(
-//                cteTabPane.getSelectionModel().getSelectedItem(),
-//                unionTabPane.getSelectionModel().getSelectedItem()
-//        );
-        saveBuilderToQuery();
+        saveToBuilder(cteTabPane.getSelectionModel().getSelectedItem(), unionTabPane.getSelectionModel().getSelectedItem(), true);
+        sQuery = fullQuery.getQuery();
         queryBuilder.closeForm(sQuery.toString());
-    }
-
-    private void saveBuilderToQuery() {
-        SelectBody sb;
-        Map<String, OneCte> cteMap = fullQuery.getCteMap();
-        if (cteMap.size() == 1) {
-            sb = new PlainSelect();
-        } else {
-            sb = new SetOperationList();
-            for (String s : cteMap.keySet()) {
-                Map<String, Union> unions = cteMap.get(s).getUnionMap();
-                if (unions.size() == 1) {
-                    PlainSelect pselect = new PlainSelect();
-
-                    pselect.setSelectItems(null);
-                }
-            }
-        }
-
-        sQuery.setSelectBody(sb);
     }
 
     @FXML
@@ -482,29 +336,36 @@ public class MainController implements Subscriber {
         queryBuilder.closeForm();
     }
 
-    @FXML
-    public void onDBTableChange() {
-//        System.out.println("234");
-    }
+    private boolean withoutSave;
 
-
-    //    public void insertResult(String result, TableRow item, SubSelect subSelect) {
-////        item.setQuery(result);
-////        PlainSelect selectBody = getSelectBody();
-////        if (selectBody.getFromItem().getAlias() != null && selectBody.getFromItem().getAlias().getName().equals(item.getName())) {
-////            selectBody.setFromItem(subSelect);
-////        } else {
-////            selectBody.getJoins().forEach((x) -> {
-////                if (x.getRightItem().getAlias() != null && x.getRightItem().getAlias().getName().equals(item.getName())) {
-////                    x.setRightItem(subSelect);
-////                }
-////            });
-////        }
-////        System.out.println(selectBody);
-//    }
-//
     @FXML
     public void removeCTEClick(ActionEvent actionEvent) {
+        if (queryCteTable.getItems().size() == 1) {
+            return;
+        }
+        String selectedItem = queryCteTable.getSelectionModel().getSelectedItem();
+        if (selectedItem == null) {
+            return;
+        }
+        if (selectedItem.equals(getCurrentCTE())) {
+            withoutSave = true;
+            int index = getCteTabIndex(selectedItem) - 1;
+            cteTabPane.getSelectionModel().select(index == -1 ? 0 : index);
+            withoutSave = false;
+        }
+        queryCteTable.getItems().remove(selectedItem);
+        fullQuery.getCteMap().remove(selectedItem);
+
+        cteTabPane.getTabs().remove(getTabById(selectedItem));
+    }
+
+    private Tab getTabById(String tabId) {
+        for (Tab tPane : cteTabPane.getTabs()) {
+            if (tPane.getId().equals(tabId)) {
+                return tPane;
+            }
+        }
+        return null;
     }
 
     private int curMaxCTE; // индекс максимального СTE, нумерация начинается с 0
@@ -514,48 +375,27 @@ public class MainController implements Subscriber {
 
     @FXML
     public void addCTEClick(ActionEvent actionEvent) {
-        if (cteTabPane.getTabs().size() == 0) {
-            addCteTabPane(1);
-        }
-
         curMaxCTE++;
-        String lastQuery = queryCteTable.getItems().get(queryCteTable.getItems().size() - 1);
 
-        Tab newTab = addCteTabPane(curMaxCTE);
-        queryCteTable.getItems().add("Query_" + curMaxCTE);
+        String key = "CTE_" + curMaxCTE;
+        fullQuery.getCteMap().put(key, new OneCte());
 
-        // добавить новый Select, все что есть превратить в блоки CTE
-        List<WithItem> withItemsList = sQuery.getWithItemsList();
-        List<WithItem> newItemsList = new ArrayList<>();
-        if (withItemsList != null) {
-            for (WithItem wIt : sQuery.getWithItemsList()) {
-                WithItem wItem = new WithItem();
-                wItem.setName(wIt.getName());
-                wItem.setSelectBody(wIt.getSelectBody());
-                newItemsList.add(wItem);
-            }
-        }
-
-        addCte(newItemsList, lastQuery);
-
-        sQuery.setWithItemsList(newItemsList);
-        sQuery.setSelectBody(getEmptySelect());
-
+        Tab newTab = addCteTabPane(curMaxCTE, key);
         activateNewTab(newTab, cteTabPane, this);
+
+        queryCteTable.getItems().add(key);
     }
 
-    private void addCte(List<WithItem> newItemsList, String lastQuery) {
-        WithItem wItem = new WithItem();
-        wItem.setName(lastQuery);
-        wItem.setSelectBody(sQuery.getSelectBody());
-        newItemsList.add(wItem);
-    }
-
-    private Tab addCteTabPane(int curMaxCTE) {
+    private Tab addCteTabPane(int curMaxCTE, String id) {
         String cteName = "Query_" + curMaxCTE;
-        Tab tab = new Tab(cteName);
-        tab.setId(cteName);
+        Tab tab = new Tab(id);
+        tab.setId(id);
         cteTabPane.getTabs().add(tab);
         return tab;
+    }
+
+    public String getCurrentCTE() {
+        Tab selectedItem = cteTabPane.getSelectionModel().getSelectedItem();
+        return selectedItem == null ? CTE_0 : selectedItem.getId();
     }
 }

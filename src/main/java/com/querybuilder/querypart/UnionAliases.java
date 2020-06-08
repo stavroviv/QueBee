@@ -3,6 +3,7 @@ package com.querybuilder.querypart;
 import com.querybuilder.domain.AliasCell;
 import com.querybuilder.domain.AliasRow;
 import com.querybuilder.domain.TableRow;
+import com.querybuilder.domain.qparts.Union;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
@@ -16,12 +17,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.parser.CCJSqlParser;
-import net.sf.jsqlparser.parser.ParseException;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,8 +30,8 @@ import static com.querybuilder.utils.Utils.*;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class UnionAliases extends AbstractQueryPart {
-    private static final String FIRST_COLUMN = "Query 1";
-    private static final String SECOND_COLUMN = "Query 2";
+    private static final String FIRST_COLUMN = "UNION_0";
+    // private static final String SECOND_COLUMN = "Query 2";
 
     private int curMaxUnion; // индекс максимального объединения, нумерация начинается с 1
     private Map<String, TableColumn<AliasRow, String>> unionColumns;
@@ -72,119 +70,118 @@ public class UnionAliases extends AbstractQueryPart {
         unionTableDistinctColumn.setCellValueFactory(data -> new SimpleBooleanProperty(data.getValue().isDistinct()));
     }
 
-    @Override
     public void load(PlainSelect pSelect) {
         // custom load
     }
 
-    public void loadUnionTabPanes(SetOperationList setOperationList) {
-        for (int i = 1; i <= setOperationList.getSelects().size(); i++) {
-            addUnionTabPane("Query " + i);
-        }
-        curMaxUnion = setOperationList.getSelects().size();
-    }
+//    public void loadUnionTabPanes(SetOperationList setOperationList) {
+//        for (int i = 1; i <= setOperationList.getSelects().size(); i++) {
+//            addUnionTabPane("Query " + i);
+//        }
+//        curMaxUnion = setOperationList.getSelects().size();
+//    }
 
-    @Override
     public void save(PlainSelect pSelect) {
         // custom save
     }
 
-    public void saveAliases() {
-        Select sQuery = mainController.getSQuery();
-        SelectBody selectBody = sQuery.getSelectBody();
-        if (selectBody instanceof SetOperationList) {
-
-            int index = 0;
-            for (String union : unionColumns.keySet()) {
-                List<SelectItem> items = new ArrayList<>();
-                for (AliasRow item : aliasTable.getItems()) {
-
-                    String name = item.getValues().get(union);//get first ket from unionColumns
-                    if (name == null) {
-                        continue;
-                    }
-                    Expression expression = null;
-                    try {
-                        expression = new CCJSqlParser(name).Expression();
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-                    SelectExpressionItem sItem = new SelectExpressionItem();
-                    if (index == 0 && !name.equals(item.getAlias())) {
-                        Alias alias = new Alias(item.getAlias(), true);
-                        sItem.setAlias(alias);
-                    }
-                    sItem.setExpression(expression);
-                    items.add(sItem);
-                }
-                if (!items.isEmpty()) {
-                    List<SelectBody> selects = ((SetOperationList) selectBody).getSelects();
-                    PlainSelect sb = (PlainSelect) selects.get(index);
-                    sb.setSelectItems(items);
-                }
-
-                index++;
-                //   selects.set(unionNumber, newSelectBody);
-//                ((PlainSelect) selectBody).setSelectItems(items);
-            }
-        } else {
-            List<SelectItem> items = new ArrayList<>();
-            for (AliasRow item : aliasTable.getItems()) {
-                String name = item.getValues().get(FIRST_COLUMN);//get first ket from unionColumns
-                Expression expression = null;
-                try {
-                    expression = new CCJSqlParser(name).Expression();
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                SelectExpressionItem sItem = new SelectExpressionItem();
-                if (!name.equals(item.getAlias())) {
-                    Alias alias = new Alias(item.getAlias(), true);
-                    sItem.setAlias(alias);
-                }
-                sItem.setExpression(expression);
-                items.add(sItem);
-            }
-            ((PlainSelect) selectBody).setSelectItems(items);
-
-        }
-//        List<SelectItem> selectItems = pSelect.getSelectItems();
-//        int i = 0;
-//        for (SelectItem selectItem : selectItems) {
-//            if (selectItem instanceof SelectExpressionItem) {
-//                Expression expression = ((SelectExpressionItem) selectItem).getExpression();
-//                if (expression instanceof Column) {
-//                    Column column = (Column) expression;
-//                    AliasRow aliasRow = aliasTable.getItems().get(i);
-//                    if (!column.getColumnName().equals(aliasRow.getAlias())) {
-//                        Alias alias = new Alias(aliasRow.getAlias(), true);
-//                        ((SelectExpressionItem) selectItem).setAlias(alias);
+//    public void saveAliases() {
+//        Select sQuery = mainController.getSQuery();
+//        SelectBody selectBody = sQuery.getSelectBody();
+//        if (selectBody instanceof SetOperationList) {
+//
+//            int index = 0;
+//            for (String union : unionColumns.keySet()) {
+//                List<SelectItem> items = new ArrayList<>();
+//                for (AliasRow item : aliasTable.getItems()) {
+//
+//                    String name = item.getValues().get(union);//get first ket from unionColumns
+//                    if (name == null) {
+//                        continue;
 //                    }
+//                    Expression expression = null;
+//                    try {
+//                        expression = new CCJSqlParser(name).Expression();
+//                    } catch (ParseException e) {
+//                        e.printStackTrace();
+//                    }
+//                    SelectExpressionItem sItem = new SelectExpressionItem();
+//                    if (index == 0 && !name.equals(item.getAlias())) {
+//                        Alias alias = new Alias(item.getAlias(), true);
+//                        sItem.setAlias(alias);
+//                    }
+//                    sItem.setExpression(expression);
+//                    items.add(sItem);
 //                }
+//                if (!items.isEmpty()) {
+//                    List<SelectBody> selects = ((SetOperationList) selectBody).getSelects();
+//                    PlainSelect sb = (PlainSelect) selects.get(index);
+//                    sb.setSelectItems(items);
+//                }
+//
+//                index++;
+//                //   selects.set(unionNumber, newSelectBody);
+////                ((PlainSelect) selectBody).setSelectItems(items);
 //            }
-//            i++;
+//        } else {
+//            List<SelectItem> items = new ArrayList<>();
+//            for (AliasRow item : aliasTable.getItems()) {
+//                String name = item.getValues().get(FIRST_COLUMN);//get first ket from unionColumns
+//                Expression expression = null;
+//                try {
+//                    expression = new CCJSqlParser(name).Expression();
+//                } catch (ParseException e) {
+//                    e.printStackTrace();
+//                }
+//                SelectExpressionItem sItem = new SelectExpressionItem();
+//                if (!name.equals(item.getAlias())) {
+//                    Alias alias = new Alias(item.getAlias(), true);
+//                    sItem.setAlias(alias);
+//                }
+//                sItem.setExpression(expression);
+//                items.add(sItem);
+//            }
+//            ((PlainSelect) selectBody).setSelectItems(items);
+//
 //        }
-//        pSelect.setSelectItems(selectItems);
-    }
+////        List<SelectItem> selectItems = pSelect.getSelectItems();
+////        int i = 0;
+////        for (SelectItem selectItem : selectItems) {
+////            if (selectItem instanceof SelectExpressionItem) {
+////                Expression expression = ((SelectExpressionItem) selectItem).getExpression();
+////                if (expression instanceof Column) {
+////                    Column column = (Column) expression;
+////                    AliasRow aliasRow = aliasTable.getItems().get(i);
+////                    if (!column.getColumnName().equals(aliasRow.getAlias())) {
+////                        Alias alias = new Alias(aliasRow.getAlias(), true);
+////                        ((SelectExpressionItem) selectItem).setAlias(alias);
+////                    }
+////                }
+////            }
+////            i++;
+////        }
+////        pSelect.setSelectItems(selectItems);
+//    }
 
-    public void loadAliases(SelectBody selectBody) {
+    public TableView<AliasRow> loadAliases(SelectBody selectBody) {
         unionTable.getItems().clear();
         unionColumns = new HashMap<>();
-        aliasTable.getItems().clear();
-        curMaxUnion = 1;
+        TableView<AliasRow> aliasTable = new TableView<>();
+        curMaxUnion = 0;
 
         int size = aliasTable.getColumns().size();
         aliasTable.getColumns().remove(1, size);
+
         if (selectBody instanceof SetOperationList) { // UNION
             SetOperationList setOperationList = (SetOperationList) selectBody;
             curMaxUnion = setOperationList.getSelects().size();
-            int i = 1;
+            int i = 0;
             for (SelectBody sBody : setOperationList.getSelects()) {
-                String unionName = "Query " + i;
+                String unionName = "UNION_" + i;
                 addUnionColumn(unionName);
                 PlainSelect pSelect = (PlainSelect) sBody;
-                if (i == 1) {
-                    addAliasFirstColumn(pSelect);
+                if (i == 0) {
+                    addAliasFirstColumn(aliasTable, pSelect);
                 } else {
                     int j = 0;
                     if (pSelect.getSelectItems().size() > aliasTable.getItems().size()) {
@@ -205,12 +202,13 @@ public class UnionAliases extends AbstractQueryPart {
             addUnionColumn(FIRST_COLUMN);
             PlainSelect pSelect = (PlainSelect) selectBody;
             if (selectBody != null) {
-                addAliasFirstColumn(pSelect);
+                addAliasFirstColumn(aliasTable, pSelect);
             }
         }
+        return aliasTable;
     }
 
-    private void addAliasFirstColumn(PlainSelect pSelect) {
+    private void addAliasFirstColumn(TableView<AliasRow> aliasTable, PlainSelect pSelect) {
         List<SelectItem> selectItems = pSelect.getSelectItems();
         if (selectItems == null) {
             return;
@@ -231,7 +229,7 @@ public class UnionAliases extends AbstractQueryPart {
             aliasTable.getItems().add(aliasRow);
         }
 
-        setAliasesIds();
+        // setAliasesIds();
     }
 
     public void setAliasesIds() {
@@ -272,70 +270,62 @@ public class UnionAliases extends AbstractQueryPart {
 
     @FXML
     protected void addUnionQuery(ActionEvent event) {
-        addNewUnion();
-
-        if (mainController.getUnionTabPane().getTabs().isEmpty()) {
-            addFirstUnion();
-            return;
-        }
-
         curMaxUnion++;
+        String key = "UNION_" + curMaxUnion;
+        mainController.getFullQuery().getCteMap()
+                .get(mainController.getCurrentCTE())
+                .getUnionMap().put(key, new Union());
         String unionName = "Query " + curMaxUnion;
-        addUnionColumn(unionName);
-        Tab tab = addUnionTabPane(unionName);
+        Tab tab = addUnionTabPane(unionName, key);
         activateNewTab(tab, mainController.getUnionTabPane(), mainController);
+
+        addUnionColumn(key);
     }
 
-    private void addFirstUnion() {
-        addUnionTabPane(FIRST_COLUMN);
-        Tab tab = addUnionTabPane(SECOND_COLUMN);
-        addUnionColumn(SECOND_COLUMN);
-        activateNewTab(tab, mainController.getUnionTabPane(), mainController);
-    }
+//    private void addNewUnion() {
+//        SetOperationList selectBody = new SetOperationList();
+//
+//        List<SelectBody> selectBodies = new ArrayList<>();
+//        SelectBody existingBody = mainController.getFullSelectBody();
+//        if (existingBody instanceof SetOperationList) {
+//            SetOperationList setOperationList = (SetOperationList) existingBody;
+//            selectBodies.addAll(setOperationList.getSelects());
+//        } else {
+//            selectBodies.add(existingBody);
+//        }
+//        selectBodies.add(getEmptySelect());
+//
+//        List<Boolean> brackets = new ArrayList<>();
+//        List<SetOperation> ops = new ArrayList<>();
+//        selectBodies.forEach(x -> {
+//            brackets.add(false);
+//            UnionOp unionOp = new UnionOp();
+//            unionOp.setAll(true);
+//            ops.add(unionOp);
+//        });
+//        ops.remove(ops.size() - 1);
+//
+//        selectBody.setBracketsOpsAndSelects(brackets, selectBodies, ops);
+//
+//        int cteNumber = mainController.getCteTabPane().getSelectionModel().getSelectedIndex();
+//        Select sQuery = mainController.getSQuery();
+//        if (sQuery.getWithItemsList() == null || cteNumber == sQuery.getWithItemsList().size()) {
+//            sQuery.setSelectBody(selectBody);
+//        } else {
+//            sQuery.getWithItemsList().get(cteNumber).setSelectBody(selectBody);
+//        }
+//    }
 
-    private void addNewUnion() {
-        SetOperationList selectBody = new SetOperationList();
-
-        List<SelectBody> selectBodies = new ArrayList<>();
-        SelectBody existingBody = mainController.getFullSelectBody();
-        if (existingBody instanceof SetOperationList) {
-            SetOperationList setOperationList = (SetOperationList) existingBody;
-            selectBodies.addAll(setOperationList.getSelects());
-        } else {
-            selectBodies.add(existingBody);
-        }
-        selectBodies.add(getEmptySelect());
-
-        List<Boolean> brackets = new ArrayList<>();
-        List<SetOperation> ops = new ArrayList<>();
-        selectBodies.forEach(x -> {
-            brackets.add(false);
-            UnionOp unionOp = new UnionOp();
-            unionOp.setAll(true);
-            ops.add(unionOp);
-        });
-        ops.remove(ops.size() - 1);
-
-        selectBody.setBracketsOpsAndSelects(brackets, selectBodies, ops);
-
-        int cteNumber = mainController.getCteTabPane().getSelectionModel().getSelectedIndex();
-        Select sQuery = mainController.getSQuery();
-        if (sQuery.getWithItemsList() == null || cteNumber == sQuery.getWithItemsList().size()) {
-            sQuery.setSelectBody(selectBody);
-        } else {
-            sQuery.getWithItemsList().get(cteNumber).setSelectBody(selectBody);
-        }
-    }
-
-    public Tab addUnionTabPane(String unionName) {
-        Tab tab = new Tab(unionName);
-        tab.setId(unionName);
+    public Tab addUnionTabPane(String unionName, String id) {
+        Tab tab = new Tab(id);
+        tab.setId(id);
         mainController.getUnionTabPane().getTabs().add(tab);
         return tab;
     }
 
     @FXML
     protected void deleteUnion(ActionEvent event) {
+        // TODO переделать
         if (unionTable.getItems().size() == 1) {
             return;
         }
@@ -359,7 +349,7 @@ public class UnionAliases extends AbstractQueryPart {
         unionTabPane.getTabs().remove(delIndex);
         if (selectedIndex == delIndex) {
             unionTabPane.getSelectionModel().select(delIndex - 1);
-         //   mainController.loadCurrentQuery(false);
+            //   mainController.loadCurrentQuery(false);
         }
 
         mainController.setNotChangeUnion(false);
@@ -380,7 +370,8 @@ public class UnionAliases extends AbstractQueryPart {
             if (!item.getAlias().equals(alias)) {
                 continue;
             }
-            if (item.getValues().get(curUnion) != null) {
+            String curVal = item.getValues().get(curUnion);
+            if (curVal != null && !EMPTY_UNION_VALUE.equals(curVal)) {
                 rename = true;
                 break;
             }

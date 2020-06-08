@@ -61,7 +61,6 @@ public class OrderBy extends AbstractQueryPart {
         setCellFactory(orderFieldsTreeColumn);
     }
 
-    @Override
     public void load(PlainSelect pSelect) {
         List<OrderByElement> orderByElements = pSelect.getOrderByElements();
         if (orderByElements == null) {
@@ -86,7 +85,6 @@ public class OrderBy extends AbstractQueryPart {
         });
     }
 
-    @Override
     public void save(PlainSelect pSelect) {
         List<OrderByElement> orderElements = new ArrayList<>();
         orderTableResults.getItems().forEach(x -> {

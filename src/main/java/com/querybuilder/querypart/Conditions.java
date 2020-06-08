@@ -105,7 +105,6 @@ public class Conditions extends AbstractQueryPart {
         });
     }
 
-    @Override
     public void load(PlainSelect pSelect) {
         Expression where = pSelect.getWhere();
         if (where == null) {
@@ -135,7 +134,6 @@ public class Conditions extends AbstractQueryPart {
         conditionTableResults.getItems().add(0, condition);
     }
 
-    @Override
     public void save(PlainSelect selectBody) {
         if (conditionTableResults.getItems().size() == 0) {
             selectBody.setWhere(null);

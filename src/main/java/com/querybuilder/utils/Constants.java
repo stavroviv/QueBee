@@ -9,4 +9,7 @@ public class Constants {
     public static final String EXPRESSIONS = "[>=<=<>]+";
     public static final String CTE_ROOT = "CTE";
     public static final String EMPTY_UNION_VALUE = "<Absent>";
+
+    public static final String CTE_0 = "CTE_0";
+    public static final String UNION_0 = "UNION_0";
 }

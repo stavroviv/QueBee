@@ -56,7 +56,6 @@ public class GroupBy extends AbstractQueryPart {
         setCellFactory(groupFieldsTreeColumn);
     }
 
-    @Override
     public void load(PlainSelect pSelect) {
         loadGroupBy(pSelect);
         deselectAggregates();
@@ -96,7 +95,6 @@ public class GroupBy extends AbstractQueryPart {
         groupTableAggregates.getItems().add(tableRow);
     }
 
-    @Override
     public void save(PlainSelect pSelect) {
         saveGroupBy(pSelect);
         saveAggregates(pSelect);

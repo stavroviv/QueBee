@@ -92,7 +92,6 @@ public class Links extends AbstractQueryPart {
         linkTableJoinCondition.setCellFactory(column -> new JoinConditionCell());
     }
 
-    @Override
     public void load(PlainSelect pSelect) {
 
     }
@@ -134,7 +133,6 @@ public class Links extends AbstractQueryPart {
         return linkTable;
     }
 
-    @Override
     public void save(PlainSelect selectBody) {
         if (linkTable.getItems().isEmpty()) {
             return;
