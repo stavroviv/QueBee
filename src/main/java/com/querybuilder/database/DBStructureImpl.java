@@ -35,6 +35,13 @@ public class DBStructureImpl implements DBStructure {
         TreeItem<TableRow> root = new TreeItem<>(tablesRoot);
         root.setExpanded(true);
 
+        DBTables data = new DBTables();
+        if (console == null) {
+            data.setDbElements(dbElements);
+            data.setRoot(root);
+            return data;
+        }
+
         LocalDataSource dataSource = console.getDataSource();
         DatabaseDriver databaseDriver = dataSource.getDatabaseDriver();
         if (databaseDriver == null) {
@@ -70,7 +77,6 @@ public class DBStructureImpl implements DBStructure {
             }
         }
 
-        DBTables data = new DBTables();
         data.setDbElements(dbElements);
         data.setRoot(root);
         return data;
