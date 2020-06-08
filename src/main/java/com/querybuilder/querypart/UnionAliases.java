@@ -17,6 +17,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
@@ -221,10 +222,12 @@ public class UnionAliases extends AbstractQueryPart {
 
             String expr = expression.toString();
             if (expression instanceof Column) {
-                Column column = (Column) expression;
-                expr = column.getColumnName();
-                if (column.getTable() == null && pSelect.getJoins() == null) {
-                    column.setTable((Table) pSelect.getFromItem());
+                expr = getString(pSelect, (Column) expression);
+            } else if (expression instanceof Function) {
+                Function expression1 = (Function) expression;
+                if (expression1.getParameters().getExpressions().size() == 1) {
+                    expression = expression1.getParameters().getExpressions().get(0);
+                    expr = getString(pSelect, (Column) expression);
                 }
             }
             String strAlias = alias != null ? select.getAlias().getName() : expr;
@@ -235,6 +238,16 @@ public class UnionAliases extends AbstractQueryPart {
         }
 
         // setAliasesIds();
+    }
+
+    private String getString(PlainSelect pSelect, Column expression) {
+        String expr;
+        Column column = expression;
+        expr = column.getColumnName();
+        if (column.getTable() == null && pSelect.getJoins() == null) {
+            column.setTable((Table) pSelect.getFromItem());
+        }
+        return expr;
     }
 
     public void setAliasesIds() {

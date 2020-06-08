@@ -6,6 +6,7 @@ import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.ParseException;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 
@@ -103,7 +104,7 @@ public class FullQuery {
             }
             SelectExpressionItem sItem = new SelectExpressionItem();
             sItem.setExpression(expression);
-            if (first) {
+            if (first && !((Column) sItem.getExpression()).getColumnName().equals(item.getAlias())) {
                 sItem.setAlias(new Alias(item.getAlias()));
             }
             sItems.add(sItem);
