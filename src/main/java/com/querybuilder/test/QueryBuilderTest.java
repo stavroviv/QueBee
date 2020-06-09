@@ -4,6 +4,7 @@ import com.querybuilder.QueryBuilder;
 import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.domain.qparts.FullQuery;
+import com.querybuilder.domain.qparts.OneCte;
 import com.querybuilder.eventbus.Subscriber;
 import com.querybuilder.utils.Utils;
 import javafx.embed.swing.JFXPanel;
@@ -21,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.querybuilder.utils.Constants.CTE_0;
+import static com.querybuilder.utils.Constants.UNION_0;
 
 public class QueryBuilderTest {
 
@@ -127,6 +129,59 @@ public class QueryBuilderTest {
                 "crm_bonus_retail.vendor_id " +
                 "FROM crm_bonus_retail " +
                 "GROUP BY crm_bonus_retail.vendor_id";
+        Assert.assertEquals(expected, query.toString());
+    }
+
+    @Test
+    public void loadSaveWithNull() throws Exception {
+        String text = "SELECT bonus_retail_value, " +
+                "vendor_id," +
+                "vendor_id2 " +
+                "FROM crm_bonus_retail " +
+                "UNION ALL " +
+                "SELECT crm_access.access_name " +
+                "FROM crm_access";
+
+        FullQuery fullQuery = loadQuery(text).getFullQuery();
+        Select query = fullQuery.getQuery();
+
+        String expected = "SELECT crm_bonus_retail.bonus_retail_value, " +
+                "crm_bonus_retail.vendor_id, " +
+                "crm_bonus_retail.vendor_id2 " +
+                "FROM crm_bonus_retail " +
+                "UNION ALL " +
+                "SELECT crm_access.access_name, NULL, NULL " +
+                "FROM crm_access";
+        Assert.assertEquals(expected, query.toString());
+    }
+
+    @Test
+    public void loadWithNull() throws Exception {
+        String text = "SELECT bonus_retail_value, " +
+                "vendor_id," +
+                "NULL AS test " +
+                "FROM crm_bonus_retail " +
+                "UNION ALL " +
+                "SELECT crm_access.access_name, NULL, vendor_id " +
+                "FROM crm_access";
+
+        FullQuery fullQuery = loadQuery(text).getFullQuery();
+        OneCte cte_0 = fullQuery.getCteMap().get("CTE_0");
+        TableView<TableRow> fieldTable = cte_0.getUnionMap().get(UNION_0).getFieldTable();
+        Assert.assertEquals(2, fieldTable.getItems().size());
+
+        fieldTable = cte_0.getUnionMap().get("UNION_1").getFieldTable();
+        Assert.assertEquals(2, fieldTable.getItems().size());
+
+        Select query = fullQuery.getQuery();
+        String expected = "SELECT crm_bonus_retail.bonus_retail_value, " +
+                "crm_bonus_retail.vendor_id, " +
+                "NULL AS test " +
+                "FROM crm_bonus_retail " +
+                "UNION ALL " +
+                "SELECT crm_access.access_name, " +
+                "NULL, " +
+                "crm_access.vendor_id FROM crm_access";
         Assert.assertEquals(expected, query.toString());
     }
 

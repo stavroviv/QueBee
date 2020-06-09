@@ -16,8 +16,7 @@ import net.sf.jsqlparser.statement.select.*;
 
 import java.util.*;
 
-import static com.querybuilder.utils.Constants.ALL_FIELDS;
-import static com.querybuilder.utils.Constants.CTE_0;
+import static com.querybuilder.utils.Constants.*;
 
 @Data
 public class FullQuery {
@@ -160,15 +159,21 @@ public class FullQuery {
 
         for (AliasRow item : cte.getAliasTable().getItems()) {
             String name = item.getValues().get(union);
+            if (name.equals(EMPTY_UNION_VALUE)) {
+                name = "NULL";
+            }
+
             Expression expression = null;
             try {
                 expression = new CCJSqlParser(name).Expression();
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            if (expression == null) { // FIXME
-                continue;
+
+            if (expression == null) {
+                throw new RuntimeException("Empty expression for " + name);
             }
+
             SelectExpressionItem sItem = new SelectExpressionItem();
             sItem.setExpression(expression);
 

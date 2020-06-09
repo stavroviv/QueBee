@@ -23,20 +23,17 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.querybuilder.utils.Constants.EMPTY_UNION_VALUE;
-import static com.querybuilder.utils.Constants.UNION_0;
-import static com.querybuilder.utils.Utils.*;
+import static com.querybuilder.utils.Constants.*;
+import static com.querybuilder.utils.Utils.activateNewTab;
+import static com.querybuilder.utils.Utils.getNameFromColumn;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class UnionAliases extends AbstractQueryPart {
     private static final String FIRST_COLUMN = "UNION_0";
-
-    private Map<String, TableColumn<AliasRow, String>> unionColumns; // TODO вынести в CTO
 
     @FXML
     private TableView<AliasRow> aliasTable;
@@ -82,7 +79,6 @@ public class UnionAliases extends AbstractQueryPart {
 
     public void loadAliases(SelectBody selectBody, OneCte oneCte) {
         TableView<TableRow> unionTable = new TableView<>();
-        unionColumns = new HashMap<>();
 
         TableView<AliasRow> aliasTable = new TableView<>();
         int curMaxUnion = 0;
@@ -95,12 +91,12 @@ public class UnionAliases extends AbstractQueryPart {
             int i = 0;
             for (SelectBody sBody : setOperationList.getSelects()) {
                 String unionName = "UNION_" + i;
-                unionColumns.put(unionName, addUnionColumn(aliasTable, unionTable, unionName, mainController));
+                addUnionColumn(aliasTable, unionTable, unionName, oneCte, mainController);
                 addAliasColumn(aliasTable, (PlainSelect) sBody, oneCte, unionName);
                 i++;
             }
         } else if (selectBody instanceof PlainSelect || selectBody == null) { // ONE QUERY
-            unionColumns.put(FIRST_COLUMN, addUnionColumn(aliasTable, unionTable, FIRST_COLUMN, mainController));
+            addUnionColumn(aliasTable, unionTable, FIRST_COLUMN, oneCte, mainController);
             PlainSelect pSelect = (PlainSelect) selectBody;
             if (selectBody != null) {
                 addAliasColumn(aliasTable, pSelect, oneCte, FIRST_COLUMN);
@@ -143,7 +139,6 @@ public class UnionAliases extends AbstractQueryPart {
             if (expression instanceof Column) {
                 nameFromColumn = getNameFromColumn((Column) expression);
             }
-            TableRow newField = new TableRow(nameFromColumn);
 
             AliasRow aliasRow;
             if (unionName.equals(UNION_0)) {
@@ -155,19 +150,29 @@ public class UnionAliases extends AbstractQueryPart {
                 aliasRow = aliasTable.getItems().get(index);
             }
 
-            aliasRow.getValues().put(unionName, nameFromColumn);
-            aliasRow.getIds().put(unionName, newField.getId());
+            if (nameFromColumn.equals(NULL_VALUE)) {
+                aliasRow.getValues().put(unionName, EMPTY_UNION_VALUE);
+            } else {
+                aliasRow.getValues().put(unionName, nameFromColumn);
+            }
+
+            if (!nameFromColumn.equals(NULL_VALUE)) {
+                TableRow newField = new TableRow(nameFromColumn);
+                aliasRow.getIds().put(unionName, newField.getId());
+
+                fieldTable.getItems().add(newField);
+
+                if (function != null) {
+                    TableRow tableRow = TableRow.tableRowFromValue(newField);
+                    tableRow.setComboBoxValue(function.getName());
+                    groupTableAggregates.getItems().add(tableRow);
+                }
+            }
+
             if (unionName.equals(UNION_0)) {
                 aliasTable.getItems().add(aliasRow);
             }
 
-            fieldTable.getItems().add(newField);
-
-            if (function != null) {
-                TableRow tableRow = TableRow.tableRowFromValue(newField);
-                tableRow.setComboBoxValue(function.getName());
-                groupTableAggregates.getItems().add(tableRow);
-            }
             index++;
         }
 
@@ -196,6 +201,7 @@ public class UnionAliases extends AbstractQueryPart {
     public static TableColumn<AliasRow, String> addUnionColumn(TableView<AliasRow> aliasTable,
                                                                TableView<TableRow> unionTable,
                                                                String unionName,
+                                                               OneCte oneCte,
                                                                MainController controller) {
         TableColumn<AliasRow, String> newColumn = new TableColumn<>(unionName);
         newColumn.setEditable(true);
@@ -216,7 +222,7 @@ public class UnionAliases extends AbstractQueryPart {
         });
 
         aliasTable.getColumns().add(newColumn);
-        //unionColumns.put(unionName, newColumn);
+        oneCte.getUnionColumns().put(unionName, newColumn);
 
         unionTable.getItems().add(new TableRow(unionName));
         return newColumn;
@@ -224,6 +230,7 @@ public class UnionAliases extends AbstractQueryPart {
 
     @FXML
     protected void addUnionQuery(ActionEvent event) {
+        // TODO что-то не так с добавлением UNION не в первом CTE
         OneCte cte = mainController.getFullQuery().getCteMap().get(mainController.getCurrentCTE());
         cte.setCurMaxUnion(cte.getCurMaxUnion() + 1);
         String key = "UNION_" + cte.getCurMaxUnion();
@@ -234,7 +241,7 @@ public class UnionAliases extends AbstractQueryPart {
         Tab tab = addUnionTabPane(unionName, key);
         activateNewTab(tab, mainController.getUnionTabPane(), mainController);
 
-        unionColumns.put(key, addUnionColumn(aliasTable, unionTable, key, mainController));
+        addUnionColumn(aliasTable, unionTable, key, cte, mainController);
     }
 
     public Tab addUnionTabPane(String unionName, String id) {
@@ -247,33 +254,33 @@ public class UnionAliases extends AbstractQueryPart {
     @FXML
     protected void deleteUnion(ActionEvent event) {
         // TODO переделать
-        if (unionTable.getItems().size() == 1) {
-            return;
-        }
-
-        mainController.setNotChangeUnion(true);
-        TabPane unionTabPane = mainController.getUnionTabPane();
-        int selectedIndex = unionTabPane.getSelectionModel().getSelectedIndex();
-
-        TableRow selectedItem = unionTable.getSelectionModel().getSelectedItem();
-        String name = selectedItem.getName();
-        aliasTable.getColumns().remove(unionColumns.get(name));
-        unionTable.getItems().remove(selectedItem);
-        unionColumns.remove(name);
-        for (AliasRow item : aliasTable.getItems()) {
-            item.getValues().remove(name);
-        }
-
-        int delIndex = getTabIndex(mainController, name);
-        SelectBody currentSelectBody = mainController.getSQuery().getSelectBody();
-        ((SetOperationList) currentSelectBody).getSelects().remove(delIndex);
-        unionTabPane.getTabs().remove(delIndex);
-        if (selectedIndex == delIndex) {
-            unionTabPane.getSelectionModel().select(delIndex - 1);
-            //   mainController.loadCurrentQuery(false);
-        }
-
-        mainController.setNotChangeUnion(false);
+//        if (unionTable.getItems().size() == 1) {
+//            return;
+//        }
+//
+//        mainController.setNotChangeUnion(true);
+//        TabPane unionTabPane = mainController.getUnionTabPane();
+//        int selectedIndex = unionTabPane.getSelectionModel().getSelectedIndex();
+//
+//        TableRow selectedItem = unionTable.getSelectionModel().getSelectedItem();
+//        String name = selectedItem.getName();
+//        aliasTable.getColumns().remove(unionColumns.get(name));
+//        unionTable.getItems().remove(selectedItem);
+//        unionColumns.remove(name);
+//        for (AliasRow item : aliasTable.getItems()) {
+//            item.getValues().remove(name);
+//        }
+//
+//        int delIndex = getTabIndex(mainController, name);
+//        SelectBody currentSelectBody = mainController.getSQuery().getSelectBody();
+//        ((SetOperationList) currentSelectBody).getSelects().remove(delIndex);
+//        unionTabPane.getTabs().remove(delIndex);
+//        if (selectedIndex == delIndex) {
+//            unionTabPane.getSelectionModel().select(delIndex - 1);
+//            //   mainController.loadCurrentQuery(false);
+//        }
+//
+//        mainController.setNotChangeUnion(false);
     }
 
     public void addAlias(TableRow newField) {
@@ -300,8 +307,10 @@ public class UnionAliases extends AbstractQueryPart {
             exists = true;
             break;
         }
+
+        OneCte cte = mainController.getFullQuery().getCteMap().get(mainController.getCurrentCTE());
         if (!exists) {
-            for (String column : unionColumns.keySet()) {
+            for (String column : cte.getUnionColumns().keySet()) {
                 aliasRow.getValues().put(column, column.equals(curUnion) ? name : EMPTY_UNION_VALUE);
             }
             if (rename) {

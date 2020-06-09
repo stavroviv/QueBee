@@ -9,6 +9,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TreeTableView;
 import lombok.Data;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -18,6 +19,7 @@ import static com.querybuilder.utils.Constants.UNION_0;
 public class OneCte {
     private String cteName;
     private Map<String, Union> unionMap = new LinkedHashMap<>();
+    private Map<String, TableColumn<AliasRow, String>> unionColumns = new HashMap<>();
 
     private TableView<AliasRow> aliasTable = new TableView<>();
     private TableView<TableRow> unionTable = new TableView<>();
@@ -33,7 +35,7 @@ public class OneCte {
     public OneCte(MainController controller) {
         this();
         aliasTable.getColumns().add(UnionAliases.aliasColumn());
-        UnionAliases.addUnionColumn(aliasTable, unionTable, UNION_0, controller);
+        UnionAliases.addUnionColumn(aliasTable, unionTable, UNION_0, this, controller);
     }
 
     public void saveAliasTable(UnionAliases controller) {
