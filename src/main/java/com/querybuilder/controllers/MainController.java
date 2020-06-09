@@ -3,6 +3,7 @@ package com.querybuilder.controllers;
 import com.querybuilder.QueryBuilder;
 import com.querybuilder.database.DBStructure;
 import com.querybuilder.database.DBStructureImpl;
+import com.querybuilder.domain.CteRow;
 import com.querybuilder.domain.DBTables;
 import com.querybuilder.domain.SelectedFieldsTree;
 import com.querybuilder.domain.qparts.FullQuery;
@@ -41,7 +42,7 @@ public class MainController implements Subscriber {
     @FXML
     private Spinner<Integer> topSpinner;
     @FXML
-    private TableView<String> queryCteTable;
+    private TableView<CteRow> queryCteTable;
     @FXML
     private TableColumn<String, String> queryCteColumn;
     @FXML
@@ -210,21 +211,18 @@ public class MainController implements Subscriber {
     private void firstLoadQuery() {
         unionTabPane.getTabs().clear();
         cteTabPane.getTabs().clear();
-        addCteTabPane(0, CTE_0);
         unionAliasesController.addUnionTabPane(UNION_0, UNION_0);
-        queryCteTable.getItems().add(CTE_0);
 
         fullQuery = new FullQuery();
         List<WithItem> withItemsList = sQuery.getWithItemsList();
         int index = 0;
         if (withItemsList != null) {
             for (WithItem x : withItemsList) {
-                addCteTabPane(index, x.getName());
-                loadQueryPart("CTE_" + index, x.getSelectBody());
+                loadQueryPart(x.getName(), index, x.getSelectBody());
                 index++;
             }
         }
-        loadQueryPart("CTE_" + index, sQuery.getSelectBody());
+        loadQueryPart("CTE_" + index, index, sQuery.getSelectBody());
 
         showFromBuilder(null, null, true);
     }
@@ -250,6 +248,7 @@ public class MainController implements Subscriber {
         OneCte cte = getCurrentCte(newCte);
         if (cteChange) {
             cte.showAliasTable(unionAliasesController);
+            CTEPart.load(this);
         }
         Union union = getCurrentUnion(cte, newUnion, false);
         union.showFrom(tableFieldsController);
@@ -275,8 +274,11 @@ public class MainController implements Subscriber {
         return oneCte.getUnionMap().get(unionId);
     }
 
-    private void loadQueryPart(String cteName, SelectBody selectBody) {
+    private void loadQueryPart(String cteName, int id, SelectBody selectBody) {
         OneCte oneCte = loadCteData(cteName, selectBody);
+        addCteTabPane(cteName, "CTE_" + id);
+        queryCteTable.getItems().add(new CteRow(cteName, "CTE_" + id));
+        curMaxCTE++;
 
         int index = 0;
         Map<String, Union> unionMap = oneCte.getUnionMap();
@@ -343,20 +345,20 @@ public class MainController implements Subscriber {
         if (queryCteTable.getItems().size() == 1) {
             return;
         }
-        String selectedItem = queryCteTable.getSelectionModel().getSelectedItem();
+        CteRow selectedItem = queryCteTable.getSelectionModel().getSelectedItem();
         if (selectedItem == null) {
             return;
         }
-        if (selectedItem.equals(getCurrentCTE())) {
+        if (selectedItem.getId().equals(getCurrentCTE())) {
             withoutSave = true;
-            int index = getCteTabIndex(selectedItem) - 1;
+            int index = getCteTabIndex(selectedItem.getId()) - 1;
             cteTabPane.getSelectionModel().select(index == -1 ? 0 : index);
             withoutSave = false;
         }
         queryCteTable.getItems().remove(selectedItem);
-        fullQuery.getCteMap().remove(selectedItem);
+        fullQuery.getCteMap().remove(selectedItem.getId());
 
-        cteTabPane.getTabs().remove(getTabById(selectedItem));
+        cteTabPane.getTabs().remove(getTabById(selectedItem.getId()));
     }
 
     private Tab getTabById(String tabId) {
@@ -375,20 +377,19 @@ public class MainController implements Subscriber {
 
     @FXML
     public void addCTEClick(ActionEvent actionEvent) {
-        curMaxCTE++;
-
         String key = "CTE_" + curMaxCTE;
         fullQuery.getCteMap().put(key, new OneCte());
 
-        Tab newTab = addCteTabPane(curMaxCTE, key);
+        Tab newTab = addCteTabPane(key, key);
         activateNewTab(newTab, cteTabPane, this);
 
-        queryCteTable.getItems().add(key);
+        queryCteTable.getItems().add(new CteRow(key, key));
+
+        curMaxCTE++;
     }
 
-    private Tab addCteTabPane(int curMaxCTE, String id) {
-        String cteName = "Query_" + curMaxCTE;
-        Tab tab = new Tab(id);
+    private Tab addCteTabPane(String name, String id) {
+        Tab tab = new Tab(name);
         tab.setId(id);
         cteTabPane.getTabs().add(tab);
         return tab;

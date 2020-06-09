@@ -2,22 +2,20 @@ package com.querybuilder.querypart;
 
 import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.TableRow;
-import javafx.beans.property.SimpleStringProperty;
+import com.querybuilder.domain.qparts.OneCte;
 import javafx.scene.control.TreeItem;
-import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.WithItem;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 
-import java.util.List;
+import java.util.Iterator;
 
 import static com.querybuilder.utils.Constants.CTE_ROOT;
 
 public class CTEPart {
 
     public static void init(MainController controller) {
-        controller.getQueryCteColumn().setCellValueFactory(data -> new SimpleStringProperty(data.getValue()));
+        controller.getQueryCteColumn().setCellFactory(TextFieldTableCell.forTableColumn());
+        controller.getQueryCteColumn().setCellValueFactory(new PropertyValueFactory<>("name"));
     }
 
     public static void load(MainController controller) {
@@ -29,12 +27,10 @@ public class CTEPart {
             }
         });
 
-        List<WithItem> withItemsList = controller.getSQuery().getWithItemsList();
-        if (withItemsList == null) {
+        if (controller.getFullQuery().getCteMap().size() == 1) {
             return;
         }
 
-        int i = 0;
         int currentCTE = controller.getCteTabPane().getSelectionModel().getSelectedIndex();
         if (currentCTE == 0) {
             return;
@@ -47,33 +43,37 @@ public class CTEPart {
         cteRootItem.setExpanded(true);
         root.getChildren().add(0, cteRootItem);
 
-        for (WithItem withItem : withItemsList) {
-            if (i == currentCTE) {
+        Iterator<String> iterator = controller.getFullQuery().getCteMap().keySet().iterator();
+        String currentCte = controller.getCteTabPane().getSelectionModel().getSelectedItem().getId();
+        while (iterator.hasNext()) {
+            String cteName = iterator.next();
+            if (currentCte.equals(cteName)) {
                 break;
             }
-            String cteName = withItem.getName();
             TableRow tableRow = new TableRow(cteName);
             tableRow.setRoot(true);
             tableRow.setCte(true);
             TreeItem<TableRow> treeItem = new TreeItem<>(tableRow);
             cteRootItem.getChildren().add(treeItem);
-            if (withItem.getSelectBody() instanceof PlainSelect) {
-                PlainSelect selectBody = (PlainSelect) withItem.getSelectBody();
-                List<SelectItem> selectItems = selectBody.getSelectItems();
-                selectItems.forEach(item -> {
-                    SelectExpressionItem selectItem = (SelectExpressionItem) item;
-                    String name;
-                    if (selectItem.getAlias() != null) {
-                        name = selectItem.getAlias().getName();
-                    } else {
-                        Column column = (Column) selectItem.getExpression();
-                        String[] split = column.getColumnName().split("\\.");
-                        name = split.length > 1 ? split[1] : split[0]; // FIXME
-                    }
-                    treeItem.getChildren().add(new TreeItem<>(new TableRow(name)));
-                });
-            }
-            i++;
+
+            OneCte oneCte = controller.getFullQuery().getCteMap().get(cteName);
+//            if (withItem.getSelectBody() instanceof PlainSelect) {
+//                PlainSelect selectBody = (PlainSelect) withItem.getSelectBody();
+//                List<SelectItem> selectItems = selectBody.getSelectItems();
+            oneCte.getAliasTable().getItems().forEach(item -> {
+//                    SelectExpressionItem selectItem = (SelectExpressionItem) item;
+//                    String name;
+//                    if (selectItem.getAlias() != null) {
+//                        name = selectItem.getAlias().getName();
+//                    } else {
+//                        Column column = (Column) selectItem.getExpression();
+//                        String[] split = column.getColumnName().split("\\.");
+//                        name = split.length > 1 ? split[1] : split[0]; // FIXME
+//                    }
+                treeItem.getChildren().add(new TreeItem<>(new TableRow(item.getAlias())));
+            });
+//            }
+
         }
     }
 }
