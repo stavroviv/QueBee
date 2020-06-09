@@ -1,6 +1,7 @@
 package com.querybuilder.utils;
 
 import com.querybuilder.controllers.MainController;
+import com.querybuilder.domain.SelectedFieldsTree;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.eventbus.Subscriber;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -25,11 +26,9 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import static com.querybuilder.utils.Constants.*;
 
@@ -182,6 +181,10 @@ public class Utils {
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
+    }
+
+    public static void applyChange(List<SelectedFieldsTree> fieldsTree, Consumer<SelectedFieldsTree> consumer) {
+        fieldsTree.stream().filter(Objects::nonNull).forEach(consumer);
     }
 
     public static String getNameFromColumn(Column column) {

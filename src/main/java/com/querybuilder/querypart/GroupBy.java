@@ -8,18 +8,11 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.GroupByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import static com.querybuilder.utils.Constants.ALL_FIELDS;
 import static com.querybuilder.utils.Constants.GROUP_DEFAULT_VALUE;
 import static com.querybuilder.utils.Utils.*;
 
@@ -61,21 +54,23 @@ public class GroupBy extends AbstractQueryPart {
         deselectAggregates();
     }
 
-    private void loadGroupBy(PlainSelect pSelect) {
+    public TableView<TableRow> loadGroupBy(PlainSelect pSelect) {
+        TableView<TableRow> groupTableResults = new TableView<>();
         GroupByElement groupBy = pSelect.getGroupBy();
         if (groupBy == null) {
-            return;
+            return groupTableResults;
         }
         groupBy.getGroupByExpressions().forEach(x -> {
-            for (TreeItem<TableRow> ddd : groupFieldsTree.getRoot().getChildren()) {
-                if (ddd.getValue().getName().equals(x.toString())) {
-                    makeSelect(groupFieldsTree, groupTableResults, ddd, null);
-                    return;
-                }
-            }
+//            for (TreeItem<TableRow> ddd : groupFieldsTree.getRoot().getChildren()) {
+//                if (ddd.getValue().getName().equals(x.toString())) {
+//                    makeSelect(groupFieldsTree, groupTableResults, ddd, null);
+//                    return;
+//                }
+//            }
             TableRow tableRow = new TableRow(x.toString());
             groupTableResults.getItems().add(0, tableRow);
         });
+        return groupTableResults;
     }
 
     private void deselectAggregates() {
@@ -89,64 +84,89 @@ public class GroupBy extends AbstractQueryPart {
         }
     }
 
-    public void loadAggregate(TableRow newField, Function function) {
-        TableRow tableRow = TableRow.tableRowFromValue(newField);
-        tableRow.setComboBoxValue(function.getName());
-        groupTableAggregates.getItems().add(tableRow);
+
+    public TableView<TableRow> loadAggregates(PlainSelect pSelect) {
+//        TableRow tableRow = TableRow.tableRowFromValue(newField);
+//        tableRow.setComboBoxValue(function.getName());
+        TableView<TableRow> groupTableAggregates = new TableView<>();
+        for (SelectItem selectField : pSelect.getSelectItems()) {
+            if (!(selectField instanceof SelectExpressionItem)) {
+                continue;
+            }
+
+            // GROUPING
+            SelectExpressionItem item = (SelectExpressionItem) selectField;
+            Expression expression = item.getExpression();
+
+            if (expression instanceof Function
+                    && ((Function) item.getExpression()).getParameters().getExpressions().size() == 1) {
+                Function function = (Function) item.getExpression();
+                String columnName = function.getParameters().getExpressions().get(0).toString();
+                TableRow newField = new TableRow(columnName);
+
+                // fieldTable.getItems().add(newField);
+                TableRow tableRow = TableRow.tableRowFromValue(newField);
+                tableRow.setComboBoxValue(function.getName());
+                groupTableAggregates.getItems().add(tableRow);
+
+            }
+        }
+
+        return groupTableAggregates;
     }
 
     public void save(PlainSelect pSelect) {
-        saveGroupBy(pSelect);
-        saveAggregates(pSelect);
+//        saveGroupBy(pSelect);
+        //saveAggregates(pSelect);
     }
 
-    private void saveGroupBy(PlainSelect pSelect) {
-        if (groupTableResults.getItems().isEmpty() && groupTableAggregates.getItems().isEmpty()) {
-            pSelect.setGroupByElement(null);
-            return;
-        }
-        List<Expression> expressions = new ArrayList<>();
-        for (TableRow item : groupTableResults.getItems()) {
-            Column groupByItem = new Column(item.getName());
-            expressions.add(groupByItem);
-        }
-        for (TreeItem<TableRow> child : groupFieldsTree.getRoot().getChildren()) {
-            if (child.getValue().getName().equals(ALL_FIELDS)) {
-                break;
-            }
-            Column groupByItem = new Column(child.getValue().getName());
-            expressions.add(groupByItem);
-        }
+//    private void saveGroupBy(PlainSelect pSelect) {
+//        if (groupTableResults.getItems().isEmpty() && groupTableAggregates.getItems().isEmpty()) {
+//            pSelect.setGroupByElement(null);
+//            return;
+//        }
+//        List<Expression> expressions = new ArrayList<>();
+//        for (TableRow item : groupTableResults.getItems()) {
+//            Column groupByItem = new Column(item.getName());
+//            expressions.add(groupByItem);
+//        }
+//        for (TreeItem<TableRow> child : groupFieldsTree.getRoot().getChildren()) {
+//            if (child.getValue().getName().equals(ALL_FIELDS)) {
+//                break;
+//            }
+//            Column groupByItem = new Column(child.getValue().getName());
+//            expressions.add(groupByItem);
+//        }
+//
+//        if (expressions.isEmpty()) {
+//            pSelect.setGroupByElement(null);
+//            return;
+//        }
+//        GroupByElement groupByElement = new GroupByElement();
+//        groupByElement.setGroupByExpressions(expressions);
+//        pSelect.setGroupByElement(groupByElement);
+//    }
 
-        if (expressions.isEmpty()) {
-            pSelect.setGroupByElement(null);
-            return;
-        }
-        GroupByElement groupByElement = new GroupByElement();
-        groupByElement.setGroupByExpressions(expressions);
-        pSelect.setGroupByElement(groupByElement);
-    }
-
-    private void saveAggregates(PlainSelect pSelect) {
-        if (groupTableAggregates.getItems().isEmpty()) {
-            return;
-        }
-
-        // add aggregates
-        List<SelectItem> selectItems = pSelect.getSelectItems();
-        for (TableRow x : groupTableAggregates.getItems()) {
-            SelectExpressionItem sItem = new SelectExpressionItem();
-            Function expression = new Function();
-            expression.setName(x.getComboBoxValue());
-            ExpressionList list = new ExpressionList();
-            Column col = new Column(x.getName());
-            list.setExpressions(Collections.singletonList(col));
-            expression.setParameters(list);
-            sItem.setExpression(expression);
-            selectItems.add(sItem);
-        }
-        pSelect.setSelectItems(selectItems);
-    }
+//    private void saveAggregates(PlainSelect pSelect) {
+//        if (groupTableAggregates.getItems().isEmpty()) {
+//            return;
+//        }
+//
+//        // add aggregates
+//        List<SelectItem> selectItems = pSelect.getSelectItems();
+//        for (TableRow x : groupTableAggregates.getItems()) {
+//            SelectExpressionItem sItem = new SelectExpressionItem();
+//            Function expression = new Function();
+//            expression.setName(x.getComboBoxValue());
+//            ExpressionList list = new ExpressionList();
+//            Column col = new Column(x.getName());
+//            list.setExpressions(Collections.singletonList(col));
+//            expression.setParameters(list);
+//            sItem.setExpression(expression);
+//            selectItems.add(sItem);
+//        }
+//        pSelect.setSelectItems(selectItems);
+//    }
 
     public boolean containAggregate(TableRow field) {
         for (TableRow x : groupTableAggregates.getItems()) {

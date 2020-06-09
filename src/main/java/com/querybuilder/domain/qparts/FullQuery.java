@@ -1,9 +1,13 @@
 package com.querybuilder.domain.qparts;
 
 import com.querybuilder.domain.AliasRow;
+import com.querybuilder.domain.TableRow;
+import javafx.scene.control.TableView;
 import lombok.Data;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.ParseException;
 import net.sf.jsqlparser.schema.Column;
@@ -84,8 +88,71 @@ public class FullQuery {
 
         saveAliases(select, cte, union, first);
         saveFromTables(select, cte, union);
+        saveGroupBy(select, cte, union);
 
         return select;
+    }
+
+    private static void saveGroupBy(PlainSelect select, OneCte cte, String union) {
+        saveGrouping(select, cte, union);
+        //saveAggregates(select, cte, union);
+    }
+
+    private static void saveGrouping(PlainSelect select, OneCte cte, String union) {
+        Union union1 = cte.getUnionMap().get(union);
+        TableView<TableRow> groupTableResults = union1.getGroupTableResults();
+        if (groupTableResults.getItems().isEmpty()) {
+            return;
+        }
+        //  if (groupTableResults.getItems().isEmpty() && groupTableAggregates.getItems().isEmpty()) {
+        if (groupTableResults.getItems().isEmpty()) {
+            select.setGroupByElement(null);
+            return;
+        }
+        List<Expression> expressions = new ArrayList<>();
+        for (TableRow item : groupTableResults.getItems()) {
+            Column groupByItem = new Column(item.getName());
+            expressions.add(groupByItem);
+        }
+//        for (TreeItem<TableRow> child : groupFieldsTree.getRoot().getChildren()) {
+//            if (child.getValue().getName().equals(ALL_FIELDS)) {
+//                break;
+//            }
+//            Column groupByItem = new Column(child.getValue().getName());
+//            expressions.add(groupByItem);
+//        }
+
+        if (expressions.isEmpty()) {
+            select.setGroupByElement(null);
+            return;
+        }
+        GroupByElement groupByElement = new GroupByElement();
+        groupByElement.setGroupByExpressions(expressions);
+        select.setGroupByElement(groupByElement);
+    }
+
+    private static void setAggregate(SelectExpressionItem sItem, Long id, OneCte cte, String union) {
+        if (id == null) {
+            return;
+        }
+        Union union1 = cte.getUnionMap().get(union);
+        TableView<TableRow> groupTableAggregates = union1.getGroupTableAggregates();
+        if (groupTableAggregates.getItems().isEmpty()) {
+            return;
+        }
+
+        for (TableRow x : groupTableAggregates.getItems()) {
+            if (id != x.getId()) {
+                continue;
+            }
+            Function expression = new Function();
+            expression.setName(x.getComboBoxValue());
+            ExpressionList list = new ExpressionList();
+            Column col = new Column(x.getName());
+            list.setExpressions(Collections.singletonList(col));
+            expression.setParameters(list);
+            sItem.setExpression(expression);
+        }
     }
 
     private static void saveAliases(PlainSelect select, OneCte cte, String union, boolean first) {
@@ -107,6 +174,7 @@ public class FullQuery {
             if (first && !((Column) sItem.getExpression()).getColumnName().equals(item.getAlias())) {
                 sItem.setAlias(new Alias(item.getAlias()));
             }
+            setAggregate(sItem, item.getIds().get(union), cte, union);
             sItems.add(sItem);
         }
         select.setSelectItems(sItems);

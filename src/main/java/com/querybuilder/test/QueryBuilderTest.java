@@ -74,6 +74,16 @@ public class QueryBuilderTest {
     }
 
     @Test
+    public void loadWithGroupBy() throws Exception {
+        String text = "SELECT vendor_id FROM crm_bonus_retail GROUP BY vendor_id";
+
+        Select query = loadQuery(text).getFullQuery().getQuery();
+
+        String expected = "SELECT crm_bonus_retail.vendor_id FROM crm_bonus_retail GROUP BY vendor_id";
+        Assert.assertEquals(expected, query.toString());
+    }
+
+    @Test
     public void loadWithFunction() throws Exception {
         String text = "SELECT SUM(bonus_retail_value), " +
                 "vendor_id " +

@@ -6,7 +6,6 @@ import com.querybuilder.domain.TableRow;
 import com.querybuilder.domain.qparts.Union;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -207,6 +206,8 @@ public class UnionAliases extends AbstractQueryPart {
                 addAliasFirstColumn(aliasTable, pSelect);
             }
         }
+
+        // setAliasesIds(aliasTable);
         return aliasTable;
     }
 
@@ -237,7 +238,6 @@ public class UnionAliases extends AbstractQueryPart {
             aliasTable.getItems().add(aliasRow);
         }
 
-        // setAliasesIds();
     }
 
     private String getString(PlainSelect pSelect, Column expression) {
@@ -248,18 +248,6 @@ public class UnionAliases extends AbstractQueryPart {
             column.setTable((Table) pSelect.getFromItem());
         }
         return expr;
-    }
-
-    public void setAliasesIds() {
-        if (aliasTable.getItems().isEmpty()) {
-            return;
-        }
-        ObservableList<TableRow> items = mainController.getTableFieldsController().getFieldTable().getItems();
-        int i = 0;
-        for (TableRow item : items) {
-            aliasTable.getItems().get(i).setId(item.getId());
-            i++;
-        }
     }
 
     public void addUnionColumn(String unionName) {

@@ -4,6 +4,7 @@ import com.querybuilder.domain.ConditionElement;
 import com.querybuilder.domain.LinkElement;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.querypart.FromTables;
+import com.querybuilder.querypart.GroupBy;
 import com.querybuilder.querypart.Links;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
@@ -48,5 +49,19 @@ public class Union {
     public void showLinks(Links controller) {
         controller.getLinkTable().getItems().clear();
         controller.getLinkTable().getItems().addAll(linkTable.getItems());
+    }
+
+    public void saveGroupBy(GroupBy controller) {
+        groupTableResults.getItems().clear();
+        groupTableResults.getItems().addAll(controller.getGroupTableResults().getItems());
+        groupTableAggregates.getItems().clear();
+        groupTableAggregates.getItems().addAll(controller.getGroupTableAggregates().getItems());
+    }
+
+    public void showGroupBy(GroupBy controller) {
+        controller.getGroupTableResults().getItems().clear();
+        controller.getGroupTableResults().getItems().addAll(groupTableResults.getItems());
+        controller.getGroupTableAggregates().getItems().clear();
+        controller.getGroupTableAggregates().getItems().addAll(groupTableAggregates.getItems());
     }
 }

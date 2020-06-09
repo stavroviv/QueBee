@@ -6,6 +6,7 @@ import com.querybuilder.database.DBStructureImpl;
 import com.querybuilder.domain.CteRow;
 import com.querybuilder.domain.DBTables;
 import com.querybuilder.domain.SelectedFieldsTree;
+import com.querybuilder.domain.TableRow;
 import com.querybuilder.domain.qparts.FullQuery;
 import com.querybuilder.domain.qparts.OneCte;
 import com.querybuilder.domain.qparts.Union;
@@ -242,6 +243,7 @@ public class MainController implements Subscriber {
         Union union = getCurrentUnion(cte, oldUnion, cteChange);
         union.saveFrom(tableFieldsController);
         union.saveLink(linksController);
+        union.saveGroupBy(groupingController);
     }
 
     private void showFromBuilder(Tab newCte, Tab newUnion, boolean cteChange) {
@@ -253,6 +255,8 @@ public class MainController implements Subscriber {
         Union union = getCurrentUnion(cte, newUnion, false);
         union.showFrom(tableFieldsController);
         union.showLinks(linksController);
+        TreeHelpers.load(this);
+        union.showGroupBy(groupingController);
     }
 
     private OneCte getCurrentCte(Tab newCte) {
@@ -318,17 +322,24 @@ public class MainController implements Subscriber {
         Union union = new Union();
 
         union.setTablesView(tableFieldsController.loadFromTables(selectBody));
-        union.setFieldTable(tableFieldsController.loadSelectedItems(selectBody));
+
+        Map<String, TableView<TableRow>> viewMap = tableFieldsController.loadSelectedItems(selectBody);
+        union.setFieldTable(viewMap.get("fieldTable"));
+        union.setGroupTableAggregates(viewMap.get("groupTableAggregates"));
+
         union.setLinkTable(linksController.loadLinks(selectBody));
+        union.setGroupTableResults(groupingController.loadGroupBy(selectBody));
 
         return union;
     }
 
-    private int cteNumberPrev = -1;
-
     @FXML
     public void okClick() {
-        saveToBuilder(cteTabPane.getSelectionModel().getSelectedItem(), unionTabPane.getSelectionModel().getSelectedItem(), true);
+        saveToBuilder(
+                cteTabPane.getSelectionModel().getSelectedItem(),
+                unionTabPane.getSelectionModel().getSelectedItem(),
+                true
+        );
         sQuery = fullQuery.getQuery();
         queryBuilder.closeForm(sQuery.toString());
     }

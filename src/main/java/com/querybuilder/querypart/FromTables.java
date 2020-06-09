@@ -25,12 +25,13 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 import static com.querybuilder.controllers.SelectedFieldController.FIELD_FORM_CLOSED_EVENT;
-import static com.querybuilder.domain.ConditionCell.REFRESH_SELECTED_TREE;
 import static com.querybuilder.utils.Constants.*;
 import static com.querybuilder.utils.Utils.*;
 
@@ -103,20 +104,20 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
             }
         });
 
-        tablesView.getRoot().getChildren().addListener((ListChangeListener<TreeItem<TableRow>>) change -> {
-            while (change.next()) {
-                List<SelectedFieldsTree> selectedFieldTrees = new ArrayList<>();
-                selectedFieldTrees.add(mainController.getSelectedGroupFieldsTree());
-                selectedFieldTrees.add(mainController.getSelectedConditionsTreeTable());
-                selectedFieldTrees.add(mainController.getSelectedOrderFieldsTree());
-                applyChange(selectedFieldTrees, selectedFieldsTree -> selectedFieldsTree.applyChanges(change));
-
-                CustomEvent customEvent = new CustomEvent();
-                customEvent.setName(REFRESH_SELECTED_TREE);
-                customEvent.setChange(change);
-                CustomEventBus.post(customEvent);
-            }
-        });
+//        tablesView.getRoot().getChildren().addListener((ListChangeListener<TreeItem<TableRow>>) change -> {
+//            while (change.next()) {
+//                List<SelectedFieldsTree> selectedFieldTrees = new ArrayList<>();
+//                selectedFieldTrees.add(mainController.getSelectedGroupFieldsTree());
+//                selectedFieldTrees.add(mainController.getSelectedConditionsTreeTable());
+//                selectedFieldTrees.add(mainController.getSelectedOrderFieldsTree());
+//                applyChange(selectedFieldTrees, selectedFieldsTree -> selectedFieldsTree.applyChanges(change));
+//
+//                CustomEvent customEvent = new CustomEvent();
+//                customEvent.setName(REFRESH_SELECTED_TREE);
+//                customEvent.setChange(change);
+//                CustomEventBus.post(customEvent);
+//            }
+//        });
         tablesView.setOnMousePressed(e -> {
             if (!doubleClick(e)) {
                 return;
@@ -138,10 +139,10 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
             }
         });
     }
-
-    private static void applyChange(List<SelectedFieldsTree> fieldsTree, Consumer<SelectedFieldsTree> consumer) {
-        fieldsTree.stream().filter(Objects::nonNull).forEach(consumer);
-    }
+//
+//    private static void applyChange(List<SelectedFieldsTree> fieldsTree, Consumer<SelectedFieldsTree> consumer) {
+//        fieldsTree.stream().filter(Objects::nonNull).forEach(consumer);
+//    }
 
     private void setCellsFactories() {
         setCellFactory(tablesViewColumn);
@@ -217,14 +218,15 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
         return treeItem;
     }
 
-    public void load(PlainSelect pSelect) {
-        loadFromTables(pSelect);
-        loadSelectedItems(pSelect);
-        TreeHelpers.load(mainController);
-    }
+//    public void load(PlainSelect pSelect) {
+//        loadFromTables(pSelect);
+//        loadSelectedItems(pSelect);
+//        TreeHelpers.load(mainController);
+//    }
 
     public TreeTableView<TableRow> loadFromTables(PlainSelect pSelect) {
         TreeTableView<TableRow> tablesView = new TreeTableView<>();
+
         tablesView.setRoot(new TreeItem<>());
         FromItem fromItem = pSelect.getFromItem();
         Table table = null;
@@ -263,13 +265,16 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
                 });
             }
         }
+
         return tablesView;
     }
 
-    public TableView<TableRow> loadSelectedItems(PlainSelect pSelect) {
+    public Map<String, TableView<TableRow>> loadSelectedItems(PlainSelect pSelect) {
+        Map<String, TableView<TableRow>> result = new HashMap<>();
+        TableView<TableRow> groupTableAggregates = new TableView<>();
         TableView<TableRow> fieldTable = new TableView<>();
         if (pSelect.getSelectItems() == null) {
-            return fieldTable;
+            return result;
         }
 
         for (SelectItem selectField : pSelect.getSelectItems()) {
@@ -284,7 +289,13 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
                     Function function = (Function) item.getExpression();
                     String columnName = function.getParameters().getExpressions().get(0).toString();
                     TableRow newField = new TableRow(columnName);
-                    mainController.getGroupingController().loadAggregate(newField, function);
+
+
+//                    loadAggregate(newField, function);
+                    TableRow tableRow = TableRow.tableRowFromValue(newField);
+                    tableRow.setComboBoxValue(function.getName());
+                    groupTableAggregates.getItems().add(tableRow);
+
                     fieldTable.getItems().add(newField);
 
                 } else if (expression instanceof Column) {
@@ -298,8 +309,16 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
                 fieldTable.getItems().add(new TableRow(selectField.toString()));
             }
         }
-        return fieldTable;
+
+
+        result.put("fieldTable", fieldTable);
+        result.put("groupTableAggregates", groupTableAggregates);
+        return result;
     }
+//
+//    public void loadAggregate(TableRow newField, Function function) {
+//
+//    }
 
     public void save(PlainSelect selectBody) {
 //        saveFromTables(selectBody);
