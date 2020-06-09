@@ -379,7 +379,7 @@ public class MainController implements Subscriber {
     @FXML
     public void addCTEClick(ActionEvent actionEvent) {
         String key = "CTE_" + curMaxCTE;
-        fullQuery.getCteMap().put(key, new OneCte());
+        fullQuery.getCteMap().put(key, new OneCte(this));
 
         Tab newTab = addCteTabPane(key, key);
         activateNewTab(newTab, cteTabPane, this);

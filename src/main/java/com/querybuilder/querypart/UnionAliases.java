@@ -1,5 +1,6 @@
 package com.querybuilder.querypart;
 
+import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.AliasCell;
 import com.querybuilder.domain.AliasRow;
 import com.querybuilder.domain.TableRow;
@@ -35,7 +36,7 @@ import static com.querybuilder.utils.Utils.*;
 public class UnionAliases extends AbstractQueryPart {
     private static final String FIRST_COLUMN = "UNION_0";
 
-    private Map<String, TableColumn<AliasRow, String>> unionColumns;
+    private Map<String, TableColumn<AliasRow, String>> unionColumns; // TODO вынести в CTO
 
     @FXML
     private TableView<AliasRow> aliasTable;
@@ -56,7 +57,7 @@ public class UnionAliases extends AbstractQueryPart {
         unionTableDistinctColumn.setCellValueFactory(data -> new SimpleBooleanProperty(data.getValue().isDistinct()));
     }
 
-    private TableColumn<AliasRow, String> aliasColumn() {
+    public static TableColumn<AliasRow, String> aliasColumn() {
         TableColumn<AliasRow, String> aliasFieldColumn = new TableColumn<>();
         aliasFieldColumn.setCellValueFactory(new PropertyValueFactory<>("alias"));
         aliasFieldColumn.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -94,12 +95,12 @@ public class UnionAliases extends AbstractQueryPart {
             int i = 0;
             for (SelectBody sBody : setOperationList.getSelects()) {
                 String unionName = "UNION_" + i;
-                addUnionColumn(aliasTable, unionTable, unionName);
+                unionColumns.put(unionName, addUnionColumn(aliasTable, unionTable, unionName, mainController));
                 addAliasColumn(aliasTable, (PlainSelect) sBody, oneCte, unionName);
                 i++;
             }
         } else if (selectBody instanceof PlainSelect || selectBody == null) { // ONE QUERY
-            addUnionColumn(aliasTable, unionTable, FIRST_COLUMN);
+            unionColumns.put(FIRST_COLUMN, addUnionColumn(aliasTable, unionTable, FIRST_COLUMN, mainController));
             PlainSelect pSelect = (PlainSelect) selectBody;
             if (selectBody != null) {
                 addAliasColumn(aliasTable, pSelect, oneCte, FIRST_COLUMN);
@@ -192,7 +193,10 @@ public class UnionAliases extends AbstractQueryPart {
         return expr;
     }
 
-    public void addUnionColumn(TableView<AliasRow> aliasTable, TableView<TableRow> unionTable, String unionName) {
+    public static TableColumn<AliasRow, String> addUnionColumn(TableView<AliasRow> aliasTable,
+                                                               TableView<TableRow> unionTable,
+                                                               String unionName,
+                                                               MainController controller) {
         TableColumn<AliasRow, String> newColumn = new TableColumn<>(unionName);
         newColumn.setEditable(true);
         for (AliasRow item : aliasTable.getItems()) {
@@ -204,7 +208,7 @@ public class UnionAliases extends AbstractQueryPart {
             return new SimpleStringProperty(initialValue);
         });
 
-        newColumn.setCellFactory(x -> new AliasCell(x, unionName, mainController));
+        newColumn.setCellFactory(x -> new AliasCell(x, unionName, controller));
 
         aliasTable.getSelectionModel().selectedIndexProperty().addListener((num) -> {
             TablePosition focusedCell = aliasTable.getFocusModel().getFocusedCell();
@@ -212,9 +216,10 @@ public class UnionAliases extends AbstractQueryPart {
         });
 
         aliasTable.getColumns().add(newColumn);
-        unionColumns.put(unionName, newColumn);
+        //unionColumns.put(unionName, newColumn);
 
         unionTable.getItems().add(new TableRow(unionName));
+        return newColumn;
     }
 
     @FXML
@@ -229,7 +234,7 @@ public class UnionAliases extends AbstractQueryPart {
         Tab tab = addUnionTabPane(unionName, key);
         activateNewTab(tab, mainController.getUnionTabPane(), mainController);
 
-        addUnionColumn(aliasTable, unionTable, key);
+        unionColumns.put(key, addUnionColumn(aliasTable, unionTable, key, mainController));
     }
 
     public Tab addUnionTabPane(String unionName, String id) {

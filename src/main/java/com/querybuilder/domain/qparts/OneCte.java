@@ -1,5 +1,6 @@
 package com.querybuilder.domain.qparts;
 
+import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.AliasRow;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.querypart.UnionAliases;
@@ -27,6 +28,12 @@ public class OneCte {
 
     public OneCte() {
         unionMap.put(UNION_0, new Union());
+    }
+
+    public OneCte(MainController controller) {
+        this();
+        aliasTable.getColumns().add(UnionAliases.aliasColumn());
+        UnionAliases.addUnionColumn(aliasTable, unionTable, UNION_0, controller);
     }
 
     public void saveAliasTable(UnionAliases controller) {
