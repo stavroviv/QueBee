@@ -254,8 +254,9 @@ public class MainController implements Subscriber {
         Union union = getCurrentUnion(cte, newUnion, false);
         union.showFrom(tableFieldsController);
         union.showLinks(linksController);
-        TreeHelpers.load(this);
+        TreeHelpers.load(this, union);
         union.showGroupBy(groupingController);
+        TreeHelpers.cleanTrees(union);
     }
 
     private OneCte getCurrentCte(Tab newCte) {

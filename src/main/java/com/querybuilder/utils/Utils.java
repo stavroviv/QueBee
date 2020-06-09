@@ -189,6 +189,9 @@ public class Utils {
 
     public static String getNameFromColumn(Column column) {
         Table table = column.getTable();
+        if (table == null) {
+            throw new RuntimeException("Ambiguous column reference: " + column);
+        }
         return table.getName() + "." + column.getColumnName();
     }
 

@@ -96,11 +96,22 @@ public class QueryBuilderTest {
     @Test
     public void loadWithGroupBy() throws Exception {
         String text = "SELECT vendor_id FROM crm_bonus_retail GROUP BY vendor_id";
-
         Select query = loadQuery(text).getFullQuery().getQuery();
-
-        String expected = "SELECT crm_bonus_retail.vendor_id FROM crm_bonus_retail GROUP BY vendor_id";
+        String expected = "SELECT crm_bonus_retail.vendor_id FROM crm_bonus_retail GROUP BY crm_bonus_retail.vendor_id";
         Assert.assertEquals(expected, query.toString());
+
+        text = "SELECT vendor_id, site_id FROM crm_bonus_retail GROUP BY vendor_id";
+        query = loadQuery(text).getFullQuery().getQuery();
+        expected = "SELECT crm_bonus_retail.vendor_id, crm_bonus_retail.site_id " +
+                "FROM crm_bonus_retail GROUP BY crm_bonus_retail.vendor_id, crm_bonus_retail.site_id";
+        Assert.assertEquals(expected, query.toString());
+
+        text = "SELECT vendor_id, site_id FROM crm_bonus_retail, crm_vendor GROUP BY vendor_id";
+        try {
+            loadQuery(text).getFullQuery().getQuery();
+        } catch (Exception e) {
+            Assert.assertEquals("Ambiguous column reference: vendor_id", e.getMessage());
+        }
     }
 
     @Test
@@ -115,7 +126,7 @@ public class QueryBuilderTest {
         String expected = "SELECT SUM(crm_bonus_retail.bonus_retail_value), " +
                 "crm_bonus_retail.vendor_id " +
                 "FROM crm_bonus_retail " +
-                "GROUP BY vendor_id";
+                "GROUP BY crm_bonus_retail.vendor_id";
         Assert.assertEquals(expected, query.toString());
     }
 

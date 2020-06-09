@@ -128,12 +128,12 @@ public class UnionAliases extends AbstractQueryPart {
             String expr = expression.toString();
             Function function = null;
             if (expression instanceof Column) {
-                expr = getString(pSelect, (Column) expression);
+                expr = getStringAndSetTableName(pSelect, (Column) expression);
             } else if (expression instanceof Function) {
                 function = (Function) expression;
                 if (function.getParameters().getExpressions().size() == 1) {
                     expression = function.getParameters().getExpressions().get(0);
-                    expr = getString(pSelect, (Column) expression);
+                    expr = getStringAndSetTableName(pSelect, (Column) expression);
                 }
             }
             String strAlias = alias != null ? select.getAlias().getName() : expr;
@@ -183,12 +183,11 @@ public class UnionAliases extends AbstractQueryPart {
 
     }
 
-    private String getString(PlainSelect pSelect, Column expression) {
+    private String getStringAndSetTableName(PlainSelect pSelect, Column expression) {
         String expr;
-        Column column = expression;
-        expr = column.getColumnName();
-        if (column.getTable() == null && pSelect.getJoins() == null) {
-            column.setTable((Table) pSelect.getFromItem());
+        expr = expression.getColumnName();
+        if (expression.getTable() == null && pSelect.getJoins() == null) {
+            expression.setTable((Table) pSelect.getFromItem());
         }
         return expr;
     }

@@ -6,6 +6,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.GroupByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -45,11 +47,6 @@ public class GroupBy extends AbstractQueryPart {
         setCellFactory(groupFieldsTreeColumn);
     }
 
-    public void load(PlainSelect pSelect) {
-        loadGroupBy(pSelect);
-        deselectAggregates();
-    }
-
     public TableView<TableRow> loadGroupBy(PlainSelect pSelect) {
         TableView<TableRow> groupTableResults = new TableView<>();
         GroupByElement groupBy = pSelect.getGroupBy();
@@ -57,16 +54,19 @@ public class GroupBy extends AbstractQueryPart {
             return groupTableResults;
         }
         groupBy.getGroupByExpressions().forEach(x -> {
-//            for (TreeItem<TableRow> ddd : groupFieldsTree.getRoot().getChildren()) {
-//                if (ddd.getValue().getName().equals(x.toString())) {
-//                    makeSelect(groupFieldsTree, groupTableResults, ddd, null);
-//                    return;
-//                }
-//            }
+            if (x instanceof Column) {
+                setTableName(pSelect, (Column) x);
+            }
             TableRow tableRow = new TableRow(x.toString());
             groupTableResults.getItems().add(0, tableRow);
         });
         return groupTableResults;
+    }
+
+    private void setTableName(PlainSelect pSelect, Column expression) {
+        if (expression.getTable() == null && pSelect.getJoins() == null) {
+            expression.setTable((Table) pSelect.getFromItem());
+        }
     }
 
     private void deselectAggregates() {

@@ -19,7 +19,7 @@ public class OneCte {
     private Map<String, Union> unionMap = new LinkedHashMap<>();
 
     private TableView<AliasRow> aliasTable = new TableView<>();
-    private TableView<TableRow> unionTable;
+    private TableView<TableRow> unionTable = new TableView<>();
 
     private TreeTableView<TableRow> orderFieldsTree = new TreeTableView<>();
     private TableView<TableRow> orderTableResults = new TableView<>();

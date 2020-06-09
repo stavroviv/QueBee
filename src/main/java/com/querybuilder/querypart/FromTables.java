@@ -17,13 +17,11 @@ import javafx.scene.control.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.engio.mbassy.listener.Handler;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.Function;
-import net.sf.jsqlparser.parser.CCJSqlParser;
-import net.sf.jsqlparser.parser.ParseException;
-import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SubSelect;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -104,20 +102,6 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
             }
         });
 
-//        tablesView.getRoot().getChildren().addListener((ListChangeListener<TreeItem<TableRow>>) change -> {
-//            while (change.next()) {
-//                List<SelectedFieldsTree> selectedFieldTrees = new ArrayList<>();
-//                selectedFieldTrees.add(mainController.getSelectedGroupFieldsTree());
-//                selectedFieldTrees.add(mainController.getSelectedConditionsTreeTable());
-//                selectedFieldTrees.add(mainController.getSelectedOrderFieldsTree());
-//                applyChange(selectedFieldTrees, selectedFieldsTree -> selectedFieldsTree.applyChanges(change));
-//
-//                CustomEvent customEvent = new CustomEvent();
-//                customEvent.setName(REFRESH_SELECTED_TREE);
-//                customEvent.setChange(change);
-//                CustomEventBus.post(customEvent);
-//            }
-//        });
         tablesView.setOnMousePressed(e -> {
             if (!doubleClick(e)) {
                 return;
@@ -139,10 +123,6 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
             }
         });
     }
-//
-//    private static void applyChange(List<SelectedFieldsTree> fieldsTree, Consumer<SelectedFieldsTree> consumer) {
-//        fieldsTree.stream().filter(Objects::nonNull).forEach(consumer);
-//    }
 
     private void setCellsFactories() {
         setCellFactory(tablesViewColumn);
@@ -218,12 +198,6 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
         return treeItem;
     }
 
-//    public void load(PlainSelect pSelect) {
-//        loadFromTables(pSelect);
-//        loadSelectedItems(pSelect);
-//        TreeHelpers.load(mainController);
-//    }
-
     public TreeTableView<TableRow> loadFromTables(PlainSelect pSelect) {
         TreeTableView<TableRow> tablesView = new TreeTableView<>();
 
@@ -268,103 +242,6 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
 
         return tablesView;
     }
-
-    public Map<String, TableView<TableRow>> loadSelectedItems(PlainSelect pSelect) {
-        Map<String, TableView<TableRow>> result = new HashMap<>();
-        TableView<TableRow> groupTableAggregates = new TableView<>();
-        TableView<TableRow> fieldTable = new TableView<>();
-        if (pSelect.getSelectItems() == null) {
-            return result;
-        }
-
-        for (SelectItem selectField : pSelect.getSelectItems()) {
-            if (selectField instanceof SelectExpressionItem) {
-
-                // GROUPING
-                SelectExpressionItem item = (SelectExpressionItem) selectField;
-                Expression expression = item.getExpression();
-
-                if (expression instanceof Function
-                        && ((Function) item.getExpression()).getParameters().getExpressions().size() == 1) {
-                    Function function = (Function) item.getExpression();
-                    String columnName = function.getParameters().getExpressions().get(0).toString();
-                    TableRow newField = new TableRow(columnName);
-
-
-//                    loadAggregate(newField, function);
-                    TableRow tableRow = TableRow.tableRowFromValue(newField);
-                    tableRow.setComboBoxValue(function.getName());
-                    groupTableAggregates.getItems().add(tableRow);
-
-                    fieldTable.getItems().add(newField);
-
-                } else if (expression instanceof Column) {
-                    Column column = (Column) expression;
-                    fieldTable.getItems().add(new TableRow(getNameFromColumn(column)));
-                } else {
-                    fieldTable.getItems().add(new TableRow(selectField.toString()));
-                }
-
-            } else {
-                fieldTable.getItems().add(new TableRow(selectField.toString()));
-            }
-        }
-
-
-        result.put("fieldTable", fieldTable);
-        result.put("groupTableAggregates", groupTableAggregates);
-        return result;
-    }
-//
-//    public void loadAggregate(TableRow newField, Function function) {
-//
-//    }
-
-    public void save(PlainSelect selectBody) {
-//        saveFromTables(selectBody);
-        saveSelectedFields(selectBody);
-    }
-
-//    public void saveFromTables(PlainSelect selectBody) {
-//        if (!mainController.getLinksController().getLinkTable().getItems().isEmpty()) {
-//            return;
-//        }
-//        List<Join> joins = new ArrayList<>();
-//        tablesView.getRoot().getChildren().forEach(x -> {
-//            String tableName = x.getValue().getName();
-//            if (selectBody.getFromItem() == null) {
-//                selectBody.setFromItem(new Table(tableName));
-//            } else {
-//                Join join = new Join();
-//                join.setRightItem(new Table(tableName));
-//                join.setSimple(true);
-//                joins.add(join);
-//            }
-//        });
-//        selectBody.setJoins(joins);
-//    }
-
-    public void saveSelectedFields(PlainSelect selectBody) {
-        List<SelectItem> items = new ArrayList<>();
-        fieldTable.getItems().forEach(item -> {
-            if (mainController.getGroupingController().containAggregate(item)) {
-                return;
-            }
-
-            String name = item.getName();
-            Expression expression = null;
-            try {
-                expression = new CCJSqlParser(name).Expression();
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-            SelectExpressionItem sItem = new SelectExpressionItem();
-            sItem.setExpression(expression);
-            items.add(sItem);
-        });
-        selectBody.setSelectItems(items);
-    }
-
 
     @FXML
     public void addInnerQueryOnClick() {

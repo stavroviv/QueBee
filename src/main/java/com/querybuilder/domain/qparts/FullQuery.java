@@ -3,6 +3,7 @@ package com.querybuilder.domain.qparts;
 import com.querybuilder.domain.AliasRow;
 import com.querybuilder.domain.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TreeItem;
 import lombok.Data;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
@@ -15,6 +16,7 @@ import net.sf.jsqlparser.statement.select.*;
 
 import java.util.*;
 
+import static com.querybuilder.utils.Constants.ALL_FIELDS;
 import static com.querybuilder.utils.Constants.CTE_0;
 
 @Data
@@ -94,12 +96,11 @@ public class FullQuery {
 
     private static void saveGroupBy(PlainSelect select, OneCte cte, String union) {
         saveGrouping(select, cte, union);
-        //saveAggregates(select, cte, union);
     }
 
-    private static void saveGrouping(PlainSelect select, OneCte cte, String union) {
-        Union union1 = cte.getUnionMap().get(union);
-        TableView<TableRow> groupTableResults = union1.getGroupTableResults();
+    private static void saveGrouping(PlainSelect select, OneCte cte, String unionName) {
+        Union union = cte.getUnionMap().get(unionName);
+        TableView<TableRow> groupTableResults = union.getGroupTableResults();
         if (groupTableResults.getItems().isEmpty()) {
             return;
         }
@@ -113,13 +114,13 @@ public class FullQuery {
             Column groupByItem = new Column(item.getName());
             expressions.add(groupByItem);
         }
-//        for (TreeItem<TableRow> child : union1.getGroupFieldsTree().getRoot().getChildren()) {
-//            if (child.getValue().getName().equals(ALL_FIELDS)) {
-//                break;
-//            }
-//            Column groupByItem = new Column(child.getValue().getName());
-//            expressions.add(groupByItem);
-//        }
+        for (TreeItem<TableRow> child : union.getGroupFieldsTree().getRoot().getChildren()) {
+            if (child.getValue().getName().equals(ALL_FIELDS)) {
+                break;
+            }
+            Column groupByItem = new Column(child.getValue().getName());
+            expressions.add(groupByItem);
+        }
 
         if (expressions.isEmpty()) {
             select.setGroupByElement(null);
