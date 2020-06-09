@@ -6,7 +6,6 @@ import com.querybuilder.database.DBStructureImpl;
 import com.querybuilder.domain.CteRow;
 import com.querybuilder.domain.DBTables;
 import com.querybuilder.domain.SelectedFieldsTree;
-import com.querybuilder.domain.TableRow;
 import com.querybuilder.domain.qparts.FullQuery;
 import com.querybuilder.domain.qparts.OneCte;
 import com.querybuilder.domain.qparts.Union;
@@ -288,7 +287,7 @@ public class MainController implements Subscriber {
         Map<String, Union> unionMap = oneCte.getUnionMap();
 
         if (selectBody instanceof PlainSelect) {
-            unionMap.put(UNION_0, loadUnionData((PlainSelect) selectBody));
+            loadUnionData(unionMap.get(UNION_0), (PlainSelect) selectBody);
         } else if (selectBody instanceof SetOperationList) {
             for (SelectBody union : ((SetOperationList) selectBody).getSelects()) {
                 String key = "UNION_" + index;
@@ -298,8 +297,7 @@ public class MainController implements Subscriber {
                     tab.setId(key);
                     unionTabPane.getTabs().add(tab);
                 }
-
-                unionMap.put(key, loadUnionData((PlainSelect) union));
+                loadUnionData(unionMap.get(key), (PlainSelect) union);
                 index++;
             }
 
@@ -313,24 +311,15 @@ public class MainController implements Subscriber {
         OneCte oneCte = new OneCte();
         oneCte.setCteName(cteName);
 
-        oneCte.setAliasTable(unionAliasesController.loadAliases(selectBody));
+        unionAliasesController.loadAliases(selectBody, oneCte);
 
         return oneCte;
     }
 
-    private Union loadUnionData(PlainSelect selectBody) {
-        Union union = new Union();
-
+    private void loadUnionData(Union union, PlainSelect selectBody) {
         union.setTablesView(tableFieldsController.loadFromTables(selectBody));
-
-        Map<String, TableView<TableRow>> viewMap = tableFieldsController.loadSelectedItems(selectBody);
-        union.setFieldTable(viewMap.get("fieldTable"));
-        union.setGroupTableAggregates(viewMap.get("groupTableAggregates"));
-
         union.setLinkTable(linksController.loadLinks(selectBody));
         union.setGroupTableResults(groupingController.loadGroupBy(selectBody));
-
-        return union;
     }
 
     @FXML

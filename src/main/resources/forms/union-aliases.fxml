@@ -63,10 +63,6 @@
                                AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="10.0"
                                AnchorPane.topAnchor="30.0">
                         <columns>
-                            <TableColumn fx:id="aliasFieldColumn" editable="false" maxWidth="304.0" minWidth="200.0"
-                                         prefWidth="304.0" sortable="false" text="Alias">
-                            </TableColumn>
-
                         </columns>
                         <columnResizePolicy>
                             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>

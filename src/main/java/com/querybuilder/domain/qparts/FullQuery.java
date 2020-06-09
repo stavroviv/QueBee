@@ -9,7 +9,6 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParser;
-import net.sf.jsqlparser.parser.ParseException;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
@@ -114,7 +113,7 @@ public class FullQuery {
             Column groupByItem = new Column(item.getName());
             expressions.add(groupByItem);
         }
-//        for (TreeItem<TableRow> child : groupFieldsTree.getRoot().getChildren()) {
+//        for (TreeItem<TableRow> child : union1.getGroupFieldsTree().getRoot().getChildren()) {
 //            if (child.getValue().getName().equals(ALL_FIELDS)) {
 //                break;
 //            }
@@ -163,7 +162,7 @@ public class FullQuery {
             Expression expression = null;
             try {
                 expression = new CCJSqlParser(name).Expression();
-            } catch (ParseException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             if (expression == null) { // FIXME
@@ -171,7 +170,15 @@ public class FullQuery {
             }
             SelectExpressionItem sItem = new SelectExpressionItem();
             sItem.setExpression(expression);
-            if (first && !((Column) sItem.getExpression()).getColumnName().equals(item.getAlias())) {
+
+            Expression expression1 = sItem.getExpression();
+            boolean equals = true;
+            if (expression1 instanceof Column) {
+                Column column = (Column) expression1;
+                equals = !column.getColumnName().equals(item.getAlias());
+            }
+
+            if (first && equals) {
                 sItem.setAlias(new Alias(item.getAlias()));
             }
             setAggregate(sItem, item.getIds().get(union), cte, union);

@@ -2,10 +2,13 @@ package com.querybuilder.test;
 
 import com.querybuilder.QueryBuilder;
 import com.querybuilder.controllers.MainController;
+import com.querybuilder.domain.TableRow;
+import com.querybuilder.domain.qparts.FullQuery;
 import com.querybuilder.eventbus.Subscriber;
 import com.querybuilder.utils.Utils;
 import javafx.embed.swing.JFXPanel;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.TableView;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.Select;
@@ -16,6 +19,8 @@ import org.junit.Test;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.querybuilder.utils.Constants.CTE_0;
 
 public class QueryBuilderTest {
 
@@ -56,7 +61,22 @@ public class QueryBuilderTest {
 
         Select query = loadQuery(text).getFullQuery().getQuery();
 
-        Assert.assertEquals(query.toString(), text);
+        Assert.assertEquals(text, query.toString());
+    }
+
+    @Test
+    public void aliasesSaveWithEmpty() throws Exception {
+        String text = "SELECT crm_bonus_retail.bonus_retail_value AS bonusOne, " +
+                "NULL AS bestBonus " +
+                "FROM crm_bonus_retail " +
+                "UNION ALL " +
+                "SELECT crm_access.access_name, " +
+                "crm_access.access_comment " +
+                "FROM crm_access, crm_advance_payment";
+
+        Select query = loadQuery(text).getFullQuery().getQuery();
+
+        Assert.assertEquals(text, query.toString());
     }
 
     @Test
@@ -97,5 +117,43 @@ public class QueryBuilderTest {
                 "FROM crm_bonus_retail " +
                 "GROUP BY vendor_id";
         Assert.assertEquals(expected, query.toString());
+    }
+
+    @Test
+    public void loadUnions() throws Exception {
+        String text = "SELECT crm_bonus_retail.bonus_retail_value AS bonusOne, " +
+                "NULL AS bestBonus " +
+                "FROM crm_bonus_retail " +
+                "UNION ALL " +
+                "SELECT crm_access.access_name, " +
+                "crm_access.access_comment " +
+                "FROM crm_access, crm_advance_payment " +
+                "UNION ALL " +
+                "SELECT crm_access.access_name, " +
+                "crm_access.access_comment " +
+                "FROM crm_access, crm_advance_payment";
+
+        FullQuery fullQuery = loadQuery(text).getFullQuery();
+        TableView<TableRow> unionTable = fullQuery.getCteMap().get(CTE_0).getUnionTable();
+        Assert.assertEquals(3, unionTable.getItems().size());
+
+        text = "WITH CTE_0 AS (SELECT crm_bonus_retail.bonus_retail_value AS bonusOne, " +
+                "NULL AS bestBonus " +
+                "FROM crm_bonus_retail " +
+                "UNION ALL " +
+                "SELECT crm_access.access_name, " +
+                "crm_access.access_comment " +
+                "FROM crm_access, crm_advance_payment " +
+                "UNION ALL " +
+                "SELECT crm_access.access_name, " +
+                "crm_access.access_comment " +
+                "FROM crm_access, crm_advance_payment) " +
+                "SELECT CTE_0.bonusOne from CTE_0";
+
+        fullQuery = loadQuery(text).getFullQuery();
+        unionTable = fullQuery.getCteMap().get(CTE_0).getUnionTable();
+        TableView<TableRow> cte_1 = fullQuery.getCteMap().get("CTE_1").getUnionTable();
+        Assert.assertEquals(3, unionTable.getItems().size());
+        Assert.assertEquals(1, cte_1.getItems().size());
     }
 }
