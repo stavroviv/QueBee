@@ -3,7 +3,10 @@ package com.querybuilder.querypart;
 import com.querybuilder.domain.TableRow;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TreeTableColumn;
+import javafx.scene.control.TreeTableView;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.sf.jsqlparser.schema.Column;
@@ -69,56 +72,25 @@ public class GroupBy extends AbstractQueryPart {
         }
     }
 
-    private void deselectAggregates() {
-        for (TableRow item : groupTableAggregates.getItems()) {
-            for (TreeItem<TableRow> child : groupFieldsTree.getRoot().getChildren()) {
-                if (child.getValue().getId() == item.getId()) {
-                    groupFieldsTree.getRoot().getChildren().remove(child);
-                    break;
-                }
-            }
-        }
-    }
-
-
-//    public TableView<TableRow> loadAggregates(PlainSelect pSelect) {
-////        TableRow tableRow = TableRow.tableRowFromValue(newField);
-////        tableRow.setComboBoxValue(function.getName());
-//        TableView<TableRow> groupTableAggregates = new TableView<>();
-//        for (SelectItem selectField : pSelect.getSelectItems()) {
-//            if (!(selectField instanceof SelectExpressionItem)) {
-//                continue;
-//            }
-//
-//            // GROUPING
-//            SelectExpressionItem item = (SelectExpressionItem) selectField;
-//            Expression expression = item.getExpression();
-//
-//            if (expression instanceof Function
-//                    && ((Function) item.getExpression()).getParameters().getExpressions().size() == 1) {
-//                Function function = (Function) item.getExpression();
-//                String columnName = function.getParameters().getExpressions().get(0).toString();
-//                TableRow newField = new TableRow(columnName);
-//
-//                // fieldTable.getItems().add(newField);
-//                TableRow tableRow = TableRow.tableRowFromValue(newField);
-//                tableRow.setComboBoxValue(function.getName());
-//                groupTableAggregates.getItems().add(tableRow);
-//
+//    private void deselectAggregates() {
+//        for (TableRow item : groupTableAggregates.getItems()) {
+//            for (TreeItem<TableRow> child : groupFieldsTree.getRoot().getChildren()) {
+//                if (child.getValue().getId() == item.getId()) {
+//                    groupFieldsTree.getRoot().getChildren().remove(child);
+//                    break;
+//                }
 //            }
 //        }
-//
-//        return groupTableAggregates;
 //    }
-
-    public boolean containAggregate(TableRow field) {
-        for (TableRow x : groupTableAggregates.getItems()) {
-            if (x.getId() == field.getId()) {
-                return true;
-            }
-        }
-        return false;
-    }
+//
+//    public boolean containAggregate(TableRow field) {
+//        for (TableRow x : groupTableAggregates.getItems()) {
+//            if (x.getId() == field.getId()) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     @FXML
     private void selectGroup(ActionEvent event) {

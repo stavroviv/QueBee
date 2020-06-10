@@ -2,6 +2,7 @@ package com.querybuilder.domain.qparts;
 
 import com.querybuilder.domain.AliasRow;
 import com.querybuilder.domain.ConditionElement;
+import com.querybuilder.domain.LinkElement;
 import com.querybuilder.domain.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
@@ -92,6 +93,7 @@ public class FullQuery {
 
         saveAliases(select, cte, union, first);
         saveFromTables(select, cte, union);
+        saveLinks(select, cte, union);
         saveGroupBy(select, cte, union);
         saveConditions(select, cte, union);
         if (last) {
@@ -101,7 +103,64 @@ public class FullQuery {
         return select;
     }
 
-    private void saveConditions(PlainSelect selectBody, OneCte cte, String unionName) {
+    public static void saveLinks(PlainSelect selectBody, OneCte cte, String union) {
+        Union union1 = cte.getUnionMap().get(union);
+        TableView<LinkElement> linkTable = union1.getLinkTable();
+        if (linkTable.getItems().isEmpty()) {
+            return;
+        }
+
+        // 1. если JOIN есть - то надо указать связи всех таблиц
+        // 2. RIGHT JOIN изменить на LEFT и упорядочить все строки кроме первой
+        String tableFrom = linkTable.getItems().get(0).getTable1();
+        selectBody.setFromItem(new Table(tableFrom));
+        List<Join> joins = new ArrayList<>();
+        for (LinkElement item : linkTable.getItems()) {
+            Join join = new Join();
+            join.setRightItem(new Table(item.getTable2()));
+            setJoinType(item, join);
+            setCondition(item, join);
+            joins.add(join);
+        }
+
+        selectBody.setJoins(joins);
+    }
+
+    private static void setCondition(LinkElement item, Join join) {
+        String strExpression = item.getCondition();
+        if (!item.isCustom()) {
+            strExpression = item.getTable1() + "." + item.getField1()
+                    + item.getExpression()
+                    + item.getTable2() + "." + item.getField2();
+        }
+        try {
+            join.setOnExpression(getExpression(strExpression));
+        } catch (JSQLParserException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void setJoinType(LinkElement item, Join join) {
+        if (item.isAllTable1() && item.isAllTable2()) {
+            join.setFull(true);
+        } else if (item.isAllTable1()) {
+            join.setLeft(true);
+        } else if (item.isAllTable2()) {
+            join.setRight(true);
+        } else {
+            join.setInner(true);
+        }
+    }
+
+    private static Expression getExpression(String where) throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse(
+                "SELECT * FROM TABLES WHERE " + where
+        );
+        Select select = (Select) stmt;
+        return ((PlainSelect) select.getSelectBody()).getWhere();
+    }
+
+    private static void saveConditions(PlainSelect selectBody, OneCte cte, String unionName) {
         Union union = cte.getUnionMap().get(unionName);
         TableView<ConditionElement> conditionTableResults = union.getConditionTableResults();
         if (conditionTableResults.getItems().size() == 0) {

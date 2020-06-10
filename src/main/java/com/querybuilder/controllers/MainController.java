@@ -310,13 +310,6 @@ public class MainController implements Subscriber {
         fullQuery.getCteMap().put(cteName, oneCte);
     }
 
-    public Tab addUnionTabPane(String unionName, String id) {
-        Tab tab = new Tab(id);
-        tab.setId(id);
-        unionTabPane.getTabs().add(tab);
-        return tab;
-    }
-
     private OneCte loadCteData(String cteName, SelectBody selectBody) {
         OneCte oneCte = new OneCte();
         oneCte.setCteName(cteName);
@@ -332,6 +325,13 @@ public class MainController implements Subscriber {
         union.setLinkTable(linksController.loadLinks(selectBody));
         union.setGroupTableResults(groupingController.loadGroupBy(selectBody));
         union.setConditionTableResults(conditionsController.load(selectBody));
+    }
+
+    public Tab addUnionTabPane(String unionName, String id) {
+        Tab tab = new Tab(id);
+        tab.setId(id);
+        unionTabPane.getTabs().add(tab);
+        return tab;
     }
 
     @FXML

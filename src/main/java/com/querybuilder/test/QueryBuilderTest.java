@@ -2,6 +2,7 @@ package com.querybuilder.test;
 
 import com.querybuilder.QueryBuilder;
 import com.querybuilder.controllers.MainController;
+import com.querybuilder.domain.LinkElement;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.domain.qparts.FullQuery;
 import com.querybuilder.domain.qparts.OneCte;
@@ -52,6 +53,24 @@ public class QueryBuilderTest {
         data.put("queryBuilder", new QueryBuilder());
         controller.initData(data);
         return (MainController) controller;
+    }
+
+    @Test
+    public void queryWithLinks() throws Exception {
+        String text = "SELECT crm_bonus_retail.bonus_retail_value AS bonus, " +
+                "crm_bonus_retail.vendor_id, " +
+                "crm_bonus_retail.bonus_retail_id, " +
+                "crm_bonus_retail.bonus_retail_creation_time AS bonus_retail " +
+                "FROM crm_bonus_retail " +
+                "LEFT JOIN crm_access ON crm_bonus_retail.invoice_id <= crm_access.invoice_id " +
+                "LEFT JOIN crm_test ON crm_bonus_retail.invoice_id = crm_test.invoice_id";
+
+        FullQuery fullQuery = loadQuery(text).getFullQuery();
+        TableView<LinkElement> linkTable = fullQuery.getCteMap().get(CTE_0).getUnionMap().get(UNION_0).getLinkTable();
+        Assert.assertEquals(2, linkTable.getItems().size());
+        Select query = fullQuery.getQuery();
+
+        Assert.assertEquals(text, query.toString());
     }
 
     @Test

@@ -12,17 +12,16 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SubSelect;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -92,10 +91,6 @@ public class Links extends AbstractQueryPart {
         linkTableJoinCondition.setCellFactory(column -> new JoinConditionCell());
     }
 
-    public void load(PlainSelect pSelect) {
-
-    }
-
     public TableView<LinkElement> loadLinks(PlainSelect pSelect) {
         TableView<LinkElement> linkTable = new TableView<>();
         List<Join> joins = pSelect.getJoins();
@@ -133,61 +128,6 @@ public class Links extends AbstractQueryPart {
         return linkTable;
     }
 
-    public void save(PlainSelect selectBody) {
-        if (linkTable.getItems().isEmpty()) {
-            return;
-        }
-        // 1. если JOIN есть - то надо указать связи всех таблиц
-        // 2. RIGHT JOIN изменить на LEFT и упорядочить все строки кроме первой
-
-        String tableFrom = linkTable.getItems().get(0).getTable1();
-        selectBody.setFromItem(new Table(tableFrom));
-        List<Join> joins = new ArrayList<>();
-        for (LinkElement item : linkTable.getItems()) {
-            Join join = new Join();
-            join.setRightItem(new Table(item.getTable2()));
-            setJoinType(item, join);
-            setCondition(item, join);
-            joins.add(join);
-        }
-
-        selectBody.setJoins(joins);
-    }
-
-    private static void setCondition(LinkElement item, Join join) {
-        String strExpression = item.getCondition();
-        if (!item.isCustom()) {
-            strExpression = item.getTable1() + "." + item.getField1()
-                    + item.getExpression()
-                    + item.getTable2() + "." + item.getField2();
-        }
-        try {
-            join.setOnExpression(getExpression(strExpression));
-        } catch (JSQLParserException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void setJoinType(LinkElement item, Join join) {
-        if (item.isAllTable1() && item.isAllTable2()) {
-            join.setFull(true);
-        } else if (item.isAllTable1()) {
-            join.setLeft(true);
-        } else if (item.isAllTable2()) {
-            join.setRight(true);
-        } else {
-            join.setInner(true);
-        }
-    }
-
-    private static Expression getExpression(String where) throws JSQLParserException {
-        Statement stmt = CCJSqlParserUtil.parse(
-                "SELECT * FROM TABLES WHERE " + where
-        );
-        Select select = (Select) stmt;
-        return ((PlainSelect) select.getSelectBody()).getWhere();
-    }
-
     private void addLinkRow(TableView<LinkElement> linkTable, Table table, Join join) {
         if (join.getOnExpression() == null) {
             return;
@@ -203,7 +143,7 @@ public class Links extends AbstractQueryPart {
                         isLeft(join), isRight(join), isCustom(rightExpression)
                 );
 
-                linkElement.setCondition(getSimpleCondition(rightExpression));
+                setSimpleCondition(linkElement, rightExpression);
                 linkTable.getItems().add(linkElement);
                 if (!(expression.getLeftExpression() instanceof AndExpression)) {
                     Expression lExpression = expression.getLeftExpression();
@@ -211,7 +151,7 @@ public class Links extends AbstractQueryPart {
                             mainController, table.getName(), join.getRightItem().toString(),
                             isLeft(join), isRight(join), isCustom(lExpression)
                     );
-                    linkElement2.setCondition(getSimpleCondition(lExpression));
+                    setSimpleCondition(linkElement2, lExpression);
                     linkTable.getItems().add(linkElement2);
                     break;
                 }
@@ -223,20 +163,25 @@ public class Links extends AbstractQueryPart {
                     mainController, table.getName(), join.getRightItem().toString(),
                     isLeft(join), isRight(join), isCustom(expression)
             );
-            linkElement.setCondition(getSimpleCondition(expression));
+            setSimpleCondition(linkElement, expression);
             linkTable.getItems().add(linkElement);
         }
     }
 
-    private static String getSimpleCondition(Expression expression) {
+    private static void setSimpleCondition(LinkElement linkElement, Expression expression) {
+        String cond = expression.toString();
         if (expression instanceof ComparisonOperator) {
             ComparisonOperator expr = (ComparisonOperator) expression;
             Column leftColumn = (Column) expr.getLeftExpression();
             Column rightColumn = (Column) expr.getRightExpression();
-            return leftColumn.getColumnName() + expr.getStringExpression() + rightColumn.getColumnName();
+            cond = leftColumn.getColumnName() + expr.getStringExpression() + rightColumn.getColumnName();
+
+            linkElement.setField1(leftColumn.getColumnName());
+            linkElement.setField2(rightColumn.getColumnName());
+            linkElement.setExpression(expr.getStringExpression());
         }
-        System.out.println(expression);
-        return expression.toString();
+
+        linkElement.setCondition(cond);
     }
 
     private static boolean isLeft(Join join) {
