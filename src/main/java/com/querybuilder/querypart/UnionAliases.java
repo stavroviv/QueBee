@@ -27,8 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.querybuilder.utils.Constants.*;
-import static com.querybuilder.utils.Utils.activateNewTab;
-import static com.querybuilder.utils.Utils.getNameFromColumn;
+import static com.querybuilder.utils.Utils.*;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -237,49 +236,43 @@ public class UnionAliases extends AbstractQueryPart {
         cte.getUnionMap().put(key, new Union());
 
         String unionName = "Query " + cte.getCurMaxUnion();
-        Tab tab = addUnionTabPane(unionName, key);
+        Tab tab = mainController.addUnionTabPane(unionName, key);
         activateNewTab(tab, mainController.getUnionTabPane(), mainController);
 
         addUnionColumn(aliasTable, unionTable, key, cte, mainController);
     }
 
-    public Tab addUnionTabPane(String unionName, String id) {
-        Tab tab = new Tab(id);
-        tab.setId(id);
-        mainController.getUnionTabPane().getTabs().add(tab);
-        return tab;
-    }
-
     @FXML
-    protected void deleteUnion(ActionEvent event) {
-        // TODO переделать
-//        if (unionTable.getItems().size() == 1) {
-//            return;
-//        }
-//
-//        mainController.setNotChangeUnion(true);
-//        TabPane unionTabPane = mainController.getUnionTabPane();
-//        int selectedIndex = unionTabPane.getSelectionModel().getSelectedIndex();
-//
-//        TableRow selectedItem = unionTable.getSelectionModel().getSelectedItem();
-//        String name = selectedItem.getName();
-//        aliasTable.getColumns().remove(unionColumns.get(name));
-//        unionTable.getItems().remove(selectedItem);
-//        unionColumns.remove(name);
-//        for (AliasRow item : aliasTable.getItems()) {
-//            item.getValues().remove(name);
-//        }
-//
-//        int delIndex = getTabIndex(mainController, name);
-//        SelectBody currentSelectBody = mainController.getSQuery().getSelectBody();
-//        ((SetOperationList) currentSelectBody).getSelects().remove(delIndex);
-//        unionTabPane.getTabs().remove(delIndex);
-//        if (selectedIndex == delIndex) {
-//            unionTabPane.getSelectionModel().select(delIndex - 1);
-//            //   mainController.loadCurrentQuery(false);
-//        }
-//
-//        mainController.setNotChangeUnion(false);
+    public void deleteUnion(ActionEvent event) {
+        if (unionTable.getItems().size() == 1) {
+            return;
+        }
+
+        mainController.setWithoutSave(true);
+
+        OneCte currentCte = mainController.getFullQuery().getCteMap().get(mainController.getCurrentCTE());
+
+        TableRow selectedItem = unionTable.getSelectionModel().getSelectedItem();
+        String delUnion = selectedItem.getName();
+        aliasTable.getColumns().remove(currentCte.getUnionColumns().get(delUnion));
+        unionTable.getItems().remove(selectedItem);
+        currentCte.getUnionColumns().remove(delUnion);
+        currentCte.getUnionMap().remove(delUnion);
+        for (AliasRow item : aliasTable.getItems()) {
+            item.getValues().remove(delUnion);
+        }
+
+        int delIndex = getUnionTabIndex(mainController, delUnion);
+
+        TabPane unionTabPane = mainController.getUnionTabPane();
+        int selectedIndex = mainController.getUnionTabPane().getSelectionModel().getSelectedIndex();
+        unionTabPane.getTabs().remove(delIndex);
+
+        if (selectedIndex == delIndex) {
+            unionTabPane.getSelectionModel().select(delIndex - 1);
+        }
+
+        mainController.setWithoutSave(false);
     }
 
     public void addAlias(TableRow newField) {

@@ -17,7 +17,7 @@ import java.util.List;
 
 import static com.querybuilder.utils.Constants.EMPTY_UNION_VALUE;
 import static com.querybuilder.utils.Utils.doubleClick;
-import static com.querybuilder.utils.Utils.getTabIndex;
+import static com.querybuilder.utils.Utils.getUnionTabIndex;
 
 public class AliasCell extends TableCell<AliasRow, String> {
     private MainController controller;
@@ -128,7 +128,7 @@ public class AliasCell extends TableCell<AliasRow, String> {
         } else {
             // get from query
             SetOperationList fullSelectBody = (SetOperationList) controller.getFullSelectBody();
-            PlainSelect selectBody = (PlainSelect) fullSelectBody.getSelects().get(getTabIndex(controller, columnName));
+            PlainSelect selectBody = (PlainSelect) fullSelectBody.getSelects().get(getUnionTabIndex(controller, columnName));
             selectBody.getSelectItems().forEach(tableRow ->
                     items.add(tableRow.toString())
             );

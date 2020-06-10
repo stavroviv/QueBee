@@ -165,6 +165,34 @@ public class QueryBuilderTest {
     }
 
     @Test
+    public void loadWithCteAndUnion() throws Exception {
+        String text = "WITH CTE_0 AS (SELECT characteristicsvalues.id, characteristicsvalues.ordernumber, " +
+                "NULL AS text " +
+                "FROM characteristicsvalues)" +
+                "SELECT classifiabletextscharacteristics.classifiabletextid, NULL AS authority_pattern_id, " +
+                "NULL AS id, NULL AS text " +
+                "FROM classifiabletextscharacteristics " +
+                "UNION ALL " +
+                "SELECT NULL, NULL, classifiabletexts.id, classifiabletexts.text " +
+                "FROM classifiabletexts";
+
+        MainController mainController = loadQuery(text);
+        //  FullQuery fullQuery = mainController.getFullQuery();
+        Assert.assertEquals(1, mainController.getUnionTabPane().getTabs().size());
+        //  System.out.println(mainController.getUnionTabPane().getTabs().size());
+//        Select query = fullQuery.getQuery();
+//
+//        String expected = "SELECT crm_bonus_retail.bonus_retail_value, " +
+//                "crm_bonus_retail.vendor_id, " +
+//                "crm_bonus_retail.vendor_id2 " +
+//                "FROM crm_bonus_retail " +
+//                "UNION ALL " +
+//                "SELECT crm_access.access_name, NULL, NULL " +
+//                "FROM crm_access";
+//        Assert.assertEquals(expected, query.toString());
+    }
+
+    @Test
     public void loadSaveWithNull() throws Exception {
         String text = "SELECT bonus_retail_value, " +
                 "vendor_id," +

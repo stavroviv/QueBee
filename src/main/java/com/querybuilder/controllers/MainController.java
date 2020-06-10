@@ -149,7 +149,7 @@ public class MainController implements Subscriber {
     private void loadUnionPages(Tab newTab) {
         unionTabPane.getTabs().clear();
         for (String union : fullQuery.getCteMap().get(newTab.getId()).getUnionMap().keySet()) {
-            unionAliasesController.addUnionTabPane(union, union);
+            addUnionTabPane(union, union);
         }
     }
 
@@ -215,7 +215,7 @@ public class MainController implements Subscriber {
     private void firstLoadQuery() {
         unionTabPane.getTabs().clear();
         cteTabPane.getTabs().clear();
-        unionAliasesController.addUnionTabPane(UNION_0, UNION_0);
+        addUnionTabPane(UNION_0, UNION_0);
 
         fullQuery = new FullQuery();
         List<WithItem> withItemsList = sQuery.getWithItemsList();
@@ -297,10 +297,8 @@ public class MainController implements Subscriber {
             for (SelectBody union : ((SetOperationList) selectBody).getSelects()) {
                 String key = "UNION_" + index;
 
-                if (index > 0) {
-                    Tab tab = new Tab(key);
-                    tab.setId(key);
-                    unionTabPane.getTabs().add(tab);
+                if (id == 0 && index > 0) {
+                    addUnionTabPane(key, key);
                 }
                 loadUnionData(unionMap.get(key), (PlainSelect) union);
                 index++;
@@ -310,6 +308,13 @@ public class MainController implements Subscriber {
         oneCte.setUnionMap(unionMap);
 
         fullQuery.getCteMap().put(cteName, oneCte);
+    }
+
+    public Tab addUnionTabPane(String unionName, String id) {
+        Tab tab = new Tab(id);
+        tab.setId(id);
+        unionTabPane.getTabs().add(tab);
+        return tab;
     }
 
     private OneCte loadCteData(String cteName, SelectBody selectBody) {

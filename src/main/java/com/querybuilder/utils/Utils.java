@@ -339,7 +339,7 @@ public class Utils {
         selModel.select(controller.getTableAndFieldsTab());
     }
 
-    public static int getTabIndex(MainController mainController, String unionTabId) {
+    public static int getUnionTabIndex(MainController mainController, String unionTabId) {
         int tIndex = 0;
         for (Tab tPane : mainController.getUnionTabPane().getTabs()) {
             if (tPane.getId().equals(unionTabId)) {
