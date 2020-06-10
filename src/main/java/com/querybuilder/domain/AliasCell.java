@@ -1,36 +1,39 @@
 package com.querybuilder.domain;
 
 import com.querybuilder.controllers.MainController;
+import com.querybuilder.domain.qparts.OneCte;
 import com.querybuilder.utils.Utils;
-import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SetOperationList;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.querybuilder.utils.Constants.EMPTY_UNION_VALUE;
 import static com.querybuilder.utils.Utils.doubleClick;
-import static com.querybuilder.utils.Utils.getUnionTabIndex;
+import static com.querybuilder.utils.Utils.removeEmptyAliases;
 
 public class AliasCell extends TableCell<AliasRow, String> {
     private MainController controller;
     private String columnName;
 
-    public AliasCell(TableColumn<AliasRow, String> aliasRow, String columnName, MainController controller) {
+    public AliasCell(TableColumn<AliasRow, String> aliasColumn, String columnName, MainController controller) {
         this.controller = controller;
         this.columnName = columnName;
 
-        aliasRow.setOnEditCommit(t -> {
+        aliasColumn.setOnEditCommit(t -> {
             int row = t.getTablePosition().getRow();
             AliasRow currentRow = t.getTableView().getItems().get(row);
-            currentRow.getValues().put(columnName, t.getNewValue());
+            String[] newValue = t.getNewValue().split("_");
+            currentRow.getValues().put(columnName, newValue[0]);
+            currentRow.getIds().put(columnName, Long.parseLong(newValue[1]));
+
+            removeEmptyAliases(controller);
         });
     }
 
@@ -111,27 +114,26 @@ public class AliasCell extends TableCell<AliasRow, String> {
         this.setGraphic(textField);
     }
 
-    private TableView<String> getAliasTable() {
-        TableView<String> aliasTableContext = new TableView<>();
+    private TableView<TableRow> getAliasTable() {
+        TableView<TableRow> aliasTableContext = new TableView<>();
         aliasTableContext.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        TableColumn<String, String> aliasTableContextColumn = new TableColumn<>();
+        TableColumn<TableRow, TableRow> aliasTableContextColumn = new TableColumn<>();
         aliasTableContext.getColumns().add(aliasTableContextColumn);
-        aliasTableContextColumn.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue()));
+        aliasTableContextColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
 
-        List<String> items = new ArrayList<>();
+        List<TableRow> items = new ArrayList<>();
 
         TabPane unionTabPane = controller.getUnionTabPane();
         if (!unionTabPane.getTabs().isEmpty() && columnName.equals(unionTabPane.getSelectionModel().getSelectedItem().getId())) {
             controller.getTableFieldsController().getFieldTable().getItems().forEach(tableRow ->
-                    items.add(tableRow.getName())
+                    items.add(TableRow.tableRowFromValue(tableRow))
             );
         } else {
             // get from query
-            SetOperationList fullSelectBody = (SetOperationList) controller.getFullSelectBody();
-            PlainSelect selectBody = (PlainSelect) fullSelectBody.getSelects().get(getUnionTabIndex(controller, columnName));
-            selectBody.getSelectItems().forEach(tableRow ->
-                    items.add(tableRow.toString())
-            );
+            OneCte cte = controller.getFullQuery().getCteMap().get(controller.getCurrentCTE());
+            for (TableRow item : cte.getUnionMap().get(columnName).getFieldTable().getItems()) {
+                items.add(TableRow.tableRowFromValue(item));
+            }
         }
 
         aliasTableContext.getItems().addAll(items);
@@ -143,13 +145,24 @@ public class AliasCell extends TableCell<AliasRow, String> {
             if (!doubleClick(e)) {
                 return;
             }
-            String selectedItem = aliasTableContext.getSelectionModel().getSelectedItem();
-            commitEdit(selectedItem);
-            aliasPopup.hide();
+            TableRow selectedItem = aliasTableContext.getSelectionModel().getSelectedItem();
+
             ObservableList<AliasRow> aliasItems = controller.getUnionAliasesController().getAliasTable().getItems();
             for (AliasRow item : aliasItems) {
-
+                Long aLong = item.getIds().get(columnName);
+                if (aLong == null) {
+                    continue;
+                }
+                if (selectedItem.getId() == aLong) {
+                    item.getValues().put(columnName, EMPTY_UNION_VALUE);
+                    item.getIds().remove(columnName);
+                }
             }
+
+            commitEdit(selectedItem.getName() + "_" + selectedItem.getId());
+            aliasPopup.hide();
+
+            controller.getUnionAliasesController().getAliasTable().refresh();
         });
         return aliasTableContext;
     }

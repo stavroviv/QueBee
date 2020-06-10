@@ -197,11 +197,9 @@ public class UnionAliases extends AbstractQueryPart {
         return expr;
     }
 
-    public static TableColumn<AliasRow, String> addUnionColumn(TableView<AliasRow> aliasTable,
-                                                               TableView<TableRow> unionTable,
-                                                               String unionName,
-                                                               OneCte oneCte,
-                                                               MainController controller) {
+    public static void addUnionColumn(TableView<AliasRow> aliasTable, TableView<TableRow> unionTable,
+                                      String unionName, OneCte oneCte,
+                                      MainController controller) {
         TableColumn<AliasRow, String> newColumn = new TableColumn<>(unionName);
         newColumn.setEditable(true);
         for (AliasRow item : aliasTable.getItems()) {
@@ -224,7 +222,6 @@ public class UnionAliases extends AbstractQueryPart {
         oneCte.getUnionColumns().put(unionName, newColumn);
 
         unionTable.getItems().add(new TableRow(unionName));
-        return newColumn;
     }
 
     @FXML
@@ -273,6 +270,8 @@ public class UnionAliases extends AbstractQueryPart {
         }
 
         mainController.setWithoutSave(false);
+
+        removeEmptyAliases(mainController);
     }
 
     public void addAlias(TableRow newField) {

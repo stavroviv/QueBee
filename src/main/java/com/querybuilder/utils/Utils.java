@@ -1,6 +1,7 @@
 package com.querybuilder.utils;
 
 import com.querybuilder.controllers.MainController;
+import com.querybuilder.domain.AliasRow;
 import com.querybuilder.domain.SelectedFieldsTree;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.eventbus.Subscriber;
@@ -348,5 +349,25 @@ public class Utils {
             tIndex++;
         }
         return tIndex;
+    }
+
+    public static void removeEmptyAliases(MainController controller) {
+        ObservableList<AliasRow> aliasItems = controller.getUnionAliasesController().getAliasTable().getItems();
+        List<AliasRow> delList = new ArrayList<>();
+        for (AliasRow item : aliasItems) {
+            boolean allEmpty = true;
+            for (Map.Entry<String, String> stringStringEntry : item.getValues().entrySet()) {
+                if (!stringStringEntry.getValue().equals(EMPTY_UNION_VALUE)) {
+                    allEmpty = false;
+                    break;
+                }
+            }
+            if (allEmpty) {
+                delList.add(item);
+            }
+        }
+        for (AliasRow aliasRow : delList) {
+            controller.getUnionAliasesController().getAliasTable().getItems().remove(aliasRow);
+        }
     }
 }
