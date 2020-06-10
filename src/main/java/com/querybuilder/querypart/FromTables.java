@@ -178,7 +178,7 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
                     getTableItemWithFields(controller, parent)
             );
         }
-        controller.refreshLinkTable();
+        controller.getLinksController().getLinkTable().refresh();
     }
 
     private static TreeItem<TableRow> getTableItemWithFields(MainController controller, String tableName) {

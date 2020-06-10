@@ -77,7 +77,7 @@ public class Links extends AbstractQueryPart {
             BooleanProperty property = cellValue.customProperty();
             property.addListener((observable, oldValue, newValue) -> {
                 cellValue.setCustom(newValue);
-                mainController.refreshLinkTable();
+                linkTable.refresh();
             });
             return property;
         });

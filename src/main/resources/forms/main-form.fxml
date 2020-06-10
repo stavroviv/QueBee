@@ -104,7 +104,7 @@
                                 <fx:include fx:id="unionAliases" source="union-aliases.fxml"/>
                             </content>
                         </Tab>
-                        <Tab text="Order">
+                        <Tab fx:id="orderTab" text="Order">
                             <content>
                                 <fx:include fx:id="order" source="order.fxml"/>
                             </content>

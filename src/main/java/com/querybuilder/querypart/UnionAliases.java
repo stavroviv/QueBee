@@ -226,7 +226,7 @@ public class UnionAliases extends AbstractQueryPart {
 
     @FXML
     public void addNewUnion(ActionEvent event) {
-        OneCte cte = mainController.getFullQuery().getCteMap().get(mainController.getCurrentCTE());
+        OneCte cte = mainController.getCurrentCte();
         cte.setCurMaxUnion(cte.getCurMaxUnion() + 1);
         String key = "UNION_" + cte.getCurMaxUnion();
 
@@ -247,7 +247,7 @@ public class UnionAliases extends AbstractQueryPart {
 
         mainController.setWithoutSave(true);
 
-        OneCte currentCte = mainController.getFullQuery().getCteMap().get(mainController.getCurrentCTE());
+        OneCte currentCte = mainController.getCurrentCte();
 
         TableRow selectedItem = unionTable.getSelectionModel().getSelectedItem();
         String delUnion = selectedItem.getName();
@@ -299,7 +299,7 @@ public class UnionAliases extends AbstractQueryPart {
             break;
         }
 
-        OneCte cte = mainController.getFullQuery().getCteMap().get(mainController.getCurrentCTE());
+        OneCte cte = mainController.getCurrentCte();
         if (!exists) {
             for (String column : cte.getUnionColumns().keySet()) {
                 aliasRow.getValues().put(column, column.equals(curUnion) ? name : EMPTY_UNION_VALUE);

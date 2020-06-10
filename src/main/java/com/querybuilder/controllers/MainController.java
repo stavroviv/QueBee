@@ -124,6 +124,12 @@ public class MainController implements Subscriber {
             }
             saveLoadPart(curCte, oldTab, curCte, newTab, false);
         });
+        mainTabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
+            if (oldTab == null || newTab == null) {
+                return;
+            }
+            setUnionAndCTETabPaneVisibility();
+        });
 
         setUnionAndCTETabPaneVisibility();
         unionTabPane.getTabs().addListener((ListChangeListener.Change<? extends Tab> change) -> {
@@ -156,7 +162,12 @@ public class MainController implements Subscriber {
     private void setUnionAndCTETabPaneVisibility() {
         double anchor = 0.0;
         anchor = setPaneVisibleAnchor(anchor, cteTabPane);
-        anchor = setPaneVisibleAnchor(anchor, unionTabPane);
+        String mainPageId = mainTabPane.getSelectionModel().getSelectedItem().getId();
+        if (mainPageId != null && mainPageId.equals("orderTab")) {
+            unionTabPane.setVisible(false);
+        } else {
+            anchor = setPaneVisibleAnchor(anchor, unionTabPane);
+        }
         AnchorPane.setRightAnchor(mainTabPane, anchor);
     }
 
@@ -182,17 +193,6 @@ public class MainController implements Subscriber {
         return tIndex;
     }
 
-    public SelectBody getFullSelectBody() {
-        SelectBody selectBody;
-        int cteNumber = cteTabPane.getSelectionModel().getSelectedIndex();
-        if (sQuery.getWithItemsList() == null || cteNumber == sQuery.getWithItemsList().size()) {
-            selectBody = sQuery.getSelectBody();
-        } else {
-            selectBody = sQuery.getWithItemsList().get(cteNumber).getSelectBody();
-        }
-        return selectBody;
-    }
-
     private void initDBTables() {
         DBStructure db = new DBStructureImpl();
         DBTables dbStructure = db.getDBStructure(queryBuilder.getConsole());
@@ -205,10 +205,6 @@ public class MainController implements Subscriber {
     private SelectedFieldsTree selectedGroupFieldsTree;
     private SelectedFieldsTree selectedConditionsTreeTable;
     private SelectedFieldsTree selectedOrderFieldsTree;
-
-    public void refreshLinkTable() {
-        linksController.getLinkTable().refresh();
-    }
 
     FullQuery fullQuery;
 
@@ -359,7 +355,7 @@ public class MainController implements Subscriber {
         if (selectedItem == null) {
             return;
         }
-        if (selectedItem.getId().equals(getCurrentCTE())) {
+        if (selectedItem.getId().equals(getCurrentCteId())) {
             withoutSave = true;
             int index = getCteTabIndex(selectedItem.getId()) - 1;
             cteTabPane.getSelectionModel().select(index == -1 ? 0 : index);
@@ -405,8 +401,12 @@ public class MainController implements Subscriber {
         return tab;
     }
 
-    public String getCurrentCTE() {
+    public String getCurrentCteId() {
         Tab selectedItem = cteTabPane.getSelectionModel().getSelectedItem();
         return selectedItem == null ? CTE_0 : selectedItem.getId();
+    }
+
+    public OneCte getCurrentCte() {
+        return fullQuery.getCteMap().get(getCurrentCteId());
     }
 }

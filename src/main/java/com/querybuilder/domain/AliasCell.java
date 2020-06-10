@@ -130,7 +130,7 @@ public class AliasCell extends TableCell<AliasRow, String> {
             );
         } else {
             // get from query
-            OneCte cte = controller.getFullQuery().getCteMap().get(controller.getCurrentCTE());
+            OneCte cte = controller.getCurrentCte();
             for (TableRow item : cte.getUnionMap().get(columnName).getFieldTable().getItems()) {
                 items.add(TableRow.tableRowFromValue(item));
             }
@@ -166,4 +166,5 @@ public class AliasCell extends TableCell<AliasRow, String> {
         });
         return aliasTableContext;
     }
+
 }
