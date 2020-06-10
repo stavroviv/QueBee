@@ -24,6 +24,7 @@ import java.util.Map;
 
 import static com.querybuilder.utils.Constants.CTE_0;
 import static com.querybuilder.utils.Constants.UNION_0;
+import static com.querybuilder.utils.Utils.notEmptyString;
 
 public class QueryBuilderTest {
 
@@ -33,7 +34,12 @@ public class QueryBuilderTest {
 
     @NotNull
     private MainController loadQuery(String text) throws Exception {
-        Statement statement = CCJSqlParserUtil.parse(text);
+        Statement statement;
+        if (notEmptyString(text)) {
+            statement = CCJSqlParserUtil.parse(text);
+        } else {
+            statement = new Select();
+        }
 
         URL resource = Utils.class.getResource("/forms/main-form.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(resource);
@@ -118,6 +124,57 @@ public class QueryBuilderTest {
     }
 
     @Test
+    public void loadOrderBy() throws Exception {
+        String text = "SELECT bonus_retail_value, " +
+                "vendor_id " +
+                "FROM crm_bonus_retail " +
+                "UNION ALL " +
+                "SELECT bonus_retail_value, " +
+                "vendor_id " +
+                "FROM crm_bonus_retail " +
+                "ORDER BY vendor_id";
+
+        Select query = loadQuery(text).getFullQuery().getQuery();
+
+        String expected = "SELECT " +
+                "crm_bonus_retail.bonus_retail_value, crm_bonus_retail.vendor_id " +
+                "FROM crm_bonus_retail " +
+                "UNION ALL " +
+                "SELECT crm_bonus_retail.bonus_retail_value, crm_bonus_retail.vendor_id " +
+                "FROM crm_bonus_retail " +
+                "ORDER BY vendor_id";
+        Assert.assertEquals(expected, query.toString());
+    }
+
+    @Test
+    public void loadEmpty() throws Exception {
+        String text = "";
+        Select query = loadQuery(text).getFullQuery().getQuery();
+        Assert.assertNull(query);
+
+        text = "     ";
+        query = loadQuery(text).getFullQuery().getQuery();
+        Assert.assertNull(query);
+    }
+
+    @Test
+    public void loadCondition() throws Exception {
+        String text = "SELECT bonus_retail_value, " +
+                "vendor_id " +
+                "FROM crm_bonus_retail " +
+                "WHERE vendor_id =1";
+
+        Select query = loadQuery(text).getFullQuery().getQuery();
+
+        String expected = "SELECT " +
+                "crm_bonus_retail.bonus_retail_value, " +
+                "crm_bonus_retail.vendor_id " +
+                "FROM crm_bonus_retail " +
+                "WHERE vendor_id = 1";
+        Assert.assertEquals(expected, query.toString());
+    }
+
+    @Test
     public void loadWithFunction() throws Exception {
         String text = "SELECT SUM(bonus_retail_value), " +
                 "vendor_id " +
@@ -177,19 +234,7 @@ public class QueryBuilderTest {
                 "FROM classifiabletexts";
 
         MainController mainController = loadQuery(text);
-        //  FullQuery fullQuery = mainController.getFullQuery();
         Assert.assertEquals(1, mainController.getUnionTabPane().getTabs().size());
-        //  System.out.println(mainController.getUnionTabPane().getTabs().size());
-//        Select query = fullQuery.getQuery();
-//
-//        String expected = "SELECT crm_bonus_retail.bonus_retail_value, " +
-//                "crm_bonus_retail.vendor_id, " +
-//                "crm_bonus_retail.vendor_id2 " +
-//                "FROM crm_bonus_retail " +
-//                "UNION ALL " +
-//                "SELECT crm_access.access_name, NULL, NULL " +
-//                "FROM crm_access";
-//        Assert.assertEquals(expected, query.toString());
     }
 
     @Test

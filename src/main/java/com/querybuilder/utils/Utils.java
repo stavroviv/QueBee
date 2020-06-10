@@ -370,4 +370,14 @@ public class Utils {
             controller.getUnionAliasesController().getAliasTable().getItems().remove(aliasRow);
         }
     }
+
+    public static <T> void loadTableToTable(TableView<T> tableFrom, TableView<T> tableTo) {
+        tableTo.getItems().clear();
+        tableTo.getItems().addAll(tableFrom.getItems());
+    }
+
+    public static boolean notEmptyString(String text) {
+        return text != null && !text.isEmpty() && !text.trim().isEmpty();
+    }
+
 }

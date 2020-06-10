@@ -22,8 +22,7 @@ import javax.swing.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.querybuilder.utils.Utils.getScene;
-import static com.querybuilder.utils.Utils.showErrorMessage;
+import static com.querybuilder.utils.Utils.*;
 
 @Data
 public class QueryBuilder {
@@ -46,7 +45,7 @@ public class QueryBuilder {
 
         String text = getSelectionText(action);
         Statement statement;
-        if (text != null && !text.isEmpty()) {
+        if (notEmptyString(text)) {
             try {
                 statement = CCJSqlParserUtil.parse(text);
             } catch (JSQLParserException exception) {

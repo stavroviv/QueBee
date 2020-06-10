@@ -238,17 +238,20 @@ public class MainController implements Subscriber {
         OneCte cte = getCurrentCte(oldCte);
         if (cteChange) {
             cte.saveAliasTable(unionAliasesController);
+            cte.saveOrderBy(orderController);
         }
         Union union = getCurrentUnion(cte, oldUnion, cteChange);
         union.saveFrom(tableFieldsController);
         union.saveLink(linksController);
         union.saveGroupBy(groupingController);
+        union.saveConditions(conditionsController);
     }
 
     private void showFromBuilder(Tab newCte, Tab newUnion, boolean cteChange) {
         OneCte cte = getCurrentCte(newCte);
         if (cteChange) {
             cte.showAliasTable(unionAliasesController);
+            cte.showOrderBy(orderController);
             CTEPart.load(this);
         }
         Union union = getCurrentUnion(cte, newUnion, false);
@@ -256,6 +259,7 @@ public class MainController implements Subscriber {
         union.showLinks(linksController);
         TreeHelpers.load(this, union);
         union.showGroupBy(groupingController);
+        union.showConditions(conditionsController);
         TreeHelpers.cleanTrees(union);
     }
 
@@ -318,6 +322,7 @@ public class MainController implements Subscriber {
         oneCte.setCteName(cteName);
 
         unionAliasesController.loadAliases(selectBody, oneCte);
+        oneCte.setOrderTableResults(orderController.load(selectBody));
 
         return oneCte;
     }
@@ -326,6 +331,7 @@ public class MainController implements Subscriber {
         union.setTablesView(tableFieldsController.loadFromTables(selectBody));
         union.setLinkTable(linksController.loadLinks(selectBody));
         union.setGroupTableResults(groupingController.loadGroupBy(selectBody));
+        union.setConditionTableResults(conditionsController.load(selectBody));
     }
 
     @FXML
@@ -336,7 +342,7 @@ public class MainController implements Subscriber {
                 true
         );
         sQuery = fullQuery.getQuery();
-        queryBuilder.closeForm(sQuery.toString());
+        queryBuilder.closeForm(sQuery == null ? "" : sQuery.toString());
     }
 
     @FXML

@@ -9,11 +9,11 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.SetOperationList;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.querybuilder.utils.Constants.ORDER_DEFAULT_VALUE;
@@ -61,40 +61,41 @@ public class OrderBy extends AbstractQueryPart {
         setCellFactory(orderFieldsTreeColumn);
     }
 
-    public void load(PlainSelect pSelect) {
-        List<OrderByElement> orderByElements = pSelect.getOrderByElements();
+    public TableView<TableRow> load(SelectBody selectBody) {
+        TableView<TableRow> orderTableResults = new TableView<>();
+        if (selectBody == null) {
+            return orderTableResults;
+        }
+        PlainSelect select;
+        if (selectBody instanceof SetOperationList) {
+            List<SelectBody> selects = ((SetOperationList) selectBody).getSelects();
+            select = (PlainSelect) selects.get(selects.size() - 1);
+        } else {
+            select = (PlainSelect) selectBody;
+        }
+
+        List<OrderByElement> orderByElements = select.getOrderByElements();
         if (orderByElements == null) {
-            return;
+            return orderTableResults;
         }
         orderByElements.forEach(x -> {
             boolean selected = false;
-            for (TreeItem<TableRow> ddd : orderFieldsTree.getRoot().getChildren()) {
-                if (ddd.getValue().getName().equals(x.getExpression().toString())) {
-                    makeSelect(
-                            orderFieldsTree, orderTableResults, ddd, x.isAsc() ? "Ascending" : "Descending"
-                    );
-                    selected = true;
-                    break;
-                }
-            }
-            if (!selected) {
-                TableRow tableRow = new TableRow(x.getExpression().toString());
-                tableRow.setComboBoxValue(x.isAsc() ? "Ascending" : "Descending");
-                orderTableResults.getItems().add(tableRow);
-            }
+//            for (TreeItem<TableRow> ddd : orderFieldsTree.getRoot().getChildren()) {
+//                if (ddd.getValue().getName().equals(x.getExpression().toString())) {
+//                    makeSelect(
+//                            orderFieldsTree, orderTableResults, ddd, x.isAsc() ? "Ascending" : "Descending"
+//                    );
+//                    selected = true;
+//                    break;
+//                }
+//            }
+//            if (!selected) {
+            TableRow tableRow = new TableRow(x.getExpression().toString());
+            tableRow.setComboBoxValue(x.isAsc() ? "Ascending" : "Descending");
+            orderTableResults.getItems().add(tableRow);
+//            }
         });
-    }
-
-    public void save(PlainSelect pSelect) {
-        List<OrderByElement> orderElements = new ArrayList<>();
-        orderTableResults.getItems().forEach(x -> {
-            OrderByElement orderByElement = new OrderByElement();
-            Column column = new Column(x.getName());
-            orderByElement.setExpression(column);
-            orderByElement.setAsc(x.getComboBoxValue().equals("Ascending"));
-            orderElements.add(orderByElement);
-        });
-        pSelect.setOrderByElements(orderElements);
+        return orderTableResults;
     }
 
     @FXML

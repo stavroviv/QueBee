@@ -1,17 +1,21 @@
 package com.querybuilder.domain.qparts;
 
 import com.querybuilder.domain.AliasRow;
+import com.querybuilder.domain.ConditionElement;
 import com.querybuilder.domain.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import lombok.Data;
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParser;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 
 import java.util.*;
@@ -51,7 +55,7 @@ public class FullQuery {
             select.setWithItemsList(withItems);
         }
 
-        return select;
+        return select.toString().equals(EMPTY_SELECT) ? null : select;
     }
 
     private SelectBody getSelectBody(String cte) {
@@ -68,13 +72,13 @@ public class FullQuery {
         while (iterator.hasNext()) {
             union = iterator.next();
             if (oneCte.getUnionMap().size() == 1) {
-                return getPlainSelect(oneCte, union, first);
+                return getPlainSelect(oneCte, union, first, true);
             }
             brackets.add(false);
             UnionOp unionOp = new UnionOp();
             unionOp.setAll(true);
             ops.add(unionOp);
-            selectBodies.add(getPlainSelect(oneCte, union, first));
+            selectBodies.add(getPlainSelect(oneCte, union, first, !iterator.hasNext()));
             first = false;
         }
         ops.remove(ops.size() - 1);
@@ -83,23 +87,51 @@ public class FullQuery {
         return selectBody;
     }
 
-    private PlainSelect getPlainSelect(OneCte cte, String union, boolean first) {
+    private PlainSelect getPlainSelect(OneCte cte, String union, boolean first, boolean last) {
         PlainSelect select = new PlainSelect();
 
         saveAliases(select, cte, union, first);
         saveFromTables(select, cte, union);
         saveGroupBy(select, cte, union);
+        saveConditions(select, cte, union);
+        if (last) {
+            saveOrderBy(select, cte);
+        }
 
         return select;
     }
 
-    private static void saveGroupBy(PlainSelect select, OneCte cte, String union) {
-        saveGrouping(select, cte, union);
+    private void saveConditions(PlainSelect selectBody, OneCte cte, String unionName) {
+        Union union = cte.getUnionMap().get(unionName);
+        TableView<ConditionElement> conditionTableResults = union.getConditionTableResults();
+        if (conditionTableResults.getItems().size() == 0) {
+            selectBody.setWhere(null);
+            return;
+        }
+        StringBuilder where = new StringBuilder();
+        for (ConditionElement item : conditionTableResults.getItems()) {
+            String whereExpr = item.getCondition();
+            if (whereExpr.isEmpty()) {
+                whereExpr = item.getLeftExpression() + item.getExpression() + item.getRightExpression();
+            }
+            where.append(whereExpr).append(" AND ");
+        }
+        Statement stmt = null;
+        try {
+            stmt = CCJSqlParserUtil.parse(
+                    "SELECT * FROM TABLES WHERE " + where.substring(0, where.length() - 4)
+            );
+        } catch (JSQLParserException e) {
+            e.printStackTrace();
+        }
+        Select select = (Select) stmt;
+        Expression whereExpression = ((PlainSelect) select.getSelectBody()).getWhere();
+        selectBody.setWhere(whereExpression);
     }
 
-    private static void saveGrouping(PlainSelect select, OneCte cte, String unionName) {
-        Union union = cte.getUnionMap().get(unionName);
-        TableView<TableRow> groupTableResults = union.getGroupTableResults();
+    private static void saveGroupBy(PlainSelect select, OneCte cte, String union) {
+        Union union1 = cte.getUnionMap().get(union);
+        TableView<TableRow> groupTableResults = union1.getGroupTableResults();
         if (groupTableResults.getItems().isEmpty()) {
             return;
         }
@@ -113,7 +145,7 @@ public class FullQuery {
             Column groupByItem = new Column(item.getName());
             expressions.add(groupByItem);
         }
-        for (TreeItem<TableRow> child : union.getGroupFieldsTree().getRoot().getChildren()) {
+        for (TreeItem<TableRow> child : union1.getGroupFieldsTree().getRoot().getChildren()) {
             if (child.getValue().getName().equals(ALL_FIELDS)) {
                 break;
             }
@@ -211,6 +243,20 @@ public class FullQuery {
             }
         });
         selectBody.setJoins(joins);
+    }
+
+    public void saveOrderBy(PlainSelect select, OneCte cte) {
+        List<OrderByElement> orderElements = new ArrayList<>();
+
+        cte.getOrderTableResults().getItems().forEach(x -> {
+            OrderByElement orderByElement = new OrderByElement();
+            Column column = new Column(x.getName());
+            orderByElement.setExpression(column);
+            orderByElement.setAsc(x.getComboBoxValue().equals("Ascending"));
+            orderElements.add(orderByElement);
+        });
+
+        select.setOrderByElements(orderElements);
     }
 
 }

@@ -14,4 +14,6 @@ public class Constants {
     public static final String UNION_0 = "UNION_0";
 
     public static final String NULL_VALUE = "NULL";
+
+    public static final String EMPTY_SELECT = "SELECT ";
 }

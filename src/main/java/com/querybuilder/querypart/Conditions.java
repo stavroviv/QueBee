@@ -10,14 +10,10 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
 
 import static com.querybuilder.utils.Constants.DATABASE_TABLE_ROOT;
 import static com.querybuilder.utils.Utils.doubleClick;
@@ -105,21 +101,23 @@ public class Conditions extends AbstractQueryPart {
         });
     }
 
-    public void load(PlainSelect pSelect) {
+    public TableView<ConditionElement> load(PlainSelect pSelect) {
+        TableView<ConditionElement> conditionTableResults = new TableView<>();
         Expression where = pSelect.getWhere();
         if (where == null) {
-            return;
+            return conditionTableResults;
         }
         if (where instanceof AndExpression) {
-            parseAndExpression((AndExpression) where);
+            parseAndExpression(conditionTableResults, (AndExpression) where);
         } else {
             ConditionElement conditionElement = new ConditionElement(where.toString());
             conditionElement.setCustom(!(where instanceof ComparisonOperator));
             conditionTableResults.getItems().add(conditionElement);
         }
+        return conditionTableResults;
     }
 
-    private void parseAndExpression(AndExpression where) {
+    private void parseAndExpression(TableView<ConditionElement> conditionTableResults, AndExpression where) {
         ConditionElement conditionElement = new ConditionElement(where.getRightExpression().toString());
         conditionTableResults.getItems().add(0, conditionElement);
 
@@ -132,32 +130,6 @@ public class Conditions extends AbstractQueryPart {
         }
         ConditionElement condition = new ConditionElement(leftExpression.toString());
         conditionTableResults.getItems().add(0, condition);
-    }
-
-    public void save(PlainSelect selectBody) {
-        if (conditionTableResults.getItems().size() == 0) {
-            selectBody.setWhere(null);
-            return;
-        }
-        StringBuilder where = new StringBuilder();
-        for (ConditionElement item : conditionTableResults.getItems()) {
-            String whereExpr = item.getCondition();
-            if (whereExpr.isEmpty()) {
-                whereExpr = item.getLeftExpression() + item.getExpression() + item.getRightExpression();
-            }
-            where.append(whereExpr).append(" AND ");
-        }
-        Statement stmt = null;
-        try {
-            stmt = CCJSqlParserUtil.parse(
-                    "SELECT * FROM TABLES WHERE " + where.substring(0, where.length() - 4)
-            );
-        } catch (JSQLParserException e) {
-            e.printStackTrace();
-        }
-        Select select = (Select) stmt;
-        Expression whereExpression = ((PlainSelect) select.getSelectBody()).getWhere();
-        selectBody.setWhere(whereExpression);
     }
 
 }

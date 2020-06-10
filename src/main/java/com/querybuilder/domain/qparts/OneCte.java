@@ -3,6 +3,7 @@ package com.querybuilder.domain.qparts;
 import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.AliasRow;
 import com.querybuilder.domain.TableRow;
+import com.querybuilder.querypart.OrderBy;
 import com.querybuilder.querypart.UnionAliases;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -14,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static com.querybuilder.utils.Constants.UNION_0;
+import static com.querybuilder.utils.Utils.loadTableToTable;
 
 @Data
 public class OneCte {
@@ -47,8 +49,7 @@ public class OneCte {
         }
         aliasTable.getItems().addAll(controller.getAliasTable().getItems());
 
-        unionTable.getItems().clear();
-        unionTable.getItems().addAll(controller.getUnionTable().getItems());
+        loadTableToTable(controller.getUnionTable(), unionTable);
     }
 
     public void showAliasTable(UnionAliases controller) {
@@ -59,8 +60,15 @@ public class OneCte {
         }
         controller.getAliasTable().getItems().addAll(aliasTable.getItems());
 
-        controller.getUnionTable().getItems().clear();
-        controller.getUnionTable().getItems().addAll(unionTable.getItems());
+        loadTableToTable(unionTable, controller.getUnionTable());
+    }
+
+    public void saveOrderBy(OrderBy controller) {
+        loadTableToTable(controller.getOrderTableResults(), orderTableResults);
+    }
+
+    public void showOrderBy(OrderBy controller) {
+        loadTableToTable(orderTableResults, controller.getOrderTableResults());
     }
 
 }
