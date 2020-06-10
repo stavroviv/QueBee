@@ -229,8 +229,7 @@ public class UnionAliases extends AbstractQueryPart {
     }
 
     @FXML
-    protected void addUnionQuery(ActionEvent event) {
-        // TODO что-то не так с добавлением UNION не в первом CTE
+    public void addNewUnion(ActionEvent event) {
         OneCte cte = mainController.getFullQuery().getCteMap().get(mainController.getCurrentCTE());
         cte.setCurMaxUnion(cte.getCurMaxUnion() + 1);
         String key = "UNION_" + cte.getCurMaxUnion();

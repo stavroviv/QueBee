@@ -24,7 +24,7 @@
                         </columnResizePolicy>
                     </TableView>
                     <Button contentDisplay="GRAPHIC_ONLY" layoutX="10.0" layoutY="3.0" minHeight="25.0" minWidth="25.0"
-                            mnemonicParsing="false" onAction="#addUnionQuery" prefHeight="25.0" prefWidth="25.0"
+                            mnemonicParsing="false" onAction="#addNewUnion" prefHeight="25.0" prefWidth="25.0"
                             text="Button">
                         <graphic>
                             <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">

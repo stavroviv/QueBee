@@ -5,6 +5,7 @@ import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.domain.qparts.FullQuery;
 import com.querybuilder.domain.qparts.OneCte;
+import com.querybuilder.domain.qparts.Union;
 import com.querybuilder.eventbus.Subscriber;
 import com.querybuilder.utils.Utils;
 import javafx.embed.swing.JFXPanel;
@@ -130,6 +131,37 @@ public class QueryBuilderTest {
                 "FROM crm_bonus_retail " +
                 "GROUP BY crm_bonus_retail.vendor_id";
         Assert.assertEquals(expected, query.toString());
+    }
+
+    @Test
+    public void addCteAndUnion() throws Exception {
+        String text = "SELECT bonus_retail_value, " +
+                "vendor_id " +
+                "FROM crm_bonus_retail " +
+                "UNION ALL " +
+                "SELECT crm_access.access_name, " +
+                "vendor_id " +
+                "FROM crm_access";
+
+        MainController mainController = loadQuery(text);
+
+        mainController.addCTEClick(null);
+        mainController.getUnionAliasesController().addNewUnion(null);
+        mainController.getUnionAliasesController().addNewUnion(null);
+
+        mainController.getCteTabPane().getSelectionModel().select(1);
+        mainController.getUnionTabPane().getSelectionModel().select(0);
+        mainController.getUnionTabPane().getSelectionModel().select(1);
+        mainController.getUnionTabPane().getSelectionModel().select(0);
+
+        FullQuery fullQuery = mainController.getFullQuery();
+
+        Map<String, Union> cte_0 = fullQuery.getCteMap().get("CTE_0").getUnionMap();
+        TableView<TableRow> fieldTable = cte_0.get(UNION_0).getFieldTable();
+        Assert.assertEquals(2, fieldTable.getItems().size());
+
+        TableView<TableRow> fieldTable1 = cte_0.get("UNION_1").getFieldTable();
+        Assert.assertEquals(2, fieldTable1.getItems().size());
     }
 
     @Test

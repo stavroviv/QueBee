@@ -118,7 +118,11 @@ public class MainController implements Subscriber {
             if (oldTab == null || newTab == null) {
                 return;
             }
-            saveLoadPart(null, oldTab, null, newTab, false);
+            Tab curCte = null;
+            if (cteTabPane.getTabs().size() > 1) {
+                curCte = cteTabPane.getSelectionModel().getSelectedItem();
+            }
+            saveLoadPart(curCte, oldTab, curCte, newTab, false);
         });
 
         setUnionAndCTETabPaneVisibility();
