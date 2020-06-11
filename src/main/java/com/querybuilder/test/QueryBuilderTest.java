@@ -9,6 +9,7 @@ import com.querybuilder.domain.qparts.OneCte;
 import com.querybuilder.domain.qparts.Union;
 import com.querybuilder.eventbus.Subscriber;
 import com.querybuilder.utils.Utils;
+import javafx.collections.ObservableList;
 import javafx.embed.swing.JFXPanel;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.TableView;
@@ -71,6 +72,68 @@ public class QueryBuilderTest {
         Select query = fullQuery.getQuery();
 
         Assert.assertEquals(text, query.toString());
+    }
+
+    @Test
+    public void queryUnionDistinctSave() throws Exception {
+        String text = "SELECT crm_bonus_retail.bonus_retail_value AS bonus, " +
+                "crm_bonus_retail.vendor_id " +
+                "FROM crm_bonus_retail " +
+                "UNION ALL " +
+                "SELECT crm_access.access_name, " +
+                "crm_access.access_comment " +
+                "FROM crm_access, crm_advance_payment";
+
+        FullQuery fullQuery = loadQuery(text).getFullQuery();
+        OneCte oneCte = fullQuery.getCteMap().get(CTE_0);
+        for (TableRow item : oneCte.getUnionTable().getItems()) {
+            item.setDistinct(true);
+        }
+
+        Select query = fullQuery.getQuery();
+
+        String expected = "SELECT crm_bonus_retail.bonus_retail_value AS bonus, " +
+                "crm_bonus_retail.vendor_id " +
+                "FROM crm_bonus_retail " +
+                "UNION " +
+                "SELECT crm_access.access_name, " +
+                "crm_access.access_comment " +
+                "FROM crm_access, crm_advance_payment";
+        Assert.assertEquals(expected, query.toString());
+    }
+
+    @Test
+    public void queryUnionDistinctLoad() throws Exception {
+        String text = "SELECT crm_bonus_retail.bonus_retail_value AS bonus, " +
+                "crm_bonus_retail.vendor_id " +
+                "FROM crm_bonus_retail " +
+                "UNION " +
+                "SELECT crm_access.access_name, " +
+                "crm_access.access_comment " +
+                "FROM crm_access, crm_advance_payment " +
+                "UNION ALL " +
+                "SELECT crm_access.access_name, " +
+                "crm_access.access_comment " +
+                "FROM crm_access, crm_advance_payment " +
+                "UNION ALL " +
+                "SELECT crm_access.access_name, " +
+                "crm_access.access_comment " +
+                "FROM crm_access, crm_advance_payment " +
+                "UNION " +
+                "SELECT crm_access.access_name, " +
+                "crm_access.access_comment " +
+                "FROM crm_access, crm_advance_payment";
+
+        FullQuery fullQuery = loadQuery(text).getFullQuery();
+        OneCte oneCte = fullQuery.getCteMap().get(CTE_0);
+        ObservableList<TableRow> items = oneCte.getUnionTable().getItems();
+
+        Assert.assertFalse(items.get(0).isDistinct());
+        Assert.assertTrue(items.get(1).isDistinct());
+        Assert.assertFalse(items.get(2).isDistinct());
+        Assert.assertFalse(items.get(3).isDistinct());
+
+        Assert.assertEquals(text, fullQuery.getQuery().toString());
     }
 
     @Test

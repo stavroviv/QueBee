@@ -6,7 +6,6 @@ import com.querybuilder.domain.AliasRow;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.domain.qparts.OneCte;
 import com.querybuilder.domain.qparts.Union;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -49,8 +48,8 @@ public class UnionAliases extends AbstractQueryPart {
         aliasTable.getSelectionModel().cellSelectionEnabledProperty().set(true);
 
         unionTableNameColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
-        unionTableDistinctColumn.setCellFactory(tc -> new CheckBoxTableCell<>());
-        unionTableDistinctColumn.setCellValueFactory(data -> new SimpleBooleanProperty(data.getValue().isDistinct()));
+        unionTableDistinctColumn.setCellFactory(CheckBoxTableCell.forTableColumn(unionTableDistinctColumn));
+        unionTableDistinctColumn.setCellValueFactory(new PropertyValueFactory<>("distinct"));
     }
 
     public static TableColumn<AliasRow, String> aliasColumn() {
@@ -90,12 +89,12 @@ public class UnionAliases extends AbstractQueryPart {
             int i = 0;
             for (SelectBody sBody : setOperationList.getSelects()) {
                 String unionName = "UNION_" + i;
-                addUnionColumn(aliasTable, unionTable, unionName, oneCte, mainController);
+                addUnionColumn(aliasTable, unionTable, unionName, oneCte, mainController, getUnionType(setOperationList, i));
                 addAliasColumn(aliasTable, (PlainSelect) sBody, oneCte, unionName);
                 i++;
             }
         } else if (selectBody instanceof PlainSelect || selectBody == null) { // ONE QUERY
-            addUnionColumn(aliasTable, unionTable, FIRST_COLUMN, oneCte, mainController);
+            addUnionColumn(aliasTable, unionTable, FIRST_COLUMN, oneCte, mainController, false);
             PlainSelect pSelect = (PlainSelect) selectBody;
             if (selectBody != null) {
                 addAliasColumn(aliasTable, pSelect, oneCte, FIRST_COLUMN);
@@ -105,6 +104,15 @@ public class UnionAliases extends AbstractQueryPart {
         oneCte.setAliasTable(aliasTable);
         oneCte.setCurMaxUnion(curMaxUnion);
         oneCte.setUnionTable(unionTable);
+    }
+
+    private boolean getUnionType(SetOperationList setOperationList, int i) {
+        if (i == 0) {
+            return false;
+        }
+        List<SetOperation> operations = setOperationList.getOperations();
+        SetOperation setOperation = operations.get(i - 1);
+        return !setOperation.toString().contains("ALL");
     }
 
     private void addAliasColumn(TableView<AliasRow> aliasTable, PlainSelect pSelect, OneCte oneCte, String unionName) {
@@ -199,7 +207,8 @@ public class UnionAliases extends AbstractQueryPart {
 
     public static void addUnionColumn(TableView<AliasRow> aliasTable, TableView<TableRow> unionTable,
                                       String unionName, OneCte oneCte,
-                                      MainController controller) {
+                                      MainController controller,
+                                      boolean distinct) {
         TableColumn<AliasRow, String> newColumn = new TableColumn<>(unionName);
         newColumn.setEditable(true);
         for (AliasRow item : aliasTable.getItems()) {
@@ -221,7 +230,9 @@ public class UnionAliases extends AbstractQueryPart {
         aliasTable.getColumns().add(newColumn);
         oneCte.getUnionColumns().put(unionName, newColumn);
 
-        unionTable.getItems().add(new TableRow(unionName));
+        TableRow unionRow = new TableRow(unionName);
+        unionRow.setDistinct(distinct);
+        unionTable.getItems().add(unionRow);
     }
 
     @FXML
@@ -236,7 +247,7 @@ public class UnionAliases extends AbstractQueryPart {
         Tab tab = mainController.addUnionTabPane(unionName, key);
         activateNewTab(tab, mainController.getUnionTabPane(), mainController);
 
-        addUnionColumn(aliasTable, unionTable, key, cte, mainController);
+        addUnionColumn(aliasTable, unionTable, key, cte, mainController, false);
     }
 
     @FXML

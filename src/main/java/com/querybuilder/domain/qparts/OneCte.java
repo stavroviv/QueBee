@@ -37,7 +37,7 @@ public class OneCte {
     public OneCte(MainController controller) {
         this();
         aliasTable.getColumns().add(UnionAliases.aliasColumn());
-        UnionAliases.addUnionColumn(aliasTable, unionTable, UNION_0, this, controller);
+        UnionAliases.addUnionColumn(aliasTable, unionTable, UNION_0, this, controller, false);
     }
 
     public void saveAliasTable(UnionAliases controller) {

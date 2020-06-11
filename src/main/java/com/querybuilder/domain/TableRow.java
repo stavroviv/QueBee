@@ -1,5 +1,6 @@
 package com.querybuilder.domain;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import lombok.Data;
 
@@ -11,7 +12,6 @@ public class TableRow {
     private String name;
     private String alias;
     private String query;
-    private boolean distinct;
     private boolean root;
     private boolean notSelectable;
     private boolean nested;
@@ -47,6 +47,20 @@ public class TableRow {
 
     public SimpleStringProperty comboBoxValueProperty() {
         return comboBoxValue;
+    }
+
+    private SimpleBooleanProperty distinct = new SimpleBooleanProperty();
+
+    public boolean isDistinct() {
+        return distinct.get();
+    }
+
+    public void setDistinct(boolean selected) {
+        this.distinct.set(selected);
+    }
+
+    public SimpleBooleanProperty distinctProperty() {
+        return distinct;
     }
 
 }

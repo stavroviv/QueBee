@@ -7,7 +7,7 @@
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.querybuilder.querypart.FromTables">
 
     <children>
-        <SplitPane dividerPositions="0.31179039301310046, 0.6532751091703056" prefHeight="671.0" prefWidth="1002.0"
+        <SplitPane dividerPositions="0.3180693069306931, 0.6534653465346535" prefHeight="671.0" prefWidth="1002.0"
                    AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
                    AnchorPane.topAnchor="0.0">
             <items>
@@ -23,6 +23,8 @@
                                 <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
                             </columnResizePolicy>
                         </TreeTableView>
+                        <TextField fx:id="searchField" layoutX="10.0" layoutY="3.0" prefHeight="25.0" prefWidth="239.0"
+                                   promptText="Find..." AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="0.0"/>
                     </children>
                 </AnchorPane>
                 <AnchorPane layoutX="10.0" layoutY="10.0" prefHeight="200.0" prefWidth="200.0">

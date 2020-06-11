@@ -19,6 +19,8 @@ import static com.querybuilder.utils.Utils.doubleClick;
 import static com.querybuilder.utils.Utils.removeEmptyAliases;
 
 public class AliasCell extends TableCell<AliasRow, String> {
+    private static final String DELIMITER = "#####";
+
     private MainController controller;
     private String columnName;
 
@@ -29,12 +31,39 @@ public class AliasCell extends TableCell<AliasRow, String> {
         aliasColumn.setOnEditCommit(t -> {
             int row = t.getTablePosition().getRow();
             AliasRow currentRow = t.getTableView().getItems().get(row);
-            String[] newValue = t.getNewValue().split("_");
-            currentRow.getValues().put(columnName, newValue[0]);
-            currentRow.getIds().put(columnName, Long.parseLong(newValue[1]));
+            String[] newValue = t.getNewValue().split(DELIMITER);
+
+            if (newValue.length == 1) {
+                addNewAlias(t, currentRow);
+            } else {
+                currentRow.getValues().put(columnName, newValue[0]);
+                currentRow.getIds().put(columnName, Long.parseLong(newValue[1]));
+            }
 
             removeEmptyAliases(controller);
         });
+    }
+
+    private void addNewAlias(TableColumn.CellEditEvent<AliasRow, String> t, AliasRow currentRow) {
+        // TODO совместить логику с public void addAlias(TableRow newField) {
+        OneCte cte = controller.getCurrentCte();
+
+        Long currentId = currentRow.getIds().get(columnName);
+        ObservableList<AliasRow> items = controller.getUnionAliasesController().getAliasTable().getItems();
+
+        AliasRow aliasRow = new AliasRow(t.getOldValue(), t.getOldValue());
+        for (String s : cte.getUnionMap().keySet()) {
+            if (s.equals(columnName)) {
+                aliasRow.getIds().put(columnName, currentId);
+                aliasRow.getValues().put(s, t.getOldValue());
+            } else {
+                aliasRow.getValues().put(s, EMPTY_UNION_VALUE);
+            }
+        }
+        items.add(aliasRow);
+
+        currentRow.getValues().put(columnName, EMPTY_UNION_VALUE);
+        currentRow.getIds().remove(columnName);
     }
 
     @Override
@@ -64,16 +93,18 @@ public class AliasCell extends TableCell<AliasRow, String> {
 
         Button clearButton = new Button("x");
         clearButton.setAlignment(Pos.CENTER_RIGHT);
-        clearButton.setOnMouseClicked(event -> {
-            commitEdit(EMPTY_UNION_VALUE);
-            if (aliasPopup != null) {
-                aliasPopup.hide();
-            }
-        });
+        clearButton.setOnMouseClicked(event -> clearField());
         pane.getChildren().add(clearButton);
 
         setGraphic(pane);
         textField.selectAll();
+    }
+
+    private void clearField() {
+        commitEdit(EMPTY_UNION_VALUE);
+        if (aliasPopup != null) {
+            aliasPopup.hide();
+        }
     }
 
     private PopupControl aliasPopup;
@@ -159,7 +190,7 @@ public class AliasCell extends TableCell<AliasRow, String> {
                 }
             }
 
-            commitEdit(selectedItem.getName() + "_" + selectedItem.getId());
+            commitEdit(selectedItem.getName() + DELIMITER + selectedItem.getId());
             aliasPopup.hide();
 
             controller.getUnionAliasesController().getAliasTable().refresh();

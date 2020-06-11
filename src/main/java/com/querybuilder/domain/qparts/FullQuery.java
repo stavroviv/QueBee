@@ -4,6 +4,7 @@ import com.querybuilder.domain.AliasRow;
 import com.querybuilder.domain.ConditionElement;
 import com.querybuilder.domain.LinkElement;
 import com.querybuilder.domain.TableRow;
+import javafx.collections.ObservableList;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import lombok.Data;
@@ -77,7 +78,7 @@ public class FullQuery {
             }
             brackets.add(false);
             UnionOp unionOp = new UnionOp();
-            unionOp.setAll(true);
+            unionOp.setAll(!isDistinct(oneCte, union));
             ops.add(unionOp);
             selectBodies.add(getPlainSelect(oneCte, union, first, !iterator.hasNext()));
             first = false;
@@ -86,6 +87,21 @@ public class FullQuery {
         selectBody.setBracketsOpsAndSelects(brackets, selectBodies, ops);
 
         return selectBody;
+    }
+
+    private boolean isDistinct(OneCte oneCte, String union) {
+        ObservableList<TableRow> items = oneCte.getUnionTable().getItems();
+        if (union.equals(items.get(items.size() - 1).getName())) {
+            return false;
+        }
+        int index = 0;
+        for (TableRow item : items) {
+            if (item.getName().equals(union)) {
+                return items.get(index + 1).isDistinct();
+            }
+            index++;
+        }
+        return false;
     }
 
     private PlainSelect getPlainSelect(OneCte cte, String union, boolean first, boolean last) {
