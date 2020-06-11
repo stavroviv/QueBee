@@ -5,6 +5,7 @@ import com.querybuilder.domain.AliasRow;
 import com.querybuilder.domain.SelectedFieldsTree;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.eventbus.Subscriber;
+import com.querybuilder.querypart.FromTables;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -113,9 +114,13 @@ public class Utils {
         });
     }
 
-    public static void setCellFactory(TreeTableColumn<com.querybuilder.domain.TableRow, TableRow> tablesViewColumn) {
+    public static void setCellFactory(TreeTableColumn<com.querybuilder.domain.TableRow, TableRow> tablesViewColumn, FromTables controller) {
         tablesViewColumn.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().getValue()));
-        tablesViewColumn.setCellFactory(ttc -> new CustomCell());
+        tablesViewColumn.setCellFactory(ttc -> new CustomCell(controller));
+    }
+
+    public static void setCellFactory(TreeTableColumn<com.querybuilder.domain.TableRow, TableRow> tablesViewColumn) {
+        setCellFactory(tablesViewColumn, null);
     }
 
     public static ObservableList<String> getColumns(MainController controller, String table, AtomicReference<Boolean> isCte) {
@@ -378,6 +383,10 @@ public class Utils {
 
     public static boolean notEmptyString(String text) {
         return text != null && !text.isEmpty() && !text.trim().isEmpty();
+    }
+
+    public static boolean isEmptySearchText(String newValue) {
+        return newValue.trim().isEmpty() || newValue.length() < 2;
     }
 
 }

@@ -50,6 +50,8 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
     private TreeTableColumn<TableRow, TableRow> databaseTableColumn;
     @FXML
     private TableColumn<TableRow, String> fieldColumn;
+    @FXML
+    private TextField searchField;
 
     @FXML
     @Override
@@ -58,7 +60,7 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
 
         setCellsFactories();
         setListeners();
-        setCellFactory(databaseTableColumn);
+        setCellFactory(databaseTableColumn, this);
 
         fieldTable.setOnMousePressed(e -> {
             if (doubleClick(e)) {
@@ -69,7 +71,10 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
         CustomEventBus.register(this);
     }
 
+    private DBTables dbStructure;
+
     public void loadDbStructureToTree(DBTables dbStructure) {
+        this.dbStructure = dbStructure;
         databaseTableView.setRoot(new TreeItem<>());
         databaseTableView.getRoot().getChildren().add(dbStructure.getRoot());
     }
@@ -92,13 +97,17 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
                 return;
             }
             TreeItem<TableRow> selectedItem = databaseTableView.getSelectionModel().getSelectedItem();
-            String parent = selectedItem.getParent().getValue().getName();
+            TableRow parent = selectedItem.getParent().getValue();
+            if (parent == null) {
+                return;
+            }
+            String parentName = parent.getName();
             String field = selectedItem.getValue().getName();
-            if (DATABASE_TABLE_ROOT.equals(parent) || CTE_ROOT.equals(parent)) {
+            if (DATABASE_TABLE_ROOT.equals(parentName) || CTE_ROOT.equals(parentName)) {
                 addTablesRow(mainController, field);
             } else {
-                addTablesRow(mainController, parent);
-                addFieldRow(parent + "." + field);
+                addTablesRow(mainController, parentName);
+                addFieldRow(parentName + "." + field);
             }
         });
 
@@ -107,7 +116,11 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
                 return;
             }
             TreeItem<TableRow> selectedItem = tablesView.getSelectionModel().getSelectedItem();
-            String parent = selectedItem.getParent().getValue().getName();
+            TableRow value = selectedItem.getParent().getValue();
+            if (value == null) {
+                return;
+            }
+            String parent = value.getName();
             String field = selectedItem.getValue().getName();
             if (!TABLES_ROOT.equals(parent)) {
                 addFieldRow(parent + "." + field);
@@ -122,6 +135,66 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
                 applyChange(selectedFieldTrees, selectedFieldsTree -> selectedFieldsTree.applyChangesString(change));
             }
         });
+
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            setFilter(newValue);
+        });
+    }
+
+    private void setFilter(String newValue) {
+        if (isEmptySearchText(newValue)) {
+            addTableElements(dbStructure.getRoot());
+            return;
+        }
+
+        TableRow tablesRoot = new TableRow(DATABASE_TABLE_ROOT);
+        tablesRoot.setRoot(true);
+        TreeItem<TableRow> root = new TreeItem<>(tablesRoot);
+        root.setExpanded(true);
+
+        ObservableList<TreeItem<TableRow>> children = dbStructure.getRoot().getChildren();
+        for (TreeItem<TableRow> table : children) {
+            boolean found = false;
+            TableRow tableRow = new TableRow(table.getValue().getName());
+            tableRow.setRoot(true);
+            TreeItem<TableRow> foundTable = new TreeItem<>(tableRow);
+            foundTable.setExpanded(true);
+
+            if (table.getValue().getName().contains(newValue)) {
+                found = true;
+            }
+            for (TreeItem<TableRow> field : table.getChildren()) {
+                if (!field.getValue().getName().contains(newValue)) {
+                    continue;
+                }
+                TableRow tableRow2 = new TableRow(field.getValue().getName());
+                TreeItem<TableRow> foundField = new TreeItem<>(tableRow2);
+                foundTable.getChildren().add(foundField);
+                found = true;
+            }
+            if (found) {
+                root.getChildren().add(foundTable);
+            }
+        }
+
+        addTableElements(root);
+    }
+
+    private void addTableElements(TreeItem<TableRow> newRoot) {
+        ObservableList<TreeItem<TableRow>> children = databaseTableView.getRoot().getChildren();
+        for (TreeItem<TableRow> child : children) {
+            if (child.getValue().getName().equals(DATABASE_TABLE_ROOT)) {
+                databaseTableView.getRoot().getChildren().remove(child);
+                break;
+            }
+        }
+        children.add(newRoot);
+        databaseTableView.refresh();
+    }
+
+    @FXML
+    public void clearSearch() {
+        searchField.setText("");
     }
 
     private void setCellsFactories() {

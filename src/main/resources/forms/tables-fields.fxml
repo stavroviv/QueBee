@@ -23,8 +23,18 @@
                                 <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
                             </columnResizePolicy>
                         </TreeTableView>
-                        <TextField fx:id="searchField" layoutX="10.0" layoutY="3.0" prefHeight="25.0" prefWidth="239.0"
-                                   promptText="Find..." AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="0.0"/>
+                        <TextField fx:id="searchField" layoutX="10.0" layoutY="3.0" prefHeight="25.0" prefWidth="218.0"
+                                   promptText="Find..." AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="25.0"/>
+                        <Button layoutX="229.0" layoutY="3.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false"
+                                onAction="#clearSearch" prefHeight="25.0" prefWidth="25.0" AnchorPane.rightAnchor="0.0">
+                            <graphic>
+                                <ImageView fitHeight="14.0" fitWidth="14.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../images/tbglacti.png"/>
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
                     </children>
                 </AnchorPane>
                 <AnchorPane layoutX="10.0" layoutY="10.0" prefHeight="200.0" prefWidth="200.0">
