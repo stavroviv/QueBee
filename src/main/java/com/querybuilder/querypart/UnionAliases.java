@@ -69,8 +69,8 @@ public class UnionAliases extends AbstractQueryPart {
             TablePosition<AliasRow, String> pos = event.getTablePosition();
             String newFullName = event.getNewValue();
             int row = pos.getRow();
-            AliasRow person = event.getTableView().getItems().get(row);
-            person.setAlias(newFullName);
+            AliasRow alias = event.getTableView().getItems().get(row);
+            alias.setAlias(newFullName);
         });
         return aliasFieldColumn;
     }

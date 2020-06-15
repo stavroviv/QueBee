@@ -47,7 +47,7 @@ public class FullQuery {
                 break;
             }
             WithItem cteBody = new WithItem();
-            cteBody.setName(cte);
+            cteBody.setName(cteMap.get(cte).getCteName());
             cteBody.setSelectBody(getSelectBody(cte));
             withItems.add(cteBody);
 

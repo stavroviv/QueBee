@@ -54,6 +54,15 @@ public class Utils {
         showErrorMessage(exception, "Parse query error");
     }
 
+    public static void showErrorMessage(String text, String header) {
+        JOptionPane.showMessageDialog(
+                null,
+                text,
+                header,
+                JOptionPane.ERROR_MESSAGE
+        );
+    }
+
     private static String getMessage(Exception exception) {
         StringBuilder result = new StringBuilder();
         if (exception instanceof JSQLParserException) {

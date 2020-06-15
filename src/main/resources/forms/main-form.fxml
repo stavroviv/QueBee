@@ -4,8 +4,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0"
-            prefWidth="900.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1"
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0"
+            prefWidth="1000.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.querybuilder.controllers.MainController">
 
     <children>
@@ -113,6 +113,30 @@
                             <content>
                                 <AnchorPane prefHeight="200.0" prefWidth="200.0">
                                     <children>
+                                        <Button fx:id="cteUpButton" layoutX="100.0" layoutY="8.0" minHeight="25.0"
+                                                minWidth="25.0" mnemonicParsing="false" prefHeight="25.0"
+                                                prefWidth="25.0">
+                                            <graphic>
+                                                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true"
+                                                           preserveRatio="true">
+                                                    <image>
+                                                        <Image url="@../images/moveup.png"/>
+                                                    </image>
+                                                </ImageView>
+                                            </graphic>
+                                        </Button>
+                                        <Button fx:id="cteDownButton" layoutX="130.0" layoutY="8.0" minHeight="25.0"
+                                                minWidth="25.0" mnemonicParsing="false" prefHeight="25.0"
+                                                prefWidth="25.0">
+                                            <graphic>
+                                                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true"
+                                                           preserveRatio="true">
+                                                    <image>
+                                                        <Image url="@../images/movedown.png"/>
+                                                    </image>
+                                                </ImageView>
+                                            </graphic>
+                                        </Button>
                                         <Button contentDisplay="GRAPHIC_ONLY" layoutX="11.0" layoutY="8.0"
                                                 minHeight="25.0" minWidth="25.0" mnemonicParsing="false"
                                                 onAction="#addCTEClick" prefHeight="25.0" prefWidth="25.0"
@@ -151,8 +175,8 @@
                                                 </ImageView>
                                             </graphic>
                                         </Button>
-                                        <TableView fx:id="queryCteTable" layoutY="40.0" prefHeight="470.0"
-                                                   prefWidth="773.0" AnchorPane.bottomAnchor="0.0"
+                                        <TableView fx:id="queryCteTable" editable="true" layoutY="40.0"
+                                                   prefHeight="470.0" prefWidth="773.0" AnchorPane.bottomAnchor="0.0"
                                                    AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0"
                                                    AnchorPane.topAnchor="40.0">
                                             <columns>

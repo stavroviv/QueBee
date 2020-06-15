@@ -41,10 +41,7 @@ public class MainController implements Subscriber {
     private TabPane unionTabPane;
     @FXML
     private Spinner<Integer> topSpinner;
-    @FXML
-    private TableView<CteRow> queryCteTable;
-    @FXML
-    private TableColumn<String, String> queryCteColumn;
+
     @FXML
     private Tab linkTablesPane;
 
@@ -284,8 +281,9 @@ public class MainController implements Subscriber {
 
     private void loadQueryPart(String cteName, int id, SelectBody selectBody) {
         OneCte oneCte = loadCteData(cteName, selectBody);
-        addCteTabPane(cteName, "CTE_" + id);
-        queryCteTable.getItems().add(new CteRow(cteName, "CTE_" + id));
+        String cteId = "CTE_" + id;
+        addCteTabPane(cteName, cteId);
+        queryCteTable.getItems().add(new CteRow(cteName, cteId));
         curMaxCTE++;
 
         int index = 0;
@@ -307,7 +305,7 @@ public class MainController implements Subscriber {
         }
         oneCte.setUnionMap(unionMap);
 
-        fullQuery.getCteMap().put(cteName, oneCte);
+        fullQuery.getCteMap().put(cteId, oneCte);
     }
 
     private OneCte loadCteData(String cteName, SelectBody selectBody) {
@@ -353,6 +351,30 @@ public class MainController implements Subscriber {
     private boolean withoutSave;
 
     @FXML
+    private TableView<CteRow> queryCteTable;
+    @FXML
+    private TableColumn<CteRow, String> queryCteColumn;
+    @FXML
+    private Button cteUpButton;
+    @FXML
+    private Button cteDownButton;
+
+    private int curMaxCTE; // индекс максимального СTE, нумерация начинается с 0
+
+    @FXML
+    public void addCTEClick(ActionEvent actionEvent) {
+        String key = "CTE_" + curMaxCTE;
+        fullQuery.getCteMap().put(key, new OneCte(this));
+
+        Tab newTab = addCteTabPane(key, key);
+        activateNewTab(newTab, cteTabPane, this);
+
+        queryCteTable.getItems().add(new CteRow(key, key));
+
+        curMaxCTE++;
+    }
+
+    @FXML
     public void removeCTEClick(ActionEvent actionEvent) {
         if (queryCteTable.getItems().size() == 1) {
             return;
@@ -382,23 +404,9 @@ public class MainController implements Subscriber {
         return null;
     }
 
-    private int curMaxCTE; // индекс максимального СTE, нумерация начинается с 0
-
     @FXML
     private Tab tableAndFieldsTab;
 
-    @FXML
-    public void addCTEClick(ActionEvent actionEvent) {
-        String key = "CTE_" + curMaxCTE;
-        fullQuery.getCteMap().put(key, new OneCte(this));
-
-        Tab newTab = addCteTabPane(key, key);
-        activateNewTab(newTab, cteTabPane, this);
-
-        queryCteTable.getItems().add(new CteRow(key, key));
-
-        curMaxCTE++;
-    }
 
     private Tab addCteTabPane(String name, String id) {
         Tab tab = new Tab(name);

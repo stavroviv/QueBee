@@ -32,6 +32,10 @@ public class OrderBy extends AbstractQueryPart {
     private TableColumn<TableRow, String> orderTableResultsFieldColumn;
     @FXML
     private TableColumn<TableRow, String> orderTableResultsSortingColumn;
+    @FXML
+    private Button orderUpButton;
+    @FXML
+    private Button orderDownButton;
 
     @Override
     public void initialize() {
@@ -97,11 +101,6 @@ public class OrderBy extends AbstractQueryPart {
         });
         return orderTableResults;
     }
-
-    @FXML
-    private Button orderUpButton;
-    @FXML
-    private Button orderDownButton;
 
     @FXML
     protected void orderUp(ActionEvent event) {

@@ -2,12 +2,14 @@ package com.querybuilder.test;
 
 import com.querybuilder.QueryBuilder;
 import com.querybuilder.controllers.MainController;
+import com.querybuilder.domain.CteRow;
 import com.querybuilder.domain.LinkElement;
 import com.querybuilder.domain.TableRow;
 import com.querybuilder.domain.qparts.FullQuery;
 import com.querybuilder.domain.qparts.OneCte;
 import com.querybuilder.domain.qparts.Union;
 import com.querybuilder.eventbus.Subscriber;
+import com.querybuilder.querypart.CTEPart;
 import com.querybuilder.utils.Utils;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.JFXPanel;
@@ -72,6 +74,56 @@ public class QueryBuilderTest {
         Select query = fullQuery.getQuery();
 
         Assert.assertEquals(text, query.toString());
+    }
+
+    @Test
+    public void queryWithCte() throws Exception {
+        String text = "WITH test AS (SELECT crm_bonus_retail.bonus_retail_value AS bonus, " +
+                "crm_bonus_retail.vendor_id, " +
+                "crm_bonus_retail.bonus_retail_id, " +
+                "crm_bonus_retail.bonus_retail_creation_time AS bonus_retail " +
+                "FROM crm_bonus_retail " +
+                "LEFT JOIN crm_access ON crm_bonus_retail.invoice_id <= crm_access.invoice_id " +
+                "LEFT JOIN crm_test ON crm_bonus_retail.invoice_id = crm_test.invoice_id) " +
+                "SELECT test.bonus FROM test WHERE test.vendor_id = 2 ORDER BY test.vendor_id";
+
+        MainController mainController = loadQuery(text);
+        FullQuery fullQuery = mainController.getFullQuery();
+
+        CteRow cteRow = mainController.getQueryCteTable().getItems().get(0);
+        CTEPart.setNewName(mainController, cteRow, "test", "test2");
+
+        Select query = fullQuery.getQuery();
+        String expected = "WITH test2 AS (SELECT crm_bonus_retail.bonus_retail_value AS bonus, " +
+                "crm_bonus_retail.vendor_id, " +
+                "crm_bonus_retail.bonus_retail_id, " +
+                "crm_bonus_retail.bonus_retail_creation_time AS bonus_retail " +
+                "FROM crm_bonus_retail " +
+                "LEFT JOIN crm_access ON crm_bonus_retail.invoice_id <= crm_access.invoice_id " +
+                "LEFT JOIN crm_test ON crm_bonus_retail.invoice_id = crm_test.invoice_id) " +
+                "SELECT test2.bonus FROM test2 WHERE test2.vendor_id = 2 ORDER BY test2.vendor_id";
+        Assert.assertEquals(expected, query.toString());
+    }
+
+    @Test
+    public void queryWithCteIncorrectName() throws Exception {
+        String text = "WITH test AS (SELECT crm_bonus_retail.bonus_retail_value AS bonus, " +
+                "crm_bonus_retail.vendor_id, " +
+                "crm_bonus_retail.bonus_retail_id, " +
+                "crm_bonus_retail.bonus_retail_creation_time AS bonus_retail " +
+                "FROM crm_bonus_retail " +
+                "LEFT JOIN crm_access ON crm_bonus_retail.invoice_id <= crm_access.invoice_id " +
+                "LEFT JOIN crm_test ON crm_bonus_retail.invoice_id = crm_test.invoice_id) " +
+                "SELECT test.bonus FROM test WHERE test.vendor_id = 2 ORDER BY test.vendor_id";
+
+        MainController mainController = loadQuery(text);
+        CteRow cteRow = mainController.getQueryCteTable().getItems().get(0);
+
+        try {
+            CTEPart.setNewName(mainController, cteRow, "test", "23@");
+        } catch (Exception e) {
+            Assert.assertEquals("Incorrect new name: 23@", e.getMessage());
+        }
     }
 
     @Test
