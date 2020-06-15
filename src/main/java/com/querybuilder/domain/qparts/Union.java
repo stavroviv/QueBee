@@ -15,7 +15,8 @@ import lombok.Data;
 import static com.querybuilder.utils.Utils.loadTableToTable;
 
 @Data
-public class Union {
+public class Union implements Orderable {
+    private Integer order;
     private TreeTableView<TableRow> tablesView = new TreeTableView<>();
     private TableView<TableRow> fieldTable = new TableView<>();
 

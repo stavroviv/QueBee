@@ -280,7 +280,7 @@ public class MainController implements Subscriber {
     }
 
     private void loadQueryPart(String cteName, int id, SelectBody selectBody) {
-        OneCte oneCte = loadCteData(cteName, selectBody);
+        OneCte oneCte = loadCteData(cteName, selectBody, id);
         String cteId = "CTE_" + id;
         addCteTabPane(cteName, cteId);
         queryCteTable.getItems().add(new CteRow(cteName, cteId));
@@ -290,7 +290,7 @@ public class MainController implements Subscriber {
         Map<String, Union> unionMap = oneCte.getUnionMap();
 
         if (selectBody instanceof PlainSelect) {
-            loadUnionData(unionMap.get(UNION_0), (PlainSelect) selectBody);
+            loadUnionData(unionMap.get(UNION_0), 0, (PlainSelect) selectBody);
         } else if (selectBody instanceof SetOperationList) {
             for (SelectBody union : ((SetOperationList) selectBody).getSelects()) {
                 String key = "UNION_" + index;
@@ -298,7 +298,7 @@ public class MainController implements Subscriber {
                 if (id == 0 && index > 0) {
                     addUnionTabPane(key, key);
                 }
-                loadUnionData(unionMap.get(key), (PlainSelect) union);
+                loadUnionData(unionMap.get(key), index, (PlainSelect) union);
                 index++;
             }
 
@@ -308,9 +308,10 @@ public class MainController implements Subscriber {
         fullQuery.getCteMap().put(cteId, oneCte);
     }
 
-    private OneCte loadCteData(String cteName, SelectBody selectBody) {
+    private OneCte loadCteData(String cteName, SelectBody selectBody, int order) {
         OneCte oneCte = new OneCte();
         oneCte.setCteName(cteName);
+        oneCte.setOrder(order);
 
         unionAliasesController.loadAliases(selectBody, oneCte);
         oneCte.setOrderTableResults(orderController.load(selectBody));
@@ -318,7 +319,8 @@ public class MainController implements Subscriber {
         return oneCte;
     }
 
-    private void loadUnionData(Union union, PlainSelect selectBody) {
+    private void loadUnionData(Union union, Integer order, PlainSelect selectBody) {
+        union.setOrder(order);
         union.setTablesView(tableFieldsController.loadFromTables(selectBody));
         union.setLinkTable(linksController.loadLinks(selectBody));
         union.setGroupTableResults(groupingController.loadGroupBy(selectBody));

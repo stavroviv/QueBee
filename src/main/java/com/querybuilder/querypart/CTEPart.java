@@ -4,8 +4,6 @@ import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.*;
 import com.querybuilder.domain.qparts.OneCte;
 import com.querybuilder.domain.qparts.Union;
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
@@ -19,6 +17,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import static com.querybuilder.utils.Constants.CTE_ROOT;
+import static com.querybuilder.utils.Utils.setUpDownBind;
 import static com.querybuilder.utils.Utils.showErrorMessage;
 
 public class CTEPart {
@@ -31,14 +30,7 @@ public class CTEPart {
                 (TableColumn.CellEditEvent<CteRow, String> event) -> setNewCteName(controller, event)
         );
 
-        ReadOnlyIntegerProperty selectedIndex = controller.getQueryCteTable().getSelectionModel().selectedIndexProperty();
-        controller.getCteUpButton().disableProperty().bind(selectedIndex.lessThanOrEqualTo(0));
-        controller.getCteDownButton().disableProperty().bind(Bindings.createBooleanBinding(() -> {
-                    int index = selectedIndex.get();
-                    return index < 0 || index + 1 >= controller.getQueryCteTable().getItems().size();
-                },
-                selectedIndex, controller.getQueryCteTable().getItems())
-        );
+        setUpDownBind(controller.getQueryCteTable(), controller.getCteUpButton(), controller.getCteDownButton());
     }
 
     private static void setNewCteName(MainController controller, TableColumn.CellEditEvent<CteRow, String> event) {

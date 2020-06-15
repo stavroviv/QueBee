@@ -18,9 +18,9 @@ import static com.querybuilder.utils.Constants.UNION_0;
 import static com.querybuilder.utils.Utils.loadTableToTable;
 
 @Data
-public class OneCte {
+public class OneCte implements Orderable {
     private String cteName;
-    private int order;
+    private Integer order;
     private Map<String, Union> unionMap = new LinkedHashMap<>();
     private Map<String, TableColumn<AliasRow, String>> unionColumns = new HashMap<>();
 

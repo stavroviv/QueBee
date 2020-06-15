@@ -2,8 +2,6 @@
 package com.querybuilder.querypart;
 
 import com.querybuilder.domain.TableRow;
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -52,15 +50,7 @@ public class OrderBy extends AbstractQueryPart {
         setStringColumnFactory(orderTableResultsFieldColumn);
 
         setComboBoxColumnFactory(orderTableResultsSortingColumn, ORDER_DEFAULT_VALUE, "Descending");
-
-        ReadOnlyIntegerProperty selectedIndex = orderTableResults.getSelectionModel().selectedIndexProperty();
-        orderUpButton.disableProperty().bind(selectedIndex.lessThanOrEqualTo(0));
-        orderDownButton.disableProperty().bind(Bindings.createBooleanBinding(() -> {
-                    int index = selectedIndex.get();
-                    return index < 0 || index + 1 >= orderTableResults.getItems().size();
-                },
-                selectedIndex, orderTableResults.getItems())
-        );
+        setUpDownBind(orderTableResults, orderUpButton, orderDownButton);
 
         setCellFactory(orderFieldsTreeColumn);
     }

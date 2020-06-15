@@ -3,9 +3,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal"
+<AnchorPane prefHeight="400.0" prefWidth="752.0" xmlns="http://javafx.com/javafx/10.0.2-internal"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.querybuilder.querypart.UnionAliases">
-    <SplitPane dividerPositions="0.188646288209607" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0"
+    <SplitPane dividerPositions="0.27935723114956734" prefHeight="483.0" prefWidth="811.0" AnchorPane.bottomAnchor="0.0"
                AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
             <AnchorPane>
@@ -34,7 +34,7 @@
                             </ImageView>
                         </graphic>
                     </Button>
-                    <Button contentDisplay="GRAPHIC_ONLY" layoutX="69.0" layoutY="3.0" minHeight="25.0" minWidth="25.0"
+                    <Button contentDisplay="GRAPHIC_ONLY" layoutX="68.0" layoutY="3.0" minHeight="25.0" minWidth="25.0"
                             mnemonicParsing="false" onAction="#deleteUnion" prefHeight="25.0" prefWidth="25.0"
                             text="Button">
                         <graphic>
@@ -55,6 +55,27 @@
                             </ImageView>
                         </graphic>
                     </Button>
+                    <Button fx:id="unionUp" layoutX="102.0" layoutY="3.0" minHeight="25.0" minWidth="25.0"
+                            mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0">
+                        <graphic>
+                            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                <image>
+                                    <Image url="@../images/moveup.png"/>
+                                </image>
+                            </ImageView>
+                        </graphic>
+                    </Button>
+                    <Button fx:id="unionDown" layoutX="131.0" layoutY="3.0" minHeight="25.0" minWidth="25.0"
+                            mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0">
+                        <graphic>
+                            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                <image>
+                                    <Image url="@../images/movedown.png"/>
+                                </image>
+                            </ImageView>
+                        </graphic>
+                    </Button>
+
                 </children>
             </AnchorPane>
             <AnchorPane>
@@ -68,6 +89,26 @@
                             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
                         </columnResizePolicy>
                     </TableView>
+                    <Button fx:id="aliasUp" layoutX="39.0" layoutY="3.0" minHeight="25.0" minWidth="25.0"
+                            mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0">
+                        <graphic>
+                            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                <image>
+                                    <Image url="@../images/moveup.png"/>
+                                </image>
+                            </ImageView>
+                        </graphic>
+                    </Button>
+                    <Button fx:id="aliasDown" layoutX="69.0" layoutY="3.0" minHeight="25.0" minWidth="25.0"
+                            mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0">
+                        <graphic>
+                            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                <image>
+                                    <Image url="@../images/movedown.png"/>
+                                </image>
+                            </ImageView>
+                        </graphic>
+                    </Button>
                     <Button contentDisplay="GRAPHIC_ONLY" layoutX="8.0" layoutY="3.0" minHeight="25.0" minWidth="25.0"
                             mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="Button">
                         <graphic>

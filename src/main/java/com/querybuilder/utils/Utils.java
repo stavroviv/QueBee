@@ -4,8 +4,11 @@ import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.AliasRow;
 import com.querybuilder.domain.SelectedFieldsTree;
 import com.querybuilder.domain.TableRow;
+import com.querybuilder.domain.qparts.Orderable;
 import com.querybuilder.eventbus.Subscriber;
 import com.querybuilder.querypart.FromTables;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -25,7 +28,6 @@ import javafx.stage.Stage;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import javax.swing.*;
 import java.util.*;
@@ -35,10 +37,6 @@ import java.util.function.Consumer;
 import static com.querybuilder.utils.Constants.*;
 
 public class Utils {
-
-    public static PlainSelect getEmptySelect() {
-        return new PlainSelect();
-    }
 
     public static void showErrorMessage(Exception exception, String header) {
         JOptionPane.showMessageDialog(
@@ -396,6 +394,30 @@ public class Utils {
 
     public static boolean isEmptySearchText(String newValue) {
         return newValue.trim().isEmpty() || newValue.length() < 2;
+    }
+
+    public static <T extends Orderable> Map<String, T> sortByOrder(Map<String, T> map) {
+        List<Map.Entry<String, T>> list = new LinkedList<>(map.entrySet());
+
+        list.sort(Comparator.comparing(o -> o.getValue().getOrder()));
+
+        Map<String, T> sortedMap = new LinkedHashMap<>();
+        for (Map.Entry<String, T> entry : list) {
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+
+        return sortedMap;
+    }
+
+    public static void setUpDownBind(TableView<?> aliasTable, Button buttonUp, Button buttonDown) {
+        ReadOnlyIntegerProperty selectedIndex = aliasTable.getSelectionModel().selectedIndexProperty();
+        buttonUp.disableProperty().bind(selectedIndex.lessThanOrEqualTo(0));
+        buttonDown.disableProperty().bind(Bindings.createBooleanBinding(() -> {
+                    int index = selectedIndex.get();
+                    return index < 0 || index + 1 >= aliasTable.getItems().size();
+                },
+                selectedIndex, aliasTable.getItems())
+        );
     }
 
 }

@@ -43,6 +43,15 @@ public class UnionAliases extends AbstractQueryPart {
     private TableColumn<TableRow, Boolean> unionTableDistinctColumn;
 
     @FXML
+    private Button aliasUp;
+    @FXML
+    private Button aliasDown;
+    @FXML
+    private Button unionUp;
+    @FXML
+    private Button unionDown;
+
+    @FXML
     @Override
     public void initialize() {
         aliasTable.getSelectionModel().cellSelectionEnabledProperty().set(true);
@@ -50,6 +59,9 @@ public class UnionAliases extends AbstractQueryPart {
         unionTableNameColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
         unionTableDistinctColumn.setCellFactory(CheckBoxTableCell.forTableColumn(unionTableDistinctColumn));
         unionTableDistinctColumn.setCellValueFactory(new PropertyValueFactory<>("distinct"));
+
+        setUpDownBind(aliasTable, aliasUp, aliasDown);
+        setUpDownBind(unionTable, unionUp, unionDown);
     }
 
     public static TableColumn<AliasRow, String> aliasColumn() {

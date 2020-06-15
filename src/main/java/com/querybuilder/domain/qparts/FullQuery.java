@@ -23,6 +23,7 @@ import net.sf.jsqlparser.statement.select.*;
 import java.util.*;
 
 import static com.querybuilder.utils.Constants.*;
+import static com.querybuilder.utils.Utils.sortByOrder;
 
 @Data
 public class FullQuery {
@@ -36,7 +37,8 @@ public class FullQuery {
         Select select = new Select();
 
         List<WithItem> withItems = new ArrayList<>();
-        Iterator<String> iterator = cteMap.keySet().iterator();
+        Map<String, OneCte> cteMapSort = sortByOrder(cteMap);
+        Iterator<String> iterator = cteMapSort.keySet().iterator();
         String cte;
         int index = 0;
 
@@ -64,7 +66,8 @@ public class FullQuery {
         SetOperationList selectBody = new SetOperationList();
         OneCte oneCte = cteMap.get(cte);
 
-        Iterator<String> iterator = oneCte.getUnionMap().keySet().iterator();
+        Map<String, Union> unionMapSort = sortByOrder(oneCte.getUnionMap());
+        Iterator<String> iterator = unionMapSort.keySet().iterator();
         String union;
 
         List<SetOperation> ops = new ArrayList<>();
