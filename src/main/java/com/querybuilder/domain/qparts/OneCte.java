@@ -20,6 +20,7 @@ import static com.querybuilder.utils.Utils.loadTableToTable;
 @Data
 public class OneCte {
     private String cteName;
+    private int order;
     private Map<String, Union> unionMap = new LinkedHashMap<>();
     private Map<String, TableColumn<AliasRow, String>> unionColumns = new HashMap<>();
 
@@ -38,6 +39,23 @@ public class OneCte {
         this();
         aliasTable.getColumns().add(UnionAliases.aliasColumn());
         UnionAliases.addUnionColumn(aliasTable, unionTable, UNION_0, this, controller, false);
+    }
+
+    public OneCte(MainController controller, OneCte currentCte) {
+        loadTableToTable(currentCte.getAliasTable(), aliasTable);
+        loadTableToTable(currentCte.getUnionTable(), unionTable);
+        loadTableToTable(currentCte.getOrderTableResults(), orderTableResults);
+        for (Map.Entry<String, Union> stringUnionEntry : currentCte.getUnionMap().entrySet()) {
+            Union union = new Union();
+            loadTableToTable(stringUnionEntry.getValue().getLinkTable(), union.getLinkTable());
+            loadTableToTable(stringUnionEntry.getValue().getFieldTable(), union.getFieldTable());
+
+            String unionId = stringUnionEntry.getKey();
+            unionMap.put(unionId, union);
+
+            aliasTable.getColumns().add(UnionAliases.aliasColumn());
+            UnionAliases.addUnionColumn(aliasTable, unionTable, unionId, this, controller, false);
+        }
     }
 
     public void saveAliasTable(UnionAliases controller) {

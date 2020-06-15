@@ -23,7 +23,6 @@ import static com.querybuilder.utils.Utils.showErrorMessage;
 
 public class CTEPart {
 
-
     public static void init(MainController controller) {
         controller.getQueryCteColumn().setCellFactory(TextFieldTableCell.forTableColumn());
         controller.getQueryCteColumn().setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -44,31 +43,37 @@ public class CTEPart {
 
     private static void setNewCteName(MainController controller, TableColumn.CellEditEvent<CteRow, String> event) {
         TablePosition<CteRow, String> pos = event.getTablePosition();
-        int row = pos.getRow();
+
         ObservableList<CteRow> items = event.getTableView().getItems();
-        CteRow cteRow = items.get(row);
+        CteRow cteRow = items.get(pos.getRow());
         String newValue = event.getNewValue();
-        for (CteRow item : items) {
-            if (item.getName().equals(newValue) && !item.getId().equals(cteRow.getId())) {
-                cteRow.setName(event.getOldValue());
-                controller.getQueryCteTable().refresh();
-                showErrorMessage("Duplicate cte name", "Attention");
-                return;
-            }
-        }
+
         try {
+            checkNewName(controller, newValue, cteRow);
             setNewName(controller, cteRow, event.getOldValue(), newValue);
         } catch (Exception e) {
             showErrorMessage(e.getMessage(), "Attention");
+            cteRow.setName(event.getOldValue());
+            controller.getQueryCteTable().refresh();
         }
     }
 
-    public static void setNewName(MainController controller, CteRow cteRow, String oldValue, String newValue) {
+    public static void checkNewName(MainController controller, String newValue, CteRow cteRow) {
+        ObservableList<CteRow> items = controller.getQueryCteTable().getItems();
+        for (CteRow item : items) {
+            if (item.getName().equals(newValue) && !item.getId().equals(cteRow.getId())) {
+                throw new RuntimeException("Duplicate cte name");
+            }
+        }
+
         try {
             CCJSqlParserUtil.parse("SELECT * FROM " + newValue);
         } catch (Exception e) {
             throw new RuntimeException("Incorrect new name: " + newValue);
         }
+    }
+
+    public static void setNewName(MainController controller, CteRow cteRow, String oldValue, String newValue) {
 
         cteRow.setName(newValue);
         Map<String, OneCte> cteMap = controller.getFullQuery().getCteMap();

@@ -120,7 +120,8 @@ public class QueryBuilderTest {
         CteRow cteRow = mainController.getQueryCteTable().getItems().get(0);
 
         try {
-            CTEPart.setNewName(mainController, cteRow, "test", "23@");
+            CTEPart.checkNewName(mainController, "23@", cteRow);
+            Assert.fail("test");
         } catch (Exception e) {
             Assert.assertEquals("Incorrect new name: 23@", e.getMessage());
         }
@@ -252,6 +253,7 @@ public class QueryBuilderTest {
         text = "SELECT vendor_id, site_id FROM crm_bonus_retail, crm_vendor GROUP BY vendor_id";
         try {
             loadQuery(text).getFullQuery().getQuery();
+            Assert.fail("test");
         } catch (Exception e) {
             Assert.assertEquals("Ambiguous column reference: vendor_id", e.getMessage());
         }

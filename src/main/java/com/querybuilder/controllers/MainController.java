@@ -364,7 +364,24 @@ public class MainController implements Subscriber {
     @FXML
     public void addCTEClick(ActionEvent actionEvent) {
         String key = "CTE_" + curMaxCTE;
-        fullQuery.getCteMap().put(key, new OneCte(this));
+        OneCte newCte = new OneCte(this);
+        newCte.setCteName(key);
+        fullQuery.getCteMap().put(key, newCte);
+
+        Tab newTab = addCteTabPane(key, key);
+        activateNewTab(newTab, cteTabPane, this);
+
+        queryCteTable.getItems().add(new CteRow(key, key));
+
+        curMaxCTE++;
+    }
+
+    @FXML
+    public void copyCTEClick(ActionEvent actionEvent) {
+        String key = "CTE_" + curMaxCTE;
+        OneCte newCte = new OneCte(this, fullQuery.getCteMap().get(getCurrentCteId()));
+        newCte.setCteName(key);
+        fullQuery.getCteMap().put(key, newCte);
 
         Tab newTab = addCteTabPane(key, key);
         activateNewTab(newTab, cteTabPane, this);
