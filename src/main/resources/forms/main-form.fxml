@@ -99,7 +99,7 @@
                                 </AnchorPane>
                             </content>
                         </Tab>
-                        <Tab text="Union/Aliases">
+                        <Tab fx:id="unionPageTab" text="Union/Aliases">
                             <content>
                                 <fx:include fx:id="unionAliases" source="union-aliases.fxml"/>
                             </content>
@@ -109,7 +109,7 @@
                                 <fx:include fx:id="order" source="order.fxml"/>
                             </content>
                         </Tab>
-                        <Tab id="queryTabPane" text="CTE">
+                        <Tab id="queryTabPane" fx:id="ctePageTab" text="CTE">
                             <content>
                                 <AnchorPane prefHeight="200.0" prefWidth="200.0">
                                     <children>

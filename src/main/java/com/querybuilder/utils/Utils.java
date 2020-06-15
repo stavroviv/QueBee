@@ -426,14 +426,6 @@ public class Utils {
         tableView.getSelectionModel().clearAndSelect(index + upDown);
     }
 
-//    public static void moveTabUp(TabPane tabPane, TableView<TableRow> unionTable) {
-//        moveTab(tabPane, unionTable, -1);
-//    }
-//
-//    public static void moveTabDown(TabPane tabPane, TableView<TableRow> unionTable) {
-//        moveTab(tabPane, unionTable, 1);
-//    }
-
     public static void moveTab(TabPane tabPane, TableView<TableRow> table, int upDown) {
         TableRow selectedItem = table.getSelectionModel().getSelectedItem();
 
@@ -512,6 +504,9 @@ public class Utils {
             }
         }
 
+        if (neighbour == null) {
+            return;
+        }
         Integer orderPrev = neighbour.getOrder();
         neighbour.setOrder(currentOrder);
         current.setOrder(orderPrev);

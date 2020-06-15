@@ -39,9 +39,12 @@ public class MainController implements Subscriber {
     private TabPane cteTabPane;
     @FXML
     private TabPane unionTabPane;
+
     @FXML
     private Spinner<Integer> topSpinner;
 
+    @FXML
+    private Tab tableAndFieldsTab;
     @FXML
     private Tab linkTablesPane;
 
@@ -156,15 +159,29 @@ public class MainController implements Subscriber {
         }
     }
 
+    @FXML
+    private Tab orderTab;
+    @FXML
+    private Tab unionPageTab;
+    @FXML
+    private Tab ctePageTab;
+
     private void setUnionAndCTETabPaneVisibility() {
         double anchor = 0.0;
-        anchor = setPaneVisibleAnchor(anchor, cteTabPane);
-        String mainPageId = mainTabPane.getSelectionModel().getSelectedItem().getId();
-        if (mainPageId != null && mainPageId.equals("orderTab")) {
+        Tab mainPageTab = mainTabPane.getSelectionModel().getSelectedItem();
+
+        if (mainPageTab.equals(ctePageTab)) {
+            cteTabPane.setVisible(false);
+        } else {
+            anchor = setPaneVisibleAnchor(anchor, cteTabPane);
+        }
+
+        if (mainPageTab.equals(orderTab) || mainPageTab.equals(unionPageTab) || mainPageTab.equals(ctePageTab)) {
             unionTabPane.setVisible(false);
         } else {
             anchor = setPaneVisibleAnchor(anchor, unionTabPane);
         }
+
         AnchorPane.setRightAnchor(mainTabPane, anchor);
     }
 
@@ -423,10 +440,6 @@ public class MainController implements Subscriber {
         }
         return null;
     }
-
-    @FXML
-    private Tab tableAndFieldsTab;
-
 
     private Tab addCteTabPane(String name, String id) {
         Tab tab = new Tab(name);
