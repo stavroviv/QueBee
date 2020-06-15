@@ -26,8 +26,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.querybuilder.utils.Constants.CTE_0;
-import static com.querybuilder.utils.Constants.UNION_0;
+import static com.querybuilder.utils.Constants.*;
 import static com.querybuilder.utils.Utils.notEmptyString;
 
 public class QueryBuilderTest {
@@ -213,6 +212,72 @@ public class QueryBuilderTest {
                 "SELECT crm_bonus_retail.bonus_retail_value, " +
                 "crm_bonus_retail.vendor_id " +
                 "FROM crm_bonus_retail";
+        Assert.assertEquals(expected, fullQuery.getQuery().toString());
+    }
+
+    @Test
+    public void deleteAliasSecondRow() throws Exception {
+        String text = "SELECT crm_bonus_retail.bonus_retail_value AS bonus, " +
+                "NULL AS test, " +
+                "crm_bonus_retail.vendor_id " +
+                "FROM crm_bonus_retail " +
+                "UNION ALL " +
+                "SELECT crm_access.access_name, " +
+                "crm_access.test, " +
+                "crm_access.access_comment " +
+                "FROM crm_access, crm_advance_payment";
+
+        MainController mainController = loadQuery(text);
+        FullQuery fullQuery = mainController.getFullQuery();
+
+        OneCte oneCte = fullQuery.getCteMap().get(CTE_0);
+        mainController.getUnionTabPane().getSelectionModel().select(0);
+
+        Assert.assertEquals(3, oneCte.getUnionMap().get(UNION_1).getFieldTable().getItems().size());
+
+        mainController.getUnionAliasesController().getAliasTable().getSelectionModel().select(1);
+        mainController.getUnionAliasesController().deleteAliasClick(null);
+
+        Assert.assertEquals(2, oneCte.getUnionMap().get(UNION_1).getFieldTable().getItems().size());
+
+        mainController.saveCurrent();
+
+        String expected = "SELECT " +
+                "crm_bonus_retail.bonus_retail_value AS bonus, " +
+                "crm_bonus_retail.vendor_id " +
+                "FROM crm_bonus_retail " +
+                "UNION ALL " +
+                "SELECT crm_access.access_name, crm_access.access_comment " +
+                "FROM crm_access, crm_advance_payment";
+        Assert.assertEquals(expected, fullQuery.getQuery().toString());
+    }
+
+    @Test
+    public void deleteAliasFirstRow() throws Exception {
+        String text = "SELECT classifiabletextscharacteristics.characteristicsvalueid, NULL AS text " +
+                "FROM classifiabletextscharacteristics " +
+                "UNION ALL " +
+                "SELECT classifiabletexts.id, classifiabletexts.text " +
+                "FROM classifiabletexts";
+
+        MainController mainController = loadQuery(text);
+        FullQuery fullQuery = mainController.getFullQuery();
+
+        OneCte oneCte = fullQuery.getCteMap().get(CTE_0);
+        mainController.getUnionTabPane().getSelectionModel().select(0);
+
+        Assert.assertEquals(1, oneCte.getUnionMap().get(UNION_0).getFieldTable().getItems().size());
+        Assert.assertEquals(2, oneCte.getUnionMap().get(UNION_1).getFieldTable().getItems().size());
+
+        mainController.getUnionAliasesController().getAliasTable().getSelectionModel().select(0);
+        mainController.getUnionAliasesController().deleteAliasClick(null);
+
+        Assert.assertEquals(1, oneCte.getUnionMap().get(UNION_0).getFieldTable().getItems().size());
+        Assert.assertEquals(1, oneCte.getUnionMap().get(UNION_1).getFieldTable().getItems().size());
+
+        String expected = "SELECT NULL AS text FROM classifiabletextscharacteristics " +
+                "UNION ALL " +
+                "SELECT classifiabletexts.text FROM classifiabletexts";
         Assert.assertEquals(expected, fullQuery.getQuery().toString());
     }
 

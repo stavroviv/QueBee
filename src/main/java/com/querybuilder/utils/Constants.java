@@ -12,6 +12,7 @@ public class Constants {
 
     public static final String CTE_0 = "CTE_0";
     public static final String UNION_0 = "UNION_0";
+    public static final String UNION_1 = "UNION_1";
 
     public static final String NULL_VALUE = "NULL";
 

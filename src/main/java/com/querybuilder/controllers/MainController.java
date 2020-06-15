@@ -237,7 +237,7 @@ public class MainController implements Subscriber {
         showFromBuilder(newCte, newUnion, cteChange);
     }
 
-    private void saveToBuilder(Tab oldCte, Tab oldUnion, boolean cteChange) {
+    public void saveToBuilder(Tab oldCte, Tab oldUnion, boolean cteChange) {
         OneCte cte = getCurrentCte(oldCte);
         if (cteChange) {
             cte.saveAliasTable(unionAliasesController);
@@ -340,13 +340,17 @@ public class MainController implements Subscriber {
 
     @FXML
     public void okClick() {
+        saveCurrent();
+        sQuery = fullQuery.getQuery();
+        queryBuilder.closeForm(sQuery == null ? "" : sQuery.toString());
+    }
+
+    public void saveCurrent() {
         saveToBuilder(
                 cteTabPane.getSelectionModel().getSelectedItem(),
                 unionTabPane.getSelectionModel().getSelectedItem(),
                 true
         );
-        sQuery = fullQuery.getQuery();
-        queryBuilder.closeForm(sQuery == null ? "" : sQuery.toString());
     }
 
     @FXML

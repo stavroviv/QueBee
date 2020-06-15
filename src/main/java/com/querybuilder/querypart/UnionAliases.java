@@ -22,6 +22,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -404,4 +405,32 @@ public class UnionAliases extends AbstractQueryPart {
     public void aliasDownClick(ActionEvent actionEvent) {
         moveRowDown(aliasTable);
     }
+
+    @FXML
+    public void deleteAliasClick(ActionEvent actionEvent) {
+        TableView.TableViewSelectionModel<AliasRow> selectionModel = aliasTable.getSelectionModel();
+        AliasRow selectedItem = selectionModel.getSelectedItem();
+
+        for (Map.Entry<String, Long> idEntry : selectedItem.getIds().entrySet()) {
+            for (Map.Entry<String, Union> stringUnionEntry : mainController.getCurrentCte().getUnionMap().entrySet()) {
+                Union union = stringUnionEntry.getValue();
+                List<TableRow> toDelete = new ArrayList<>();
+                for (TableRow item : union.getFieldTable().getItems()) {
+                    if (item.getId() != idEntry.getValue()) {
+                        continue;
+                    }
+                    toDelete.add(item);
+                }
+                for (TableRow tableRow : toDelete) {
+                    union.getFieldTable().getItems().remove(tableRow);
+                }
+            }
+        }
+
+        int index = selectionModel.getSelectedIndex();
+        aliasTable.getItems().remove(index);
+
+        mainController.saveCurrent();
+    }
+
 }
