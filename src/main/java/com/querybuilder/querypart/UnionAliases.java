@@ -369,7 +369,7 @@ public class UnionAliases extends AbstractQueryPart {
         moveUnion(1);
     }
 
-    private void moveUnion(int upDown) {
+    public void moveUnion(int upDown) {
         moveAliasColumn(unionTable, aliasTable, upDown);
         changeUnionOrder(mainController, unionTable, upDown);
         moveTab(mainController.getUnionTabPane(), unionTable, upDown);
@@ -378,6 +378,9 @@ public class UnionAliases extends AbstractQueryPart {
 
     private static void moveAliasColumn(TableView<TableRow> unionTable, TableView<AliasRow> aliasTable, int move) {
         TableRow selectedItem = unionTable.getSelectionModel().getSelectedItem();
+        if (selectedItem == null) {
+            return;
+        }
         TableColumn<AliasRow, ?> current = null;
         int index = 0;
         for (TableColumn<AliasRow, ?> column : aliasTable.getColumns()) {

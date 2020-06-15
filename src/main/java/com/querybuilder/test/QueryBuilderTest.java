@@ -190,6 +190,33 @@ public class QueryBuilderTest {
     }
 
     @Test
+    public void unionOrderChange() throws Exception {
+        String text = "SELECT crm_bonus_retail.bonus_retail_value AS bonus, " +
+                "crm_bonus_retail.vendor_id " +
+                "FROM crm_bonus_retail " +
+                "UNION ALL " +
+                "SELECT crm_access.access_name, " +
+                "crm_access.access_comment " +
+                "FROM crm_access, crm_advance_payment";
+
+        MainController mainController = loadQuery(text);
+        FullQuery fullQuery = mainController.getFullQuery();
+
+        mainController.getUnionTabPane().getSelectionModel().select(0);
+        mainController.getUnionAliasesController().getUnionTable().getSelectionModel().select(0);
+        mainController.getUnionAliasesController().moveUnion(1);
+
+        String expected = "SELECT crm_access.access_name AS bonus, " +
+                "crm_access.access_comment AS vendor_id " +
+                "FROM crm_access, crm_advance_payment " +
+                "UNION ALL " +
+                "SELECT crm_bonus_retail.bonus_retail_value, " +
+                "crm_bonus_retail.vendor_id " +
+                "FROM crm_bonus_retail";
+        Assert.assertEquals(expected, fullQuery.getQuery().toString());
+    }
+
+    @Test
     public void aliasesSave() throws Exception {
         String text = "SELECT crm_bonus_retail.bonus_retail_value AS bonus, " +
                 "crm_bonus_retail.vendor_id, " +
