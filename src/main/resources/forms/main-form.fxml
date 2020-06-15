@@ -114,8 +114,8 @@
                                 <AnchorPane prefHeight="200.0" prefWidth="200.0">
                                     <children>
                                         <Button fx:id="cteUpButton" layoutX="100.0" layoutY="8.0" minHeight="25.0"
-                                                minWidth="25.0" mnemonicParsing="false" prefHeight="25.0"
-                                                prefWidth="25.0">
+                                                minWidth="25.0" mnemonicParsing="false" onAction="#cteUpButtonClick"
+                                                prefHeight="25.0" prefWidth="25.0">
                                             <graphic>
                                                 <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true"
                                                            preserveRatio="true">
@@ -126,8 +126,8 @@
                                             </graphic>
                                         </Button>
                                         <Button fx:id="cteDownButton" layoutX="130.0" layoutY="8.0" minHeight="25.0"
-                                                minWidth="25.0" mnemonicParsing="false" prefHeight="25.0"
-                                                prefWidth="25.0">
+                                                minWidth="25.0" mnemonicParsing="false" onAction="#cteDownButtonClick"
+                                                prefHeight="25.0" prefWidth="25.0">
                                             <graphic>
                                                 <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true"
                                                            preserveRatio="true">

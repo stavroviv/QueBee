@@ -2,9 +2,12 @@ package com.querybuilder.utils;
 
 import com.querybuilder.controllers.MainController;
 import com.querybuilder.domain.AliasRow;
+import com.querybuilder.domain.CteRow;
 import com.querybuilder.domain.SelectedFieldsTree;
 import com.querybuilder.domain.TableRow;
+import com.querybuilder.domain.qparts.OneCte;
 import com.querybuilder.domain.qparts.Orderable;
+import com.querybuilder.domain.qparts.Union;
 import com.querybuilder.eventbus.Subscriber;
 import com.querybuilder.querypart.FromTables;
 import javafx.beans.binding.Bindings;
@@ -352,17 +355,6 @@ public class Utils {
         selModel.select(controller.getTableAndFieldsTab());
     }
 
-    public static int getUnionTabIndex(MainController mainController, String unionTabId) {
-        int tIndex = 0;
-        for (Tab tPane : mainController.getUnionTabPane().getTabs()) {
-            if (tPane.getId().equals(unionTabId)) {
-                break;
-            }
-            tIndex++;
-        }
-        return tIndex;
-    }
-
     public static void removeEmptyAliases(MainController controller) {
         ObservableList<AliasRow> aliasItems = controller.getUnionAliasesController().getAliasTable().getItems();
         List<AliasRow> delList = new ArrayList<>();
@@ -418,6 +410,111 @@ public class Utils {
                 },
                 selectedIndex, aliasTable.getItems())
         );
+    }
+
+    public static <T> void moveRowUp(TableView<T> tableView) {
+        moveRow(tableView, -1);
+    }
+
+    public static <T> void moveRowDown(TableView<T> tableView) {
+        moveRow(tableView, 1);
+    }
+
+    public static <T> void moveRow(TableView<T> tableView, int upDown) {
+        int index = tableView.getSelectionModel().getSelectedIndex();
+        tableView.getItems().add(index + upDown, tableView.getItems().remove(index));
+        tableView.getSelectionModel().clearAndSelect(index + upDown);
+    }
+
+//    public static void moveTabUp(TabPane tabPane, TableView<TableRow> unionTable) {
+//        moveTab(tabPane, unionTable, -1);
+//    }
+//
+//    public static void moveTabDown(TabPane tabPane, TableView<TableRow> unionTable) {
+//        moveTab(tabPane, unionTable, 1);
+//    }
+
+    public static void moveTab(TabPane tabPane, TableView<TableRow> table, int upDown) {
+        TableRow selectedItem = table.getSelectionModel().getSelectedItem();
+
+        int tabIndex = getTabIndex(tabPane, selectedItem.getName());
+
+        Tab remove = tabPane.getTabs().remove(tabIndex);
+        tabPane.getTabs().add(tabIndex + upDown, remove);
+        tabPane.getSelectionModel().clearAndSelect(tabIndex + upDown);
+    }
+
+    public static void moveCteTabUp(TabPane tabPane, TableView<CteRow> table) {
+        moveCteTab(tabPane, table, -1);
+    }
+
+    public static void moveCteTabDown(TabPane tabPane, TableView<CteRow> table) {
+        moveCteTab(tabPane, table, 1);
+    }
+
+    private static void moveCteTab(TabPane tabPane, TableView<CteRow> table, int upDown) {
+        CteRow selectedItem = table.getSelectionModel().getSelectedItem();
+
+        int tabIndex = getTabIndex(tabPane, selectedItem.getId());
+
+        Tab remove = tabPane.getTabs().remove(tabIndex);
+        tabPane.getTabs().add(tabIndex + upDown, remove);
+        tabPane.getSelectionModel().clearAndSelect(tabIndex + upDown);
+    }
+
+    public static int getTabIndex(TabPane tabPane, String unionTabId) {
+        int tIndex = 0;
+        for (Tab tPane : tabPane.getTabs()) {
+            if (tPane.getId().equals(unionTabId)) {
+                break;
+            }
+            tIndex++;
+        }
+        return tIndex;
+    }
+
+    public static void changeUnionOrder(MainController mainController, TableView<TableRow> unionTable, int upDown) {
+        TableRow selectedItem = unionTable.getSelectionModel().getSelectedItem();
+
+        OneCte currentCte = mainController.getCurrentCte();
+        Union current = currentCte.getUnionMap().get(selectedItem.getName());
+
+        changeOrderInQueryObjects(sortByOrder(currentCte.getUnionMap()), upDown, current);
+    }
+
+    public static void changeCteOrder(MainController mainController, TableView<CteRow> unionTable, int upDown) {
+        CteRow selectedItem = unionTable.getSelectionModel().getSelectedItem();
+        String id = selectedItem.getId();
+
+        Map<String, OneCte> cteMap = mainController.getFullQuery().getCteMap();
+        OneCte current = cteMap.get(id);
+
+        changeOrderInQueryObjects(sortByOrder(cteMap), upDown, current);
+    }
+
+    private static void changeOrderInQueryObjects(Map<String, ? extends Orderable> map, int upDown, Orderable current) {
+        Orderable neighbour = null;
+        boolean foundNext = false;
+        Integer currentOrder = current.getOrder();
+
+        for (Map.Entry<String, ? extends Orderable> stringUnionEntry : map.entrySet()) {
+            if (stringUnionEntry.getValue().equals(current)) {
+                if (upDown == -1) {
+                    break;
+                } else {
+                    foundNext = true;
+                    continue;
+                }
+            }
+            neighbour = stringUnionEntry.getValue();
+            if (foundNext) {
+                break;
+            }
+        }
+
+        Integer orderPrev = neighbour.getOrder();
+        neighbour.setOrder(currentOrder);
+        current.setOrder(orderPrev);
     }
 
 }

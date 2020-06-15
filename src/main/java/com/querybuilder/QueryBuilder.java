@@ -77,7 +77,7 @@ public class QueryBuilder {
                 frame = new JFrame("Query builder");
                 frame.setContentPane(fxPanel);
                 frame.pack();
-                frame.setSize(900, 650);
+                frame.setSize(1000, 700);
 
                 IdeFrame ideFrame = WindowManager.getInstance().getIdeFrame(action.getProject());
                 frame.setLocationRelativeTo(ideFrame.getComponent());

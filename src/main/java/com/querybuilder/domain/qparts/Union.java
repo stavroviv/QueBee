@@ -29,7 +29,8 @@ public class Union implements Orderable {
     private TreeTableView<TableRow> conditionsTreeTable = new TreeTableView<>();
     private TableView<ConditionElement> conditionTableResults = new TableView<>();
 
-    public Union() {
+    public Union(Integer order) {
+        this.order = order;
         tablesView.setRoot(new TreeItem<>());
     }
 

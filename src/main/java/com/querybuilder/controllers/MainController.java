@@ -25,7 +25,7 @@ import java.util.Map;
 
 import static com.querybuilder.utils.Constants.CTE_0;
 import static com.querybuilder.utils.Constants.UNION_0;
-import static com.querybuilder.utils.Utils.activateNewTab;
+import static com.querybuilder.utils.Utils.*;
 
 @Data
 public class MainController implements Subscriber {
@@ -179,17 +179,6 @@ public class MainController implements Subscriber {
         return anchor;
     }
 
-    private int getCteTabIndex(String tabId) {
-        int tIndex = 0;
-        for (Tab tPane : cteTabPane.getTabs()) {
-            if (tPane.getId().equals(tabId)) {
-                break;
-            }
-            tIndex++;
-        }
-        return tIndex;
-    }
-
     private void initDBTables() {
         DBStructure db = new DBStructureImpl();
         DBTables dbStructure = db.getDBStructure(queryBuilder.getConsole());
@@ -309,9 +298,7 @@ public class MainController implements Subscriber {
     }
 
     private OneCte loadCteData(String cteName, SelectBody selectBody, int order) {
-        OneCte oneCte = new OneCte();
-        oneCte.setCteName(cteName);
-        oneCte.setOrder(order);
+        OneCte oneCte = new OneCte(cteName, order);
 
         unionAliasesController.loadAliases(selectBody, oneCte);
         oneCte.setOrderTableResults(orderController.load(selectBody));
@@ -364,16 +351,30 @@ public class MainController implements Subscriber {
     private int curMaxCTE; // индекс максимального СTE, нумерация начинается с 0
 
     @FXML
-    public void addCTEClick(ActionEvent actionEvent) {
-        String key = "CTE_" + curMaxCTE;
-        OneCte newCte = new OneCte(this);
-        newCte.setCteName(key);
-        fullQuery.getCteMap().put(key, newCte);
+    public void cteUpButtonClick(ActionEvent actionEvent) {
+        changeCteOrder(this, queryCteTable, -1);
+        moveCteTabUp(cteTabPane, queryCteTable);
+        moveRowUp(queryCteTable);
+    }
 
-        Tab newTab = addCteTabPane(key, key);
+    @FXML
+    public void cteDownButtonClick(ActionEvent actionEvent) {
+        changeCteOrder(this, queryCteTable, 1);
+        moveCteTabDown(cteTabPane, queryCteTable);
+        moveRowDown(queryCteTable);
+    }
+
+    @FXML
+    public void addCTEClick(ActionEvent actionEvent) {
+        String newCteId = "CTE_" + curMaxCTE;
+        OneCte newCte = new OneCte(this, newCteId, curMaxCTE);
+
+        fullQuery.getCteMap().put(newCteId, newCte);
+
+        Tab newTab = addCteTabPane(newCteId, newCteId);
         activateNewTab(newTab, cteTabPane, this);
 
-        queryCteTable.getItems().add(new CteRow(key, key));
+        queryCteTable.getItems().add(new CteRow(newCteId, newCteId));
 
         curMaxCTE++;
     }
@@ -404,7 +405,7 @@ public class MainController implements Subscriber {
         }
         if (selectedItem.getId().equals(getCurrentCteId())) {
             withoutSave = true;
-            int index = getCteTabIndex(selectedItem.getId()) - 1;
+            int index = getTabIndex(cteTabPane, selectedItem.getId()) - 1;
             cteTabPane.getSelectionModel().select(index == -1 ? 0 : index);
             withoutSave = false;
         }

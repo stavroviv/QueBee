@@ -31,12 +31,14 @@ public class OneCte implements Orderable {
     private TableView<TableRow> orderTableResults = new TableView<>();
     private int curMaxUnion;
 
-    public OneCte() {
-        unionMap.put(UNION_0, new Union());
+    public OneCte(String cteName, Integer order) {
+        this.cteName = cteName;
+        this.order = order;
+        unionMap.put(UNION_0, new Union(0));
     }
 
-    public OneCte(MainController controller) {
-        this();
+    public OneCte(MainController controller, String cteName, Integer order) {
+        this(cteName, order);
         aliasTable.getColumns().add(UnionAliases.aliasColumn());
         UnionAliases.addUnionColumn(aliasTable, unionTable, UNION_0, this, controller, false);
     }
@@ -45,8 +47,9 @@ public class OneCte implements Orderable {
         loadTableToTable(currentCte.getAliasTable(), aliasTable);
         loadTableToTable(currentCte.getUnionTable(), unionTable);
         loadTableToTable(currentCte.getOrderTableResults(), orderTableResults);
+        int index = 0;
         for (Map.Entry<String, Union> stringUnionEntry : currentCte.getUnionMap().entrySet()) {
-            Union union = new Union();
+            Union union = new Union(index);
             loadTableToTable(stringUnionEntry.getValue().getLinkTable(), union.getLinkTable());
             loadTableToTable(stringUnionEntry.getValue().getFieldTable(), union.getFieldTable());
 
@@ -55,6 +58,7 @@ public class OneCte implements Orderable {
 
             aliasTable.getColumns().add(UnionAliases.aliasColumn());
             UnionAliases.addUnionColumn(aliasTable, unionTable, unionId, this, controller, false);
+            index++;
         }
     }
 

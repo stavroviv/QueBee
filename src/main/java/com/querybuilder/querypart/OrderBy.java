@@ -94,16 +94,12 @@ public class OrderBy extends AbstractQueryPart {
 
     @FXML
     protected void orderUp(ActionEvent event) {
-        int index = orderTableResults.getSelectionModel().getSelectedIndex();
-        orderTableResults.getItems().add(index - 1, orderTableResults.getItems().remove(index));
-        orderTableResults.getSelectionModel().clearAndSelect(index - 1);
+        moveRowUp(orderTableResults);
     }
 
     @FXML
     protected void orderDown(ActionEvent event) {
-        int index = orderTableResults.getSelectionModel().getSelectedIndex();
-        orderTableResults.getItems().add(index + 1, orderTableResults.getItems().remove(index));
-        orderTableResults.getSelectionModel().clearAndSelect(index + 1);
+        moveRowDown(orderTableResults);
     }
 
     @FXML

@@ -30,7 +30,7 @@ public class FullQuery {
     private Map<String, OneCte> cteMap = new LinkedHashMap<>();
 
     public FullQuery() {
-        cteMap.put(CTE_0, new OneCte());
+        cteMap.put(CTE_0, new OneCte(CTE_0, 0));
     }
 
     public Select getQuery() {

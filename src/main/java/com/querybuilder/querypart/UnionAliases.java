@@ -43,20 +43,12 @@ public class UnionAliases extends AbstractQueryPart {
     private TableColumn<TableRow, Boolean> unionTableDistinctColumn;
 
     @FXML
-    private Button aliasUp;
-    @FXML
-    private Button aliasDown;
-    @FXML
-    private Button unionUp;
-    @FXML
-    private Button unionDown;
-
-    @FXML
     @Override
     public void initialize() {
         aliasTable.getSelectionModel().cellSelectionEnabledProperty().set(true);
 
         unionTableNameColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
+
         unionTableDistinctColumn.setCellFactory(CheckBoxTableCell.forTableColumn(unionTableDistinctColumn));
         unionTableDistinctColumn.setCellValueFactory(new PropertyValueFactory<>("distinct"));
 
@@ -94,22 +86,22 @@ public class UnionAliases extends AbstractQueryPart {
         int curMaxUnion = 0;
 
         aliasTable.getColumns().add(aliasColumn());
+        int i = 0;
 
         if (selectBody instanceof SetOperationList) { // UNION
             SetOperationList setOperationList = (SetOperationList) selectBody;
             curMaxUnion = setOperationList.getSelects().size();
-            int i = 0;
             for (SelectBody sBody : setOperationList.getSelects()) {
                 String unionName = "UNION_" + i;
                 addUnionColumn(aliasTable, unionTable, unionName, oneCte, mainController, getUnionType(setOperationList, i));
-                addAliasColumn(aliasTable, (PlainSelect) sBody, oneCte, unionName);
+                addAliasColumn(aliasTable, (PlainSelect) sBody, oneCte, unionName, i);
                 i++;
             }
         } else if (selectBody instanceof PlainSelect || selectBody == null) { // ONE QUERY
             addUnionColumn(aliasTable, unionTable, FIRST_COLUMN, oneCte, mainController, false);
             PlainSelect pSelect = (PlainSelect) selectBody;
             if (selectBody != null) {
-                addAliasColumn(aliasTable, pSelect, oneCte, FIRST_COLUMN);
+                addAliasColumn(aliasTable, pSelect, oneCte, FIRST_COLUMN, i);
             }
         }
 
@@ -127,7 +119,7 @@ public class UnionAliases extends AbstractQueryPart {
         return !setOperation.toString().contains("ALL");
     }
 
-    private void addAliasColumn(TableView<AliasRow> aliasTable, PlainSelect pSelect, OneCte oneCte, String unionName) {
+    private void addAliasColumn(TableView<AliasRow> aliasTable, PlainSelect pSelect, OneCte oneCte, String unionName, Integer unionOrder) {
         TableView<TableRow> groupTableAggregates = new TableView<>();
         TableView<TableRow> fieldTable = new TableView<>();
 
@@ -200,7 +192,7 @@ public class UnionAliases extends AbstractQueryPart {
             union.setFieldTable(fieldTable);
             union.setGroupTableAggregates(groupTableAggregates);
         } else {
-            Union value = new Union();
+            Union value = new Union(unionOrder);
             value.setFieldTable(fieldTable);
             value.setGroupTableAggregates(groupTableAggregates);
             oneCte.getUnionMap().put(unionName, value);
@@ -250,10 +242,12 @@ public class UnionAliases extends AbstractQueryPart {
     @FXML
     public void addNewUnion(ActionEvent event) {
         OneCte cte = mainController.getCurrentCte();
-        cte.setCurMaxUnion(cte.getCurMaxUnion() + 1);
+
+        int curMaxUnion = cte.getCurMaxUnion() + 1;
+        cte.setCurMaxUnion(curMaxUnion);
         String key = "UNION_" + cte.getCurMaxUnion();
 
-        cte.getUnionMap().put(key, new Union());
+        cte.getUnionMap().put(key, new Union(curMaxUnion));
 
         String unionName = "Query " + cte.getCurMaxUnion();
         Tab tab = mainController.addUnionTabPane(unionName, key);
@@ -282,7 +276,7 @@ public class UnionAliases extends AbstractQueryPart {
             item.getValues().remove(delUnion);
         }
 
-        int delIndex = getUnionTabIndex(mainController, delUnion);
+        int delIndex = getTabIndex(mainController.getUnionTabPane(), delUnion);
 
         TabPane unionTabPane = mainController.getUnionTabPane();
         int selectedIndex = mainController.getUnionTabPane().getSelectionModel().getSelectedIndex();
@@ -356,4 +350,55 @@ public class UnionAliases extends AbstractQueryPart {
         aliasTable.getItems().remove(deleted);
     }
 
+    @FXML
+    private Button aliasUp;
+    @FXML
+    private Button aliasDown;
+    @FXML
+    private Button unionUp;
+    @FXML
+    private Button unionDown;
+
+    @FXML
+    public void unionUpClick(ActionEvent actionEvent) {
+        moveUnion(-1);
+    }
+
+    @FXML
+    public void unionDownClick(ActionEvent actionEvent) {
+        moveUnion(1);
+    }
+
+    private void moveUnion(int upDown) {
+        moveAliasColumn(unionTable, aliasTable, upDown);
+        changeUnionOrder(mainController, unionTable, upDown);
+        moveTab(mainController.getUnionTabPane(), unionTable, upDown);
+        moveRow(unionTable, upDown);
+    }
+
+    private static void moveAliasColumn(TableView<TableRow> unionTable, TableView<AliasRow> aliasTable, int move) {
+        TableRow selectedItem = unionTable.getSelectionModel().getSelectedItem();
+        TableColumn<AliasRow, ?> current = null;
+        int index = 0;
+        for (TableColumn<AliasRow, ?> column : aliasTable.getColumns()) {
+            if (column.getText().equals(selectedItem.getName())) {
+                current = column;
+                break;
+            }
+            index++;
+        }
+        aliasTable.getColumns().remove(current);
+        aliasTable.getColumns().add(index + move, current);
+        aliasTable.refresh();
+    }
+
+    @FXML
+    public void aliasUpClick(ActionEvent actionEvent) {
+        moveRowUp(aliasTable);
+    }
+
+    @FXML
+    public void aliasDownClick(ActionEvent actionEvent) {
+        moveRowDown(aliasTable);
+    }
 }
