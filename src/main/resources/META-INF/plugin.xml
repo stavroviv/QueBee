@@ -1,9 +1,9 @@
 <idea-plugin>
     <id>plug.quebee</id>
     <name>QueBee</name>
-    <vendor email="QueBee@gmail.com" url="http://www.homelab.com">QueBee</vendor>
+    <vendor email="SQLQueBee@gmail.com" url="http://www.homelab.com">QueBee</vendor>
 
-    <description><![CDATA[ Query builder for making select queries in <em>Postgres</em>]]></description>
+    <description><![CDATA[ Query builder for making select SQL queries in <em>Postgres</em>]]></description>
 
     <depends>com.intellij.modules.database</depends>
     <depends>com.intellij.modules.ultimate</depends>
@@ -14,8 +14,8 @@
     <actions>
         <action id="com.querybuilder.MainAction"
                 class="com.querybuilder.MainAction"
-                text="Open QueBee to Edit Query"
-                description="Open QueBee to edit query"
+                text="Open SQL QueBee to Edit Query"
+                description="Open SQL QueBee to edit query"
                 icon="/images/qbicon.png">
             <add-to-group group-id="Console.Jdbc.Left" anchor="after" relative-to-action="Database.Settings"/>
         </action>
