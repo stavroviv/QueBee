@@ -24,6 +24,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
@@ -161,6 +162,8 @@ public class Utils {
     public static void openForm(String formName, String title, Map<String, Object> userData) {
         Stage stage = new Stage();
         stage.setTitle(title);
+        stage.setResizable(false);
+        stage.getIcons().add(new Image(Utils.class.getResourceAsStream("/images/cte.png")));
         stage.initModality(Modality.APPLICATION_MODAL);
         try {
             stage.setScene(getScene(formName, userData));

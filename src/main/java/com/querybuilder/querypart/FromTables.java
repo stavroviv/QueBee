@@ -222,9 +222,7 @@ public class FromTables extends AbstractQueryPart implements Subscriber {
         });
         deleteContext.setOnAction((ActionEvent event) -> deleteTableFromSelected());
         renameContext.setOnAction((ActionEvent event) -> {
-//            System.out.println("renameContext");
-//            Object item = tablesView.getSelectionModel().getSelectedItem();
-//            System.out.println("Selected item: " + item);
+            openForm("/forms/rename-table.fxml", "Change Table Name", null);
         });
         changeContext.setOnAction((ActionEvent event) -> {
 //            System.out.println("changeContext");
